@@ -1,4 +1,4 @@
-# Xetra Two-Step Stock Prediction Engine (v5.0 Upgrade)
+# Xetra Two-Step Stock Prediction
 
 A highly modular, distributed machine learning pipeline designed to predict German Xetra (`.DE`) stock price movements over a 6-month (126 trading day) horizon. The system utilizes a massive 360-degree global macroeconomic universe coupled with target company fundamentals, passing data through a strict **Two-Step Cascade** using Kolmogorov-Smirnov (KS) optimized Logistic Regression models.
 
