@@ -76,6 +76,33 @@ If a stock reaches Step 2, its quarterly financial statements are fetched from Y
 
 ---
 
+## Execution Guide
+
+The engine is highly flexible and can be executed either directly from your local terminal or fully distributed in the cloud via GitHub Actions.
+
+### 1. Local Terminal Execution
+The `main.py` entry point acts as your local CLI.
+
+* **Single-Ticker Mode (Fast Diagnosis):**
+  If you want to instantly diagnose a specific stock without waiting for the entire Xetra universe to process:
+  ```bash
+  python main.py --ticker SAP.DE
+  ```
+* **Full Batch Mode:**
+  If you want to evaluate the entire German retail market sequentially on your local machine:
+  ```bash
+  python main.py
+  ```
+
+### 2. Cloud Execution (GitHub Actions)
+For maximum speed and bypass of API rate limits, you can manually trigger the decoupled Actions via the "Actions" tab on GitHub. **You must run them in this exact order**, as they pass state and payloads to each other via GitHub Artifacts:
+
+1. **`1. T7 Download (Initialization)`**: Fetches the master list of qualified `.DE` tickers.
+2. **`2. Execute Step 1 (Macro)`**: Automatically spawns 3 parallel runners. Evaluates global macro conditions for all tickers.
+3. **`3. Execute Step 2 (Fundamentals)`**: Automatically spawns 3 parallel runners. Merges the surviving tickers from Step 1 and evaluates company balance sheets.
+
+---
+
 ## Outputs & Diagnostics
 
 The engine generates highly granular outputs for every stock evaluated:
