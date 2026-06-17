@@ -1,0 +1,25 @@
+{
+  "step1_model": {
+    "cv_accuracy": 0.919558359621451,
+    "ks_cutoff": 0.7066643775886469,
+    "predicted_class": "UP",
+    "selected_predictors_and_weights": {
+      "EURUSD=X_Dist_SMA200": 0.5539317603868006,
+      "LE=F_63D_ret": -1.4498546239289078,
+      "LE=F_126D_ret": 1.0820326624953984,
+      "LE=F_252D_ret": -0.06784637969071582,
+      "XLK_252D_ret": 0.4509796373681647,
+      "ZC=F_126D_ret": -2.1658697678823002,
+      "^GDAXI_252D_ret": -2.9007352835056843,
+      "UNRATE_Level": -1.7571806526868963,
+      "GEPUCURRENT_Level": -0.7610356002911816,
+      "ratio_credit_spread_Level": 0.4763984157581938,
+      "ratio_consumer_risk_Level": -1.552347802677452,
+      "Dist_SMA_200": 1.4826262890960613
+    }
+  },
+  "final_prediction": "UP",
+  "step2_model": {
+    "predicted_class": "UP"
+  }
+}
