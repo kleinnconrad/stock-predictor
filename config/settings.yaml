@@ -4,4 +4,4 @@ features_to_select: 12
 step1_history_years: 10
 step2_history_years: 4
 quantiles: 10
-xetra_t7_url: "https://www.xetra.com/resource/blob/136704/8cc7402dc022e3369d7210e53a3eb2e5/data/t7-xfra-allTradableInstruments.csv"
+xetra_t7_url: "https://www.cashmarket.deutsche-boerse.com/resource/blob/1528/6249e15bf93885fd91bd411663a0ff82/data/t7-xetr-allTradableInstruments.csv"
