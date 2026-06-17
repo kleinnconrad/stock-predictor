@@ -1,5 +1,6 @@
 import logging
 import sys
+import os
 import argparse
 from dotenv import load_dotenv
 from src.orchestration.batch_runner import run_batch, run_single
@@ -7,12 +8,13 @@ from src.orchestration.batch_runner import run_batch, run_single
 load_dotenv()
 
 def setup_logging():
+    os.makedirs('logs', exist_ok=True)
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         handlers=[
             logging.StreamHandler(sys.stdout),
-            logging.FileHandler('xetra_predictor.log')
+            logging.FileHandler(os.path.join('logs', 'xetra_predictor.log'))
         ]
     )
 
