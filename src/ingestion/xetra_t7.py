@@ -24,9 +24,9 @@ def fetch_xetra_t7(url: str) -> pd.DataFrame:
         csv_response = requests.get(url, headers=headers, timeout=30)
         csv_response.raise_for_status()
         
-        # Save to config directory just like etf-predictor
+        # Save to data directory
         project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        output_dir = os.path.join(project_root, 'config')
+        output_dir = os.path.join(project_root, 'data', 'raw')
         os.makedirs(output_dir, exist_ok=True)
         
         output_path = os.path.join(output_dir, 't7-xetr-allTradableInstruments.csv')
