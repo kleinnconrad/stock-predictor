@@ -44,3 +44,31 @@ jobs:
             outputs/predictions/
             outputs/diagnostics/
           retention-days: 7
+
+  consolidate-and-commit:
+    needs: step2-matrix
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Download all Step 2 Shard Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: step2-final-shard-*
+          path: step2_artifacts
+          merge-multiple: true
+
+      - name: Consolidate Shards
+        run: |
+          mkdir -p data/processed
+          echo "Ticker" > data/processed/final_buy_signals.csv
+          find step2_artifacts/data/processed/ -name "final_buy_signals_shard_*.csv" -exec awk 'FNR>1' {} + >> data/processed/final_buy_signals.csv
+
+      - name: Commit and Push Final Buy Signals
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/processed/final_buy_signals.csv
+          git commit -m "chore: Auto-update final_buy_signals.csv from Action 3" || echo "No changes to commit"
+          git push
