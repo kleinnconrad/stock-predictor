@@ -1,7 +1,14 @@
 # Architecture Specification: Xetra Two-Step Stock Prediction Engine (v5.0)
 
+## Table of Contents
+- [1. Project Overview](#1-project-overview)
+- [2. Directory Structure](#2-directory-structure)
+- [3. Module Specifications for Code Generation](#3-module-specifications-for-code-generation)
+- [4. Required Dependencies (`requirements.txt`)](#4-required-dependencies-requirementstxt)
+- [5. Strict Agent Constraints & Guardrails](#5-strict-agent-constraints--guardrails)
+
 ## 1. Project Overview
-This document provides a detailed, modular architecture for a batch-processed, two-step machine learning pipeline designed to predict German stock price movements. It incorporates model diagnostics, Kolomogorov-Smirnov (KS) optimized cutoffs, 10-quantile lift charts, robust imputation, Z-scaling, comprehensive JSON reporting, and a **massive 360-degree global macroeconomic variable universe**. It is formatted to be ingested by an autonomous coding AI to generate a complete, production-ready Python repository.
+This document provides a detailed, modular architecture for a batch-processed, two-step machine learning pipeline designed to predict German stock price movements. It incorporates model diagnostics, Kolomogorov-Smirnov (KS) optimized cutoffs, 10-quantile lift charts, robust imputation, Z-scaling, JSON reporting, and a **360-degree global macroeconomic variable universe**. It is formatted to be ingested by an autonomous coding AI to generate a complete, production-ready Python repository.
 
 **Core Parameters & Default Configurations:**
 *   **Target Classes:** `UP` (1) vs `NOT_UP` (0)
@@ -96,7 +103,7 @@ Crucially, define these two aggregate variables at the bottom of the file for th
 
 ### 3.3 `src/ingestion/global_macro.py` & `src/ingestion/market_api.py`
 
-**Purpose:** Data extraction optimized for massive variable universes without hitting API bans.
+**Purpose:** Data extraction optimized for large variable universes without hitting API bans.
 **Agent Instructions:**
 *   **Macro Caching Optimization (CRITICAL):** The agent MUST implement `fetch_global_macro_universe(history_years)` in `global_macro.py`. This function:
     1. Downloads `ALL_YF_TICKERS` (Adjusted Close only) via `yfinance`. 
@@ -112,7 +119,7 @@ Crucially, define these two aggregate variables at the bottom of the file for th
 **Agent Instructions:** Construct the following strict Scikit-learn Pipeline:
 1.  `SimpleImputer(strategy='median')`: Fills any edge-case NaNs (e.g., assets that IPO'd 8 years ago within the 10-year window) *before* standardizing.
 2.  `StandardScaler()`: Applies strict **Z-scaling** to normalize all variables natively so coefficients and weights are perfectly comparable.
-3.  `SelectKBest(score_func=f_classif, k=40)`: ANOVA pre-filter (Set to 40 because the global universe is massive; this prevents SFS from taking hours).
+3.  `SelectKBest(score_func=f_classif, k=40)`: ANOVA pre-filter (Set to 40 because the global universe is large; this prevents SFS from taking hours).
 4.  `SequentialFeatureSelector(LogisticRegression(class_weight='balanced', solver='liblinear'), cv=TimeSeriesSplit(n_splits=3), n_features_to_select=12)`
 5.  `LogisticRegression(class_weight='balanced', solver='liblinear')` configured to output `predict_proba`.
 
