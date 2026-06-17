@@ -3,12 +3,13 @@ import numpy as np
 import logging
 from typing import Dict, Any, Tuple
 from .base_pipeline import build_pipeline
-from .diagnostics import calculate_ks_and_cutoff, calculate_cv_accuracy
+from .diagnostics import calculate_ks_and_cutoff, calculate_cv_accuracy, generate_confusion_matrix, generate_lift_chart
 from sklearn.model_selection import cross_val_predict, StratifiedKFold
+import os
 
 logger = logging.getLogger(__name__)
 
-def execute_step1(df: pd.DataFrame, n_features_out: int = 12) -> Tuple[Dict[str, Any], pd.DataFrame]:
+def execute_step1(df: pd.DataFrame, ticker: str = "UNKNOWN", n_features_out: int = 12) -> Tuple[Dict[str, Any], pd.DataFrame]:
     """
     Executes Step 1 modeling logic.
     
@@ -57,8 +58,19 @@ def execute_step1(df: pd.DataFrame, n_features_out: int = 12) -> Tuple[Dict[str,
     ks_stat, ks_cutoff = calculate_ks_and_cutoff(y_train, y_prob_cv)
     cv_accuracy = calculate_cv_accuracy(y_train, y_prob_cv, ks_cutoff)
     
+    diag_dir = os.path.join('outputs', 'diagnostics', ticker)
+    os.makedirs(diag_dir, exist_ok=True)
+    
+    # Generate Visual Artifacts for Cross Validation
+    generate_confusion_matrix(y_train, y_prob_cv, ks_cutoff, os.path.join(diag_dir, f"{ticker}_cv_confusion_matrix.png"))
+    generate_lift_chart(y_train, y_prob_cv, 10, os.path.join(diag_dir, f"{ticker}_cv_lift_chart.png"))
+    
     # Now fit on the entire historical dataset to get the final model weights for prediction
     pipeline.fit(X_train, y_train)
+    y_prob_train = pipeline.predict_proba(X_train)[:, 1]
+    
+    # Generate Visual Artifacts for Full Training Set
+    generate_confusion_matrix(y_train, y_prob_train, ks_cutoff, os.path.join(diag_dir, f"{ticker}_train_confusion_matrix.png"))
     
     # Predict probabilities for the most recent data (the real prediction)
     if not X_pred.empty:
