@@ -1,4 +1,9 @@
 import os
+import sys
+
+# Ensure the root directory is in the Python path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import json
 import time
 import random

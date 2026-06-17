@@ -2,11 +2,11 @@ import logging
 import pandas as pd
 import os
 from tqdm import tqdm
-from ..ingestion.xetra_t7 import fetch_xetra_t7_tickers
+from ..ingestion.xetra_t7 import fetch_xetra_t7
 from ..ingestion.global_macro import fetch_global_macro_universe
 from ..ingestion.market_api import fetch_step1_data
 from ..ingestion.funds_api import fetch_step2_fundamentals
-from ..processing.qualifier import filter_qualified_retail_stocks
+from ..processing.qualifier import filter_qualified_tickers
 from ..processing.features import engineer_features
 from ..modeling.step1_macro import run_step1_model
 from ..modeling.step2_funds import run_step2_model
@@ -69,8 +69,10 @@ def run_batch():
     logger.info("Starting local batch runner.")
     
     # 1. Fetch Tickers
-    raw_df = fetch_xetra_t7_tickers()
-    qualified_tickers = filter_qualified_retail_stocks(raw_df)
+    with open('config/settings.yaml', 'r') as f:
+        settings = yaml.safe_load(f)
+    raw_df = fetch_xetra_t7(settings['xetra_t7_url'])
+    qualified_tickers = filter_qualified_tickers(raw_df)
     
     if not qualified_tickers:
         logger.warning("No qualified tickers found. Exiting.")
