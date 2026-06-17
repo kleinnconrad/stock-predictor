@@ -1,14 +1,15 @@
 # Xetra Two-Step Stock Prediction Engine (v5.0 Upgrade)
 
-A highly modular, batch-processed machine learning pipeline designed to predict German Xetra (`.DE`) stock price movements over a 6-month (126 trading day) horizon. The system utilizes a massive 360-degree global macroeconomic universe coupled with target company fundamentals, passing data through a strict **Two-Step Cascade** using Kolmogorov-Smirnov (KS) optimized Logistic Regression models.
+A highly modular, distributed machine learning pipeline designed to predict German Xetra (`.DE`) stock price movements over a 6-month (126 trading day) horizon. The system utilizes a massive 360-degree global macroeconomic universe coupled with target company fundamentals, passing data through a strict **Two-Step Cascade** using Kolmogorov-Smirnov (KS) optimized Logistic Regression models.
 
 ## How the Engine Works: The Two-Step Cascade
 
-To maximize computational efficiency and logically mimic human institutional investing, the model evaluates stocks in two distinct sequential steps:
+To maximize computational efficiency, logically mimic human institutional investing, and bypass API rate limits, the model evaluates stocks across three distributed GitHub Actions:
 
-1. **Step 1 (The Macro & Market Environment):** 
-   The system assesses whether the *global economic climate* and the stock's *specific price momentum* are conducive to a +15% gain over the next 6 months. If the Logistic Regression pipeline predicts "UP" for the most recent unobservable date (and its probability clears the dynamically calculated KS cutoff), the stock moves to Step 2.
-2. **Step 2 (Company Fundamentals):** 
+1. **Action 1 (T7 Initialization):** Extracts the universe of qualified Xetra retail tickers directly from the Deutsche Börse network.
+2. **Action 2 (Step 1 - Macro & Market Environment):** 
+   The system assesses whether the *global economic climate* and the stock's *specific price momentum* are conducive to a +15% gain over the next 6 months. If the Logistic Regression pipeline predicts "UP" for the most recent unobservable date (and its probability clears the dynamically calculated KS cutoff), the stock is passed to Step 2 via GitHub Artifacts.
+3. **Action 3 (Step 2 - Company Fundamentals):** 
    Using *only* the historical dates where Step 1 macro conditions were favorable, the system evaluates the target company's quarterly financial health (Income Statements, Balance Sheets, Cash Flows). If this secondary fundamental pipeline also predicts "UP", the stock is officially flagged as a Buy Candidate.
 
 ### The Machine Learning Pipeline
@@ -25,34 +26,18 @@ Both steps utilize an identical strict Scikit-Learn architecture to prevent data
 ## Architecture Diagram
 
 ```mermaid
-graph TD
-    A[Start: Fetch Qualified Xetra Tickers] --> B(Global Macro Caching)
-    B -->|Fetch 80+ indices & rates| C[Convert YF to 20-Day Returns & Resample]
+graph LR
+    A[Action 1: T7 Extraction] -->|Yields Tickers| B(Action 2: Step 1 Macro Pipeline)
     
-    C --> D[Begin Ticker Loop]
-    D --> E[Fetch Target OHLCV & Engineer Technicals]
-    E --> F[Left Join Target Data with Global Macro cache]
+    B -->|ANOVA + SFS| C{Pass KS Cutoff?}
+    C -->|No| D[Reject]
+    C -->|Yes| E[Action 3: Step 2 Funds Pipeline]
     
-    F --> G{Step 1 ML Pipeline}
-    G -->|ANOVA + SFS -> Top 12 macro/tech features| H[Calculate Probabilities & KS Cutoff]
+    E -->|ANOVA + SFS| F{Pass KS Cutoff?}
+    F -->|No| D
+    F -->|Yes| G[Final Buy Candidate]
     
-    H --> I{Does latest date pass KS Cutoff?}
-    I -->|No| J[Reject Ticker]
-    I -->|Yes| K[Fetch Company Fundamentals]
-    
-    K --> L[Filter against Fundamental Universe config]
-    L --> M[Inner Join Fundamentals to Favorable Step 1 Dates]
-    
-    M --> N{Step 2 ML Pipeline}
-    N -->|ANOVA + SFS -> Top 12 fundamental features| O[Calculate Probabilities & KS Cutoff]
-    
-    O --> P{Does latest date pass KS Cutoff?}
-    P -->|No| J
-    P -->|Yes| Q[Flag as Buy Candidate]
-    
-    Q --> R[Export Feature Diagnostics & Prediction JSONs]
-    J --> R
-    R --> S[End Ticker Loop]
+    G --> H[Export JSON Payload]
 ```
 
 ---
