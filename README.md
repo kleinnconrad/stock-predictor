@@ -6,7 +6,7 @@ A highly modular, distributed machine learning pipeline designed to predict Germ
 
 To maximize computational efficiency, logically mimic human institutional investing, and bypass API rate limits, the model evaluates stocks across three distributed GitHub Actions:
 
-1. **Action 1 (T7 Initialization):** Extracts the universe of qualified Xetra retail tickers directly from the Deutsche Börse network.
+1. **Action 1 (T7 Initialization & Zero-Cost Qualification):** Extracts the raw universe of nearly 5,000 Xetra instruments directly from the Deutsche Börse network. It applies strict, deterministic Pandas filters (`Instrument Type == 'CS'` and `Product Assignment Group Description == 'DEUTSCHLAND'`) to instantly strip out all ETFs, ETNs, warrants, and foreign listings. This narrows the dataset down to the top ~250 highly relevant, domestic German equities, saving massive amounts of compute without relying on external LLM APIs.
 2. **Action 2 (Step 1 - Macro & Market Environment):** 
    The system assesses whether the *global economic climate* and the stock's *specific price momentum* are conducive to a +15% gain over the next 6 months. If the Logistic Regression pipeline predicts "UP" for the most recent unobservable date (and its probability clears the dynamically calculated KS cutoff), the stock is passed to Step 2 via GitHub Artifacts.
 3. **Action 3 (Step 2 - Company Fundamentals):** 

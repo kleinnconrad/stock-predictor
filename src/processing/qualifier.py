@@ -27,11 +27,13 @@ def filter_qualified_tickers(df: pd.DataFrame) -> list:
             
         valid_df = df.dropna(subset=['Mnemonic'])
         
-        # In a real scenario, you might filter by 'Instrument Group' == 'EQTY' or similar
-        # For now, we take mnemonics and append '.DE'
+        # Filter by Instrument Type (Common Stock) and Country
+        valid_df = valid_df[valid_df['Instrument Type'] == 'CS']
+        valid_df = valid_df[valid_df['Product Assignment Group Description'] == 'DEUTSCHLAND']
+        
         tickers = (valid_df['Mnemonic'] + '.DE').tolist()
         
-        logger.info(f"Qualified {len(tickers)} tickers.")
+        logger.info(f"Qualified {len(tickers)} domestic German tickers.")
         return tickers
     except Exception as e:
         logger.error(f"Failed to qualify tickers: {e}")
