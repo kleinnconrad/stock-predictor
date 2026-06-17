@@ -10,16 +10,21 @@ To maximize computational efficiency, logically mimic human institutional invest
 2. **Action 2 (Step 1 - Macro & Market Environment):** 
    The system assesses whether the *global economic climate* and the stock's *specific price momentum* are conducive to a +15% gain over the next 6 months. If the Logistic Regression pipeline predicts "UP" for the most recent unobservable date (and its probability clears the dynamically calculated KS cutoff), the stock is passed to Step 2 via GitHub Artifacts.
 3. **Action 3 (Step 2 - Company Fundamentals):** 
-   Using *only* the historical dates where Step 1 macro conditions were favorable, the system evaluates the target company's quarterly financial health (Income Statements, Balance Sheets, Cash Flows). If this secondary fundamental pipeline also predicts "UP", the stock is officially flagged as a Buy Candidate.
+   If Step 1 flags the stock's current environment as "UP", the system evaluates the target company's latest quarterly financial health (Income Statements, Balance Sheets, Cash Flows) using a **Deterministic Rules Engine**. If the stock passes at least 3 out of 4 strict fundamental health rules, it is officially flagged as a Buy Candidate.
 
-### The Machine Learning Pipeline
-Both steps utilize an identical strict Scikit-Learn architecture to prevent data leakage and lookahead bias:
-* **Forward-Fill Imputation (`ffill`)**: Raw macro and fundamental data are strictly forward-filled upon ingestion. This exactly mirrors the reality of periodic reporting (e.g., Q1 earnings represent the "current state of truth" every day until Q2 earnings are released).
-* **Median Imputation**: `SimpleImputer(strategy='median')` handles any remaining extreme edge-case NaNs before scaling.
-* **Z-Scaling (`StandardScaler`)**: Normalizes the data into standard deviations. Crucially, this happens *inside* the pipeline *after* cross-validation splits to prevent data leakage.
-* **ANOVA Pre-filter (`SelectKBest`)**: Quickly slices the massive variable universe down to the top statistically significant features.
-* **Sequential Feature Selection (SFS)**: Wraps the final model in a `TimeSeriesSplit` cross-validation loop to iteratively select the absolute best **12** independent variables without overfitting.
-* **KS-Optimized Logistic Regression**: A class-balanced logit model outputs probabilities, which are then converted to binary 0s and 1s by dynamically calculating the threshold that maximizes the Kolmogorov-Smirnov (KS) statistic (`max(TPR - FPR)`).
+### The Hybrid Pipeline (Machine Learning + Rules Engine)
+The engine separates macro momentum prediction (Step 1) from fundamental accounting validation (Step 2):
+
+**Step 1 (Macro Momentum) utilizes a strict Scikit-Learn architecture:**
+* **Forward-Fill Imputation (`ffill`)**: Raw macro data is strictly forward-filled upon ingestion.
+* **Median Imputation**: `SimpleImputer(strategy='median')` handles extreme edge-case NaNs.
+* **Z-Scaling (`StandardScaler`)**: Normalizes the data into standard deviations inside the pipeline.
+* **ANOVA Pre-filter (`SelectKBest`)**: Slices the universe down to the top statistically significant features.
+* **Sequential Feature Selection (SFS)**: Iteratively selects the absolute best **12** independent variables.
+* **KS-Optimized Logistic Regression**: Outputs probabilities, converted to binary 0s and 1s by dynamically calculating the threshold that maximizes the Kolmogorov-Smirnov (KS) statistic.
+
+**Step 2 (Company Fundamentals) utilizes a Deterministic Ruleset Engine:**
+Because historical fundamental data is sparse, Step 2 bypasses ML and evaluates the raw Q/Q changes on the last 2 financial statements against 4 hard rules (Revenue Growth, Profitability, Earnings Momentum, Cash Flow Health). A score of 3/4 is required to pass.
 
 ---
 
@@ -31,9 +36,9 @@ graph LR
     
     B -->|ANOVA + SFS| C{Pass KS Cutoff?}
     C -->|No| D[Reject]
-    C -->|Yes| E[Action 3: Step 2 Funds Pipeline]
+    C -->|Yes| E[Action 3: Step 2 Funds Ruleset]
     
-    E -->|ANOVA + SFS| F{Pass KS Cutoff?}
+    E -->|Evaluate Q_latest vs Q_prev| F{Score >= 3/4?}
     F -->|No| D
     F -->|Yes| G[Final Buy Candidate]
     

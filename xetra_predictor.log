@@ -609,3 +609,22 @@ ValueError: No feature in X meets the variance threshold 0.00000
 2026-06-17 12:14:24,267 - src.orchestration.json_exporter - INFO - Successfully exported feature diagnostics for SAP.DE to outputs\diagnostics\SAP.DE_feature_diagnostics.json
 2026-06-17 12:14:24,267 - src.orchestration.batch_runner - INFO - SAP.DE failed Step 2.
 2026-06-17 12:14:24,267 - __main__ - INFO - Engine run completed successfully.
+2026-06-17 12:23:26,081 - __main__ - INFO - Starting Xetra Two-Step Stock Prediction Engine (v5.0)
+2026-06-17 12:23:26,081 - __main__ - INFO - Single Ticker Mode activated for: SAP.DE
+2026-06-17 12:23:26,083 - src.orchestration.batch_runner - INFO - Running Two-Step Cascade for single ticker: SAP.DE
+2026-06-17 12:23:26,083 - src.orchestration.batch_runner - INFO - Pre-caching Global Macro Universe for local execution...
+2026-06-17 12:23:26,083 - src.ingestion.global_macro - INFO - Fetching 49 YF tickers and 24 FRED indicators for Global Macro Cache.
+2026-06-17 12:23:42,219 - src.ingestion.global_macro - INFO - Applying massive quantitative feature engineering matrix to macro cache...
+2026-06-17 12:23:42,322 - src.ingestion.global_macro - INFO - Global macro engineering complete. Expanded Matrix Shape: (782, 260)
+2026-06-17 12:23:42,334 - src.ingestion.market_api - INFO - Fetching market pricing for target SAP.DE.
+2026-06-17 12:23:42,357 - src.processing.features - INFO - Engineering features with horizon=126 and threshold=0.15
+2026-06-17 12:23:42,367 - src.modeling.step1_macro - INFO - Executing Step 1 Macro Model.
+2026-06-17 12:24:01,115 - src.orchestration.json_exporter - INFO - Successfully exported feature diagnostics for SAP.DE to outputs\diagnostics\SAP.DE_feature_diagnostics.json
+2026-06-17 12:24:01,118 - src.orchestration.json_exporter - INFO - Successfully exported JSON prediction for SAP.DE to outputs\predictions\SAP.DE_prediction.json
+2026-06-17 12:24:01,118 - src.ingestion.funds_api - INFO - Fetching fundamental data for SAP.DE.
+2026-06-17 12:24:02,139 - src.modeling.step2_funds - INFO - Executing Step 2 Fundamental Ruleset Engine.
+2026-06-17 12:24:02,139 - src.modeling.step2_funds - INFO - Fundamental Ruleset Passed! Score: 3/4
+2026-06-17 12:24:02,148 - src.orchestration.json_exporter - INFO - Successfully exported feature diagnostics for SAP.DE to outputs\diagnostics\SAP.DE_feature_diagnostics.json
+2026-06-17 12:24:02,149 - src.orchestration.json_exporter - INFO - Successfully exported JSON prediction for SAP.DE to outputs\predictions\SAP.DE_prediction.json
+2026-06-17 12:24:02,149 - src.orchestration.batch_runner - INFO - *** SAP.DE PASSED STEP 2 AND IS A BUY CANDIDATE! ***
+2026-06-17 12:24:02,149 - __main__ - INFO - Engine run completed successfully.

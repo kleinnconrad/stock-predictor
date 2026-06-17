@@ -39,8 +39,10 @@ def run_single(ticker: str, macro_df: pd.DataFrame = None) -> bool:
         combined_diagnostics = {"step1_macro": feature_diagnostics_1}
         export_feature_diagnostics_json(ticker, combined_diagnostics)
         
+        # We will export the combined payload at the end. For now, export Step 1 alone.
+        combined_payload = {"step1_model": pred_payload_1, "final_prediction": "PENDING"}
         if pred_payload_1:
-            export_prediction_json(ticker, pred_payload_1)
+            export_prediction_json(ticker, combined_payload)
             
         if step1_dates.empty:
             logger.info(f"{ticker} failed Step 1. Not proceeding to Step 2.")
@@ -52,18 +54,6 @@ def run_single(ticker: str, macro_df: pd.DataFrame = None) -> bool:
              logger.warning(f"No fundamental data for {ticker}. Aborting.")
              return False
              
-        # Filter funds_df by step1 dates
-        funds_df = funds_df.loc[funds_df.index.intersection(step1_dates)]
-        if funds_df.empty:
-             logger.warning(f"No aligned fundamental dates for {ticker} after Step 1 filtering. Aborting.")
-             return False
-             
-        # Step 2 needs the Target labels to train its models
-        funds_df = funds_df.join(features_df[['Target']], how='inner')
-        if funds_df.empty:
-             logger.warning(f"No aligned target dates for {ticker}. Aborting.")
-             return False
-             
         metrics_2, latest_pred_class = execute_step2(funds_df)
         feature_diagnostics_2 = metrics_2.pop('feature_diagnostics', {}) if metrics_2 else {}
         pred_payload_2 = metrics_2
@@ -71,8 +61,12 @@ def run_single(ticker: str, macro_df: pd.DataFrame = None) -> bool:
         
         combined_diagnostics["step2_funds"] = feature_diagnostics_2
         export_feature_diagnostics_json(ticker, combined_diagnostics)
+        
+        combined_payload["step2_model"] = pred_payload_2
+        combined_payload["final_prediction"] = "UP" if final_decision else "NOT_UP"
+        
         if final_decision:
-            export_prediction_json(ticker, pred_payload_2)
+            export_prediction_json(ticker, combined_payload)
             logger.info(f"*** {ticker} PASSED STEP 2 AND IS A BUY CANDIDATE! ***")
             return True
         else:

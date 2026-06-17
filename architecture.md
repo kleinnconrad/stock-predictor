@@ -56,8 +56,8 @@ xetra_predictor/
 │   │   ├── __init__.py
 │   │   ├── base_pipeline.py # Imputer, Z-Scaler, ANOVA, SFS, LogReg Pipeline
 │   │   ├── diagnostics.py   # KS Statistic, Cutoff, Confusion Matrix, Lift Charts
-│   │   ├── step1_macro.py   # Execution logic for Step 1
-│   │   └── step2_funds.py   # Execution logic for Step 2
+│   │   ├── step1_macro.py   # ML Execution logic for Step 1
+│   │   └── step2_funds.py   # Rules Engine evaluation for Step 2
 │   │
 │   └── orchestration/
 │       ├── __init__.py
@@ -126,11 +126,10 @@ Crucially, define these two aggregate variables at the bottom of the file for th
 
 ### 3.6 `src/modeling/step1_macro.py` & `src/modeling/step2_funds.py`
 
-**Purpose:** Execution modules that extract model weights and trigger cascades.
+**Purpose:** Execution modules that extract ML weights (Step 1) and evaluate fundamental rulesets (Step 2) to trigger cascades.
 **Agent Instructions:**
-*   Fit models and generate CV probabilities via `cross_val_predict(..., method='predict_proba')`. Calculate KS Cutoffs and CV Accuracy.
-*   **Feature Extraction Logic (CRITICAL):** Chain the boolean masks of `sfs.get_support()` and `anova.get_support()` back to the original DataFrame columns. Extract LogReg weights from `clf.coef_[0]`. Return a dictionary of `{"feature_name": float(weight)}`.
-*   Cascade filter Step 1 dates where `y_prob >= ks_optimal_cutoff` to Step 2.
+*   **`step1_macro.py`**: Fit ML models and generate CV probabilities via `cross_val_predict`. Calculate KS Cutoffs and CV Accuracy. Chain the boolean masks of `sfs.get_support()` and `anova.get_support()` back to the original DataFrame columns. Extract LogReg weights from `clf.coef_[0]`.
+*   **`step2_funds.py`**: A deterministic Rules Engine that checks if the latest quarterly statements meet strict fundamental rules (e.g., Q/Q Revenue Growth, Positive Net Income). A score of 3/4 is required to pass.
 
 ### 3.7 `src/orchestration/json_exporter.py`
 
@@ -160,12 +159,11 @@ Crucially, define these two aggregate variables at the bottom of the file for th
         }
       },
       "step2_model": {
-        "cv_accuracy": 0.71,
-        "ks_cutoff": 0.61,
         "predicted_class": "UP",
-        "selected_predictors_and_weights": {
-          "FreeCashFlow": 0.88,
-          "TotalDebt": -0.34
+        "feature_diagnostics": {
+          "Total Score": 4,
+          "Required Score": 3,
+          "Rule 1 (Revenue Growth)": true
         }
       },
       "final_prediction": "UP"

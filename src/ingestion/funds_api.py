@@ -44,11 +44,8 @@ def fetch_fundamentals(ticker: str) -> pd.DataFrame:
         fundamentals.index = pd.to_datetime(fundamentals.index)
         fundamentals = fundamentals.sort_index()
         
-        # To align with daily market data, we must resample to daily and ffill
-        # This will be joined with daily data later, so returning daily frequency here.
-        daily_fundamentals = fundamentals.resample('D').ffill()
-        
-        return daily_fundamentals
+        # Return the raw quarterly data, sorted by date (oldest to newest)
+        return fundamentals
     except Exception as e:
         logger.error(f"Failed to fetch fundamental data for {ticker}: {e}")
         return pd.DataFrame()

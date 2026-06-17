@@ -44,8 +44,7 @@ graph TD
     BR -->|4. If Passed Step 1| FA
     FA -->|Fetch Quarterlies| S2
     
-    S2 -.->|Instantiates| BP
-    S2 -.->|Calculates KS| DIAG
+    S2 -.->|Evaluates 4-Rule Health Checklist| BR
     S2 -->|Returns Final Buy Signal| BR
 
     BR -->|5. Export Payload| JE
@@ -74,8 +73,8 @@ Houses the Scikit-Learn machine learning architecture, validation algorithms, an
 
 * **`base_pipeline.py`**: Defines the strict Scikit-Learn pipeline architecture shared by both Step 1 and Step 2. It sequentially enforces Median Imputation, Z-Scaling (`StandardScaler`), ANOVA pre-filtering (`SelectKBest`), and iterative cross-validation via Sequential Feature Selection (`SFS`), ultimately wrapping a class-balanced Logistic Regression estimator.
 * **`diagnostics.py`**: Calculates deep performance metrics. It dynamically calculates the optimal probability cutoff by maximizing the Kolmogorov-Smirnov (KS) statistic. It applies this cutoff to compute the true CV Accuracy and is capable of generating visual artifacts like Confusion Matrices and 10-Quantile Lift Charts.
-* **`step1_macro.py`**: Wraps the `base_pipeline` for Step 1 execution. It passes the massive macro-matrix into the model, extracts exactly which features were killed by ANOVA vs. SFS, retrieves the standardized coefficients, and returns a filtered dataframe of only the dates where the model predicted an "UP" signal.
-* **`step2_funds.py`**: Wraps the `base_pipeline` for Step 2 execution. It applies the model to the fundamental dataset (using only the dates that survived Step 1). It acts as the final gatekeeper, producing the final binary Buy/Reject signal.
+* **`step1_macro.py`**: Wraps the `base_pipeline` for Step 1 ML execution. It passes the massive macro-matrix into the model, extracts exactly which features were killed by ANOVA vs. SFS, retrieves the standardized coefficients, and returns a filtered dataframe of only the dates where the model predicted an "UP" signal.
+* **`step2_funds.py`**: Implements a strict, deterministic Fundamental Rules Engine. Because Yahoo Finance historical fundamentals are sparse, this step bypasses ML and evaluates the most recent two quarters of financial statements against four hard rules (Revenue Growth, Profitability, Earnings Momentum, Cash Flow Health). It acts as the final gatekeeper, producing the final binary Buy/Reject signal.
 
 ## 4. `orchestration/`
 The control center of the application that manages execution flow, memory, and artifact storage.

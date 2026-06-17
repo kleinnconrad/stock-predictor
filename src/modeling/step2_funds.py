@@ -2,126 +2,86 @@ import pandas as pd
 import numpy as np
 import logging
 from typing import Dict, Any, Tuple
-from .base_pipeline import build_pipeline
-from .diagnostics import calculate_ks_and_cutoff, calculate_cv_accuracy
-from sklearn.model_selection import cross_val_predict, StratifiedKFold
 
 logger = logging.getLogger(__name__)
 
-def execute_step2(df: pd.DataFrame, n_features_out: int = 12) -> Tuple[Dict[str, Any], str]:
+def execute_step2(funds_df: pd.DataFrame) -> Tuple[Dict[str, Any], str]:
     """
-    Executes Step 2 fundamental modeling logic.
+    Executes Step 2 Fundamental Ruleset Engine.
+    
+    Evaluates the two most recent quarterly financial statements against a strict 
+    fundamental health checklist.
     
     Args:
-        df (pd.DataFrame): The cascaded DataFrame from Step 1 (containing fundamentals).
-        n_features_out (int): Number of features to select.
+        funds_df (pd.DataFrame): The raw quarterly fundamental DataFrame.
         
     Returns:
         tuple: (metrics_dictionary, final_prediction_class)
     """
-    logger.info("Executing Step 2 Fundamental Model.")
+    logger.info("Executing Step 2 Fundamental Ruleset Engine.")
     
-    # Same target logic as Step 1
-    train_df = df.dropna(subset=['Target'])
-    pred_df = df[df['Target'].isna()]
-    
-    if train_df.empty:
-        logger.warning("No training data available for Step 2.")
+    if funds_df.empty or len(funds_df) < 2:
+        logger.warning("Not enough quarterly fundamental data to evaluate ruleset.")
         return {}, "NOT_UP"
         
-    X_train = train_df.drop(columns=['Target', 'Future_Return'], errors='ignore')
-    # Force strictly 0 or 1
-    y_train = np.where(train_df['Target'] >= 0.5, 1, 0)
+    # Get the two most recent quarters
+    q_latest = funds_df.iloc[-1]
+    q_prev = funds_df.iloc[-2]
     
-    # Check if we have any variance at all. Due to backfilling YF data, older periods
-    # might be completely constant, causing VarianceThreshold to drop all features.
-    if X_train.empty or X_train.var().max() == 0:
-        logger.error("No variance found in fundamental features (all constant). Skipping Step 2.")
-        return {}, "NOT_UP"
+    def safe_get(series, key):
+        val = series.get(key, np.nan)
+        return float(val) if pd.notna(val) else 0.0
     
-    X_pred = pred_df.drop(columns=['Target', 'Future_Return'], errors='ignore')
+    # 1. Revenue Growth: Total Revenue (Q_latest) > Total Revenue (Q_prev)
+    rev_latest = safe_get(q_latest, 'Total Revenue')
+    rev_prev = safe_get(q_prev, 'Total Revenue')
+    rule_1_pass = rev_latest > rev_prev
     
-    # We must ensure we don't ask for more features than we have
-    max_features = min(n_features_out, X_train.shape[1])
-    if max_features == 0:
-        logger.warning("No features remaining for Step 2.")
-        return {}, "NOT_UP"
-        
-    pipeline = build_pipeline(n_features_out=max_features)
+    # 2. Profitability: Net Income (Q_latest) > 0
+    ni_latest = safe_get(q_latest, 'Net Income')
+    rule_2_pass = ni_latest > 0
     
-    cv = StratifiedKFold(n_splits=3, shuffle=True, random_state=42)
+    # 3. Earnings Momentum: Net Income (Q_latest) > Net Income (Q_prev)
+    ni_prev = safe_get(q_prev, 'Net Income')
+    rule_3_pass = ni_latest > ni_prev
     
-    try:
-        y_prob_cv = cross_val_predict(pipeline, X_train, y_train, cv=cv, method='predict_proba', n_jobs=-1)[:, 1]
-    except Exception as e:
-        logger.warning(f"Failed to generate CV probabilities for Step 2, falling back to full fit. Reason: {e}")
-        try:
-            pipeline.fit(X_train, y_train)
-            y_prob_cv = pipeline.predict_proba(X_train)[:, 1]
-        except Exception as e2:
-            logger.error(f"Failed to fit fallback pipeline for Step 2. Reason: {e2}")
-            return {}, "NOT_UP"
-
-    # Calculate KS and Cutoff
-    ks_stat, ks_cutoff = calculate_ks_and_cutoff(y_train, y_prob_cv)
-    cv_accuracy = calculate_cv_accuracy(y_train, y_prob_cv, ks_cutoff)
+    # 4. Cash Flow Health: Operating Cash Flow (Q_latest) > 0
+    ocf_latest = safe_get(q_latest, 'Operating Cash Flow')
+    rule_4_pass = ocf_latest > 0
     
-    # Now fit on the entire historical dataset to get the final model weights for prediction
-    try:
-        pipeline.fit(X_train, y_train)
-    except Exception as e:
-        logger.error(f"Failed to fit final pipeline for Step 2. Reason: {e}")
-        return {}, "NOT_UP"
+    rules_passed = sum([rule_1_pass, rule_2_pass, rule_3_pass, rule_4_pass])
     
-    if not X_pred.empty:
-        y_pred_prob = pipeline.predict_proba(X_pred)[:, 1]
+    # Require at least 3 out of 4 rules to pass
+    latest_pred_class = "UP" if rules_passed >= 3 else "NOT_UP"
+    
+    if latest_pred_class == "UP":
+        logger.info(f"Fundamental Ruleset Passed! Score: {rules_passed}/4")
     else:
-        y_pred_prob = np.array([])
-        
-    # Feature Extraction
-    var_thresh = pipeline.named_steps['var_thresh']
-    anova = pipeline.named_steps['anova']
-    sfs = pipeline.named_steps['sfs']
-    clf = pipeline.named_steps['clf']
+        logger.info(f"Fundamental Ruleset Failed. Score: {rules_passed}/4")
     
-    var_mask = var_thresh.get_support()
-    var_features = X_train.columns[var_mask]
-    
-    anova_mask = anova.get_support()
-    anova_features = var_features[anova_mask]
-    
-    sfs_mask = sfs.get_support()
-    final_features = anova_features[sfs_mask].tolist()
-    
-    weights = clf.coef_[0].tolist()
-    
-    selected_predictors_and_weights = {
-        feature: float(weight) for feature, weight in zip(final_features, weights)
+    diagnostics = {
+        "Rule 1 (Revenue Growth)": bool(rule_1_pass),
+        "Rule 2 (Profitability)": bool(rule_2_pass),
+        "Rule 3 (Earnings Momentum)": bool(rule_3_pass),
+        "Rule 4 (Cash Flow Health)": bool(rule_4_pass),
+        "Total Score": int(rules_passed),
+        "Required Score": 3,
+        "Q_latest_date": str(q_latest.name.date()),
+        "Q_prev_date": str(q_prev.name.date()),
+        "Metrics_latest": {
+            "Total Revenue": rev_latest,
+            "Net Income": ni_latest,
+            "Operating Cash Flow": ocf_latest
+        },
+        "Metrics_prev": {
+            "Total Revenue": rev_prev,
+            "Net Income": ni_prev
+        }
     }
     
-    # Generate Feature Diagnostics
-    fetched_features = X_train.columns.tolist()
-    removed_by_anova = list(set(fetched_features) - set(anova_features.tolist()))
-    removed_by_sfs = list(set(anova_features.tolist()) - set(final_features))
-    
-    feature_diagnostics = {
-        "fetched_features": fetched_features,
-        "removed_by_anova": removed_by_anova,
-        "removed_by_sfs": removed_by_sfs
-    }
-    
-    latest_pred_class = "NOT_UP"
-    if len(y_pred_prob) > 0:
-        latest_prob = y_pred_prob[-1]
-        if latest_prob >= ks_cutoff:
-            latest_pred_class = "UP"
-            
     metrics = {
-        "cv_accuracy": float(cv_accuracy),
-        "ks_cutoff": float(ks_cutoff),
         "predicted_class": latest_pred_class,
-        "selected_predictors_and_weights": selected_predictors_and_weights,
-        "feature_diagnostics": feature_diagnostics
+        "feature_diagnostics": diagnostics
     }
     
     return metrics, latest_pred_class
