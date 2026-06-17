@@ -8,6 +8,8 @@ import json
 import time
 import random
 import argparse
+import yaml
+import datetime
 import pandas as pd
 from tqdm import tqdm
 from src.ingestion.global_macro import fetch_global_macro_universe
@@ -60,7 +62,23 @@ def main():
             metrics, filtered_df = execute_step1(features_df)
             step1_dates = filtered_df.index
             feature_diagnostics = metrics.pop('feature_diagnostics', {}) if metrics else {}
-            pred_payload = metrics
+            
+            with open('config/settings.yaml', 'r') as f:
+                settings = yaml.safe_load(f)
+                
+            pred_payload = {
+                "stock_name": ticker,
+                "prediction_date": str(datetime.date.today()),
+                "applied_parameters": {
+                    "horizon_days": settings.get('horizon_days', 126),
+                    "threshold": settings.get('threshold', 0.15),
+                    "step1_history_years": settings.get('step1_history_years', 10),
+                    "step2_history_years": settings.get('step2_history_years', 4),
+                    "features_to_select": settings.get('features_to_select', 12)
+                },
+                "step1_model": metrics,
+                "final_prediction": "PENDING"
+            } if metrics else {}
             
             if not step1_dates.empty:
                 passed_tickers.append(ticker)

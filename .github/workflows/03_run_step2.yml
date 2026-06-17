@@ -28,9 +28,8 @@ jobs:
 
       - name: Move artifacts to state
         run: |
-          mkdir -p data/state
-          find artifacts_temp/ -name "*.csv" -exec cp {} data/state/ \;
-          find artifacts_temp/ -name "*.json" -exec cp {} data/state/ \;
+          rsync -a artifacts_temp/*/data/ data/ || true
+          rsync -a artifacts_temp/*/outputs/ outputs/ || true
 
       - name: Execute Step 2 Model
         run: python scripts/03_run_step2.py --shard ${{ matrix.shard }} --total 3
@@ -64,11 +63,24 @@ jobs:
           mkdir -p data/processed
           echo "Ticker" > data/processed/final_buy_signals.csv
           find step2_artifacts/data/processed/ -name "final_buy_signals_shard_*.csv" -exec awk 'FNR>1' {} + >> data/processed/final_buy_signals.csv
+          
+          python -c '
+          import os, json, glob
+          payloads = []
+          for f in glob.glob("step2_artifacts/outputs/predictions/*.json"):
+              try:
+                  with open(f, "r") as file:
+                      payloads.append(json.load(file))
+              except Exception as e:
+                  print(f"Failed to read {f}: {e}")
+          with open("data/processed/full_batch_report.json", "w") as out:
+              json.dump(payloads, out, indent=2)
+          '
 
       - name: Commit and Push Final Buy Signals
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/processed/final_buy_signals.csv
-          git commit -m "chore: Auto-update final_buy_signals.csv from Action 3" || echo "No changes to commit"
+          git add data/processed/final_buy_signals.csv data/processed/full_batch_report.json
+          git commit -m "chore: Auto-update final results and JSON batch report" || echo "No changes to commit"
           git push
