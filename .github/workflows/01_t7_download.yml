@@ -1,0 +1,28 @@
+name: "1. T7 Download (Initialization)"
+on:
+  workflow_dispatch:
+
+jobs:
+  t7-download:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run T7 Extraction
+        run: python scripts/01_run_t7.py
+
+      - name: Upload Qualified Tickers Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: t7-state-artifact
+          path: data/state/qualified_tickers.csv
+          retention-days: 7

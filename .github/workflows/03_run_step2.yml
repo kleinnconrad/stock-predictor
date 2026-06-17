@@ -1,0 +1,46 @@
+name: "3. Execute Step 2 (Fundamentals)"
+on:
+  workflow_dispatch:
+
+jobs:
+  step2-matrix:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        shard: [0, 1, 2]
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      - name: Download Step 1 Artifacts
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: 02_run_step1.yml
+          path: artifacts_temp/
+
+      - name: Move artifacts to state
+        run: |
+          mkdir -p data/state
+          find artifacts_temp/ -name "*.csv" -exec cp {} data/state/ \;
+          find artifacts_temp/ -name "*.json" -exec cp {} data/state/ \;
+
+      - name: Execute Step 2 Model
+        run: python scripts/03_run_step2.py --shard ${{ matrix.shard }} --total 3
+
+      - name: Upload Final Output Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: step2-final-shard-${{ matrix.shard }}
+          path: |
+            data/processed/final_buy_signals_shard_${{ matrix.shard }}.csv
+            outputs/predictions/
+            outputs/diagnostics/
+          retention-days: 7

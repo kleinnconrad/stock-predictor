@@ -1,0 +1,12 @@
+# Environment variables
+.env
+
+# Python caching
+__pycache__/
+*.pyc
+.ruff_cache/
+
+# Data & outputs (Do not commit large state files or logs)
+data/
+outputs/
+artifacts_temp/
