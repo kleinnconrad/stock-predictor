@@ -85,7 +85,7 @@ def fetch_global_macro_universe(history_years: int) -> pd.DataFrame:
             if is_rate_or_spread:
                 col_dict[f'{col}_{w}D_diff'] = global_macro_df[col].diff(w)
             else:
-                col_dict[f'{col}_{w}D_ret'] = global_macro_df[col].pct_change(w)
+                col_dict[f'{col}_{w}D_ret'] = global_macro_df[col].pct_change(w, fill_method=None)
                 
         # 2. Distance to Trend (200-day SMA)
         sma_200 = global_macro_df[col].rolling(window=200).mean()
@@ -100,8 +100,8 @@ def fetch_global_macro_universe(history_years: int) -> pd.DataFrame:
                 current_1Y_change = global_macro_df[col].diff(252)
                 past_1Y_change = global_macro_df[col].shift(63).diff(252)
             else:
-                current_1Y_change = global_macro_df[col].pct_change(252)
-                past_1Y_change = global_macro_df[col].shift(63).pct_change(252)
+                current_1Y_change = global_macro_df[col].pct_change(252, fill_method=None)
+                past_1Y_change = global_macro_df[col].shift(63).pct_change(252, fill_method=None)
                 
             col_dict[f'{col}_YoY_Accel_3M'] = current_1Y_change - past_1Y_change
             

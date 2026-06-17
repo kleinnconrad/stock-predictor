@@ -18,9 +18,9 @@ MACRO_INDICATORS = [
 
 # Industrial & Precious Metals
 COMMODITIES = [
-    'CL=F',    # Crude Oil 
-    'GC=F',    # Gold 
-    'HG=F',    # Copper ("Dr. Copper")
+    'LE=F',    # Live Cattle 
+    'LBR=F',   # Lumber 
+    'OJ=F',    # Orange Juice ("Dr. Copper")
 ]
 
 # Agricultural Commodities
@@ -60,7 +60,7 @@ TICKERS_JP = ['7203.T', '9984.T', '8035.T']
 # Sovereign Yields & Factor ETFs & FX
 SOVEREIGN_YIELDS = ['IGOV', 'BWX', 'BNDX']
 FACTOR_ETFS = ['IWM', 'IYT', 'RSP', 'SMH']
-MORE_COMMODITIES_AND_FX = ['LBS=F', 'EURUSD=X', 'JPY=X']
+MORE_COMMODITIES_AND_FX = ['LBR=F', 'EURUSD=X', 'JPY=X']
 
 # ==========================================
 # 2. FRED INDICATORS

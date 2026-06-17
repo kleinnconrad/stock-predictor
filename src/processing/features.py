@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import logging
 
 logger = logging.getLogger(__name__)
@@ -46,13 +47,13 @@ def engineer_features(df: pd.DataFrame, horizon_days: int = 126, threshold: floa
         data['Future_Return'] = data['Close'].shift(-horizon_days) / data['Close'] - 1.0
         
         # Target Class: 1 if Future_Return >= threshold, else 0
-        data['Target'] = (data['Future_Return'] >= threshold).astype(int)
+        data['Target'] = (data['Future_Return'] >= threshold).astype(float)
         
         # The 'Target' for the most recent `horizon_days` will be NaN (since we can't look into the future).
         # We must drop rows where Target calculation is impossible for training, 
         # BUT we need the most recent rows for *prediction*.
         # So we keep Future_Return as NaN, and we'll separate training and prediction sets later.
-        data.loc[data['Future_Return'].isna(), 'Target'] = pd.NA
+        data.loc[data['Future_Return'].isna(), 'Target'] = np.nan
         
         # Drop intermediary columns if desired, but SMA_50 etc might be useful
         data = data.drop(columns=['SMA_50', 'SMA_200'])

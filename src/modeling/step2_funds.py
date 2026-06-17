@@ -4,7 +4,7 @@ import logging
 from typing import Dict, Any, Tuple
 from .base_pipeline import build_pipeline
 from .diagnostics import calculate_ks_and_cutoff, calculate_cv_accuracy
-from sklearn.model_selection import cross_val_predict, TimeSeriesSplit
+from sklearn.model_selection import cross_val_predict, StratifiedKFold
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +30,14 @@ def execute_step2(df: pd.DataFrame, n_features_out: int = 12) -> Tuple[Dict[str,
         return {}, "NOT_UP"
         
     X_train = train_df.drop(columns=['Target', 'Future_Return'], errors='ignore')
-    y_train = train_df['Target'].values
+    # Force strictly 0 or 1
+    y_train = np.where(train_df['Target'] >= 0.5, 1, 0)
+    
+    # Check if we have any variance at all. Due to backfilling YF data, older periods
+    # might be completely constant, causing VarianceThreshold to drop all features.
+    if X_train.empty or X_train.var().max() == 0:
+        logger.error("No variance found in fundamental features (all constant). Skipping Step 2.")
+        return {}, "NOT_UP"
     
     X_pred = pred_df.drop(columns=['Target', 'Future_Return'], errors='ignore')
     
@@ -42,19 +49,29 @@ def execute_step2(df: pd.DataFrame, n_features_out: int = 12) -> Tuple[Dict[str,
         
     pipeline = build_pipeline(n_features_out=max_features)
     
-    cv = TimeSeriesSplit(n_splits=3)
+    cv = StratifiedKFold(n_splits=3, shuffle=True, random_state=42)
     
     try:
         y_prob_cv = cross_val_predict(pipeline, X_train, y_train, cv=cv, method='predict_proba', n_jobs=-1)[:, 1]
     except Exception as e:
-        logger.error(f"Failed to generate CV probabilities for Step 2: {e}")
-        pipeline.fit(X_train, y_train)
-        y_prob_cv = pipeline.predict_proba(X_train)[:, 1]
+        logger.warning(f"Failed to generate CV probabilities for Step 2, falling back to full fit. Reason: {e}")
+        try:
+            pipeline.fit(X_train, y_train)
+            y_prob_cv = pipeline.predict_proba(X_train)[:, 1]
+        except Exception as e2:
+            logger.error(f"Failed to fit fallback pipeline for Step 2. Reason: {e2}")
+            return {}, "NOT_UP"
 
+    # Calculate KS and Cutoff
     ks_stat, ks_cutoff = calculate_ks_and_cutoff(y_train, y_prob_cv)
     cv_accuracy = calculate_cv_accuracy(y_train, y_prob_cv, ks_cutoff)
     
-    pipeline.fit(X_train, y_train)
+    # Now fit on the entire historical dataset to get the final model weights for prediction
+    try:
+        pipeline.fit(X_train, y_train)
+    except Exception as e:
+        logger.error(f"Failed to fit final pipeline for Step 2. Reason: {e}")
+        return {}, "NOT_UP"
     
     if not X_pred.empty:
         y_pred_prob = pipeline.predict_proba(X_pred)[:, 1]
@@ -62,12 +79,16 @@ def execute_step2(df: pd.DataFrame, n_features_out: int = 12) -> Tuple[Dict[str,
         y_pred_prob = np.array([])
         
     # Feature Extraction
+    var_thresh = pipeline.named_steps['var_thresh']
     anova = pipeline.named_steps['anova']
     sfs = pipeline.named_steps['sfs']
     clf = pipeline.named_steps['clf']
     
+    var_mask = var_thresh.get_support()
+    var_features = X_train.columns[var_mask]
+    
     anova_mask = anova.get_support()
-    anova_features = X_train.columns[anova_mask]
+    anova_features = var_features[anova_mask]
     
     sfs_mask = sfs.get_support()
     final_features = anova_features[sfs_mask].tolist()

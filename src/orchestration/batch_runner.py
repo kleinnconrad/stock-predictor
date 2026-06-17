@@ -5,12 +5,12 @@ from tqdm import tqdm
 from ..ingestion.xetra_t7 import fetch_xetra_t7
 from ..ingestion.global_macro import fetch_global_macro_universe
 from ..ingestion.market_api import fetch_step1_data
-from ..ingestion.funds_api import fetch_step2_fundamentals
+from ..ingestion.funds_api import fetch_fundamentals
 from ..processing.qualifier import filter_qualified_tickers
 from ..processing.features import engineer_features
-from ..modeling.step1_macro import run_step1_model
-from ..modeling.step2_funds import run_step2_model
-from .json_exporter import export_prediction_json, export_diagnostics_json
+from ..modeling.step1_macro import execute_step1
+from ..modeling.step2_funds import execute_step2
+from .json_exporter import export_prediction_json, export_feature_diagnostics_json
 
 logger = logging.getLogger(__name__)
 
@@ -31,27 +31,48 @@ def run_single(ticker: str, macro_df: pd.DataFrame = None) -> bool:
             return False
             
         features_df = engineer_features(merged_df)
-        step1_dates, feature_diagnostics_1, pred_payload_1 = run_step1_model(features_df)
+        metrics_1, filtered_df_1 = execute_step1(features_df)
+        step1_dates = filtered_df_1.index
+        feature_diagnostics_1 = metrics_1.pop('feature_diagnostics', {}) if metrics_1 else {}
+        pred_payload_1 = metrics_1
         
-        export_diagnostics_json(ticker, feature_diagnostics_1, step=1)
+        combined_diagnostics = {"step1_macro": feature_diagnostics_1}
+        export_feature_diagnostics_json(ticker, combined_diagnostics)
+        
         if pred_payload_1:
-            export_prediction_json(ticker, pred_payload_1, step=1)
+            export_prediction_json(ticker, pred_payload_1)
             
         if step1_dates.empty:
             logger.info(f"{ticker} failed Step 1. Not proceeding to Step 2.")
             return False
             
         # Step 2
-        funds_df = fetch_step2_fundamentals(ticker, history_years=3)
+        funds_df = fetch_fundamentals(ticker)
         if funds_df.empty:
              logger.warning(f"No fundamental data for {ticker}. Aborting.")
              return False
              
-        final_decision, feature_diagnostics_2, pred_payload_2 = run_step2_model(funds_df, step1_dates)
+        # Filter funds_df by step1 dates
+        funds_df = funds_df.loc[funds_df.index.intersection(step1_dates)]
+        if funds_df.empty:
+             logger.warning(f"No aligned fundamental dates for {ticker} after Step 1 filtering. Aborting.")
+             return False
+             
+        # Step 2 needs the Target labels to train its models
+        funds_df = funds_df.join(features_df[['Target']], how='inner')
+        if funds_df.empty:
+             logger.warning(f"No aligned target dates for {ticker}. Aborting.")
+             return False
+             
+        metrics_2, latest_pred_class = execute_step2(funds_df)
+        feature_diagnostics_2 = metrics_2.pop('feature_diagnostics', {}) if metrics_2 else {}
+        pred_payload_2 = metrics_2
+        final_decision = latest_pred_class == "UP"
         
-        export_diagnostics_json(ticker, feature_diagnostics_2, step=2)
+        combined_diagnostics["step2_funds"] = feature_diagnostics_2
+        export_feature_diagnostics_json(ticker, combined_diagnostics)
         if final_decision:
-            export_prediction_json(ticker, pred_payload_2, step=2)
+            export_prediction_json(ticker, pred_payload_2)
             logger.info(f"*** {ticker} PASSED STEP 2 AND IS A BUY CANDIDATE! ***")
             return True
         else:

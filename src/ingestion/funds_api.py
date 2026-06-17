@@ -45,7 +45,7 @@ def fetch_fundamentals(ticker: str) -> pd.DataFrame:
         fundamentals = fundamentals.sort_index()
         
         # To align with daily market data, we must resample to daily and ffill
-        # This will be joined with daily data later, so returning daily frequency here
+        # This will be joined with daily data later, so returning daily frequency here.
         daily_fundamentals = fundamentals.resample('D').ffill()
         
         return daily_fundamentals

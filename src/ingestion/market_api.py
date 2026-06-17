@@ -5,21 +5,22 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def fetch_step1_data(ticker: str, global_macro_df: pd.DataFrame, start_date: datetime.date, end_date: datetime.date) -> pd.DataFrame:
+def fetch_step1_data(ticker: str, global_macro_df: pd.DataFrame, history_years: int = 10) -> pd.DataFrame:
     """
     Fetches target stock OHLCV data and merges it with the global macro cache.
     
     Args:
         ticker (str): The stock ticker (e.g., 'SAP.DE').
         global_macro_df (pd.DataFrame): Pre-cached global macro dataset.
-        start_date (datetime.date): Start date.
-        end_date (datetime.date): End date.
+        history_years (int): Number of years of history to fetch.
         
     Returns:
         pd.DataFrame: Merged DataFrame.
     """
     logger.info(f"Fetching market pricing for target {ticker}.")
     try:
+        end_date = datetime.date.today()
+        start_date = end_date - datetime.timedelta(days=history_years * 365)
         df = yf.download(ticker, start=start_date, end=end_date, progress=False)
         if df.empty:
             logger.warning(f"No pricing data found for {ticker}.")

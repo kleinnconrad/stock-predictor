@@ -13,8 +13,8 @@ from tqdm import tqdm
 from src.ingestion.global_macro import fetch_global_macro_universe
 from src.ingestion.market_api import fetch_step1_data
 from src.processing.features import engineer_features
-from src.modeling.step1_macro import run_step1_model
-from src.orchestration.json_exporter import export_prediction_json, export_diagnostics_json
+from src.modeling.step1_macro import execute_step1
+from src.orchestration.json_exporter import export_prediction_json, export_feature_diagnostics_json
 
 def apply_anti_jitter():
     """
@@ -57,7 +57,10 @@ def main():
                 
             features_df = engineer_features(merged_df)
             
-            step1_dates, feature_diagnostics, pred_payload = run_step1_model(features_df)
+            metrics, filtered_df = execute_step1(features_df)
+            step1_dates = filtered_df.index
+            feature_diagnostics = metrics.pop('feature_diagnostics', {}) if metrics else {}
+            pred_payload = metrics
             
             if not step1_dates.empty:
                 passed_tickers.append(ticker)
@@ -65,9 +68,9 @@ def main():
                 step1_dates_dict[ticker] = [str(d) for d in step1_dates]
                 
             # Export JSON payloads
-            export_diagnostics_json(ticker, feature_diagnostics, step=1)
+            export_feature_diagnostics_json(ticker, feature_diagnostics)
             if pred_payload:
-                export_prediction_json(ticker, pred_payload, step=1)
+                export_prediction_json(ticker, pred_payload)
                 
         except Exception as e:
             print(f"Failed {ticker} in Step 1: {e}")

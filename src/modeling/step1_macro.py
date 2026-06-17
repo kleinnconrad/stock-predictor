@@ -4,7 +4,7 @@ import logging
 from typing import Dict, Any, Tuple
 from .base_pipeline import build_pipeline
 from .diagnostics import calculate_ks_and_cutoff, calculate_cv_accuracy
-from sklearn.model_selection import cross_val_predict, TimeSeriesSplit
+from sklearn.model_selection import cross_val_predict, StratifiedKFold
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +30,8 @@ def execute_step1(df: pd.DataFrame, n_features_out: int = 12) -> Tuple[Dict[str,
         return {}, df.iloc[0:0] # Return empty DF
         
     X_train = train_df.drop(columns=['Target', 'Future_Return'], errors='ignore')
-    y_train = train_df['Target'].values
+    # Force strictly 0 or 1 to completely prevent any sklearn multiclass detection edge cases
+    y_train = np.where(train_df['Target'] >= 0.5, 1, 0)
     
     X_pred = pred_df.drop(columns=['Target', 'Future_Return'], errors='ignore')
     
@@ -38,11 +39,13 @@ def execute_step1(df: pd.DataFrame, n_features_out: int = 12) -> Tuple[Dict[str,
     max_features = min(n_features_out, X_train.shape[1])
     pipeline = build_pipeline(n_features_out=max_features)
     
-    # Generate Cross-Validation probabilities using TimeSeriesSplit to avoid lookahead bias
-    cv = TimeSeriesSplit(n_splits=3)
-    
+    # Generate Cross-Validation probabilities.
+    # TimeSeriesSplit doesn't test the first fold, causing cross_val_predict to fail.
+    # We use StratifiedKFold just for generating full out-of-fold probabilities.
+    cv = StratifiedKFold(n_splits=3, shuffle=True, random_state=42)
     # We need proba, cross_val_predict can return it if method='predict_proba'
     try:
+        # Use error_score='raise' to catch fold exceptions and suppress the ugly FitFailedWarning stack traces
         y_prob_cv = cross_val_predict(pipeline, X_train, y_train, cv=cv, method='predict_proba', n_jobs=-1)[:, 1]
     except Exception as e:
         logger.error(f"Failed to generate CV probabilities: {e}")
@@ -64,13 +67,18 @@ def execute_step1(df: pd.DataFrame, n_features_out: int = 12) -> Tuple[Dict[str,
         y_pred_prob = np.array([])
         
     # Feature Extraction Logic
+    var_thresh = pipeline.named_steps['var_thresh']
     anova = pipeline.named_steps['anova']
     sfs = pipeline.named_steps['sfs']
     clf = pipeline.named_steps['clf']
     
-    # 1. Get ANOVA mask and filter original features
+    # 0. Get Variance Threshold mask
+    var_mask = var_thresh.get_support()
+    var_features = X_train.columns[var_mask]
+    
+    # 1. Get ANOVA mask and filter
     anova_mask = anova.get_support()
-    anova_features = X_train.columns[anova_mask]
+    anova_features = var_features[anova_mask]
     
     # 2. Get SFS mask and filter ANOVA features
     sfs_mask = sfs.get_support()

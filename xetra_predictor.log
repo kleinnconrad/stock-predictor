@@ -1,0 +1,611 @@
+2026-06-17 11:31:11,849 - __main__ - INFO - Starting Xetra Two-Step Stock Prediction Engine (v5.0)
+2026-06-17 11:31:11,849 - __main__ - INFO - Single Ticker Mode activated for: SAP.DE
+2026-06-17 11:31:11,849 - src.orchestration.batch_runner - INFO - Running Two-Step Cascade for single ticker: SAP.DE
+2026-06-17 11:31:11,849 - src.orchestration.batch_runner - INFO - Pre-caching Global Macro Universe for local execution...
+2026-06-17 11:31:11,849 - src.ingestion.global_macro - INFO - Fetching 51 YF tickers and 24 FRED indicators for Global Macro Cache.
+2026-06-17 11:31:13,023 - yfinance - ERROR - $LBS=F: possibly delisted; no price data found  (1d 2023-06-18 -> 2026-06-17)
+2026-06-17 11:31:13,977 - yfinance - ERROR - 
+1 Failed download:
+2026-06-17 11:31:13,977 - yfinance - ERROR - ['LBS=F']: possibly delisted; no price data found  (1d 2023-06-18 -> 2026-06-17)
+2026-06-17 11:31:20,422 - src.ingestion.global_macro - INFO - Applying massive quantitative feature engineering matrix to macro cache...
+2026-06-17 11:31:20,461 - src.ingestion.global_macro - INFO - Global macro engineering complete. Expanded Matrix Shape: (782, 74)
+2026-06-17 11:31:20,461 - src.orchestration.batch_runner - ERROR - Error processing SAP.DE: fetch_step1_data() got an unexpected keyword argument 'history_years'
+Traceback (most recent call last):
+  File "C:\Users\klein\Desktop\stock-predictor\src\orchestration\batch_runner.py", line 28, in run_single
+    merged_df = fetch_step1_data(ticker, macro_df, history_years=3)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: fetch_step1_data() got an unexpected keyword argument 'history_years'
+2026-06-17 11:31:20,461 - __main__ - INFO - Engine run completed successfully.
+2026-06-17 11:32:49,083 - __main__ - INFO - Starting Xetra Two-Step Stock Prediction Engine (v5.0)
+2026-06-17 11:32:49,083 - __main__ - INFO - Single Ticker Mode activated for: SAP.DE
+2026-06-17 11:32:49,083 - src.orchestration.batch_runner - INFO - Running Two-Step Cascade for single ticker: SAP.DE
+2026-06-17 11:32:49,083 - src.orchestration.batch_runner - INFO - Pre-caching Global Macro Universe for local execution...
+2026-06-17 11:32:49,083 - src.ingestion.global_macro - INFO - Fetching 51 YF tickers and 24 FRED indicators for Global Macro Cache.
+2026-06-17 11:32:50,035 - yfinance - ERROR - $LBS=F: possibly delisted; no price data found  (1d 2023-06-18 -> 2026-06-17)
+2026-06-17 11:32:51,224 - yfinance - ERROR - 
+1 Failed download:
+2026-06-17 11:32:51,224 - yfinance - ERROR - ['LBS=F']: possibly delisted; no price data found  (1d 2023-06-18 -> 2026-06-17)
+2026-06-17 11:32:52,570 - src.ingestion.global_macro - INFO - Applying massive quantitative feature engineering matrix to macro cache...
+2026-06-17 11:32:52,600 - src.ingestion.global_macro - INFO - Global macro engineering complete. Expanded Matrix Shape: (782, 74)
+2026-06-17 11:32:52,601 - src.ingestion.market_api - INFO - Fetching market pricing for target SAP.DE.
+2026-06-17 11:32:52,629 - src.processing.features - INFO - Engineering features with horizon=126 and threshold=0.15
+2026-06-17 11:32:52,637 - src.modeling.step1_macro - INFO - Executing Step 1 Macro Model.
+2026-06-17 11:32:52,669 - src.modeling.step1_macro - ERROR - Failed to generate CV probabilities: cross_val_predict only works for partitions
+2026-06-17 11:33:09,465 - src.orchestration.batch_runner - ERROR - Error processing SAP.DE: export_feature_diagnostics_json() got an unexpected keyword argument 'step'
+Traceback (most recent call last):
+  File "C:\Users\klein\Desktop\stock-predictor\src\orchestration\batch_runner.py", line 39, in run_single
+    export_feature_diagnostics_json(ticker, feature_diagnostics_1, step=1)
+TypeError: export_feature_diagnostics_json() got an unexpected keyword argument 'step'
+2026-06-17 11:33:09,467 - __main__ - INFO - Engine run completed successfully.
+2026-06-17 11:35:08,994 - __main__ - INFO - Starting Xetra Two-Step Stock Prediction Engine (v5.0)
+2026-06-17 11:35:08,994 - __main__ - INFO - Single Ticker Mode activated for: SAP.DE
+2026-06-17 11:35:08,994 - src.orchestration.batch_runner - INFO - Running Two-Step Cascade for single ticker: SAP.DE
+2026-06-17 11:35:08,994 - src.orchestration.batch_runner - INFO - Pre-caching Global Macro Universe for local execution...
+2026-06-17 11:35:08,994 - src.ingestion.global_macro - INFO - Fetching 51 YF tickers and 24 FRED indicators for Global Macro Cache.
+2026-06-17 11:35:09,931 - yfinance - ERROR - $LBS=F: possibly delisted; no price data found  (1d 2023-06-18 -> 2026-06-17)
+2026-06-17 11:35:11,021 - yfinance - ERROR - 
+1 Failed download:
+2026-06-17 11:35:11,021 - yfinance - ERROR - ['LBS=F']: possibly delisted; no price data found  (1d 2023-06-18 -> 2026-06-17)
+2026-06-17 11:35:14,431 - src.ingestion.global_macro - INFO - Applying massive quantitative feature engineering matrix to macro cache...
+2026-06-17 11:35:14,462 - src.ingestion.global_macro - INFO - Global macro engineering complete. Expanded Matrix Shape: (782, 74)
+2026-06-17 11:35:14,462 - src.ingestion.market_api - INFO - Fetching market pricing for target SAP.DE.
+2026-06-17 11:35:14,487 - src.processing.features - INFO - Engineering features with horizon=126 and threshold=0.15
+2026-06-17 11:35:14,496 - src.modeling.step1_macro - INFO - Executing Step 1 Macro Model.
+2026-06-17 11:35:14,499 - src.modeling.step1_macro - ERROR - Failed to generate CV probabilities: cross_val_predict only works for partitions
+2026-06-17 11:35:30,915 - src.orchestration.json_exporter - INFO - Successfully exported feature diagnostics for SAP.DE to outputs\diagnostics\SAP.DE_feature_diagnostics.json
+2026-06-17 11:35:30,915 - src.orchestration.json_exporter - INFO - Successfully exported JSON prediction for SAP.DE to outputs\predictions\SAP.DE_prediction.json
+2026-06-17 11:35:30,915 - src.ingestion.funds_api - INFO - Fetching fundamental data for SAP.DE.
+2026-06-17 11:35:31,916 - src.modeling.step2_funds - INFO - Executing Step 2 Fundamental Model.
+2026-06-17 11:35:31,916 - src.orchestration.batch_runner - ERROR - Error processing SAP.DE: ['Target']
+Traceback (most recent call last):
+  File "C:\Users\klein\Desktop\stock-predictor\src\orchestration\batch_runner.py", line 59, in run_single
+    metrics_2, latest_pred_class = execute_step2(funds_df)
+                                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\klein\Desktop\stock-predictor\src\modeling\step2_funds.py", line 25, in execute_step2
+    train_df = df.dropna(subset=['Target'])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\klein\AppData\Roaming\Python\Python312\site-packages\pandas\core\frame.py", line 6670, in dropna
+    raise KeyError(np.array(subset)[check].tolist())
+KeyError: ['Target']
+2026-06-17 11:35:31,950 - __main__ - INFO - Engine run completed successfully.
+2026-06-17 11:39:37,632 - __main__ - INFO - Starting Xetra Two-Step Stock Prediction Engine (v5.0)
+2026-06-17 11:39:37,632 - __main__ - INFO - Single Ticker Mode activated for: SAP.DE
+2026-06-17 11:39:37,632 - src.orchestration.batch_runner - INFO - Running Two-Step Cascade for single ticker: SAP.DE
+2026-06-17 11:39:37,633 - src.orchestration.batch_runner - INFO - Pre-caching Global Macro Universe for local execution...
+2026-06-17 11:39:37,633 - src.ingestion.global_macro - INFO - Fetching 50 YF tickers and 24 FRED indicators for Global Macro Cache.
+2026-06-17 11:39:39,385 - yfinance - ERROR - $LBS=F: possibly delisted; no price data found  (1d 2023-06-18 -> 2026-06-17)
+2026-06-17 11:39:39,979 - yfinance - ERROR - 
+1 Failed download:
+2026-06-17 11:39:39,979 - yfinance - ERROR - ['LBS=F']: possibly delisted; no price data found  (1d 2023-06-18 -> 2026-06-17)
+2026-06-17 11:39:49,506 - src.ingestion.global_macro - INFO - Applying massive quantitative feature engineering matrix to macro cache...
+2026-06-17 11:39:49,532 - src.ingestion.global_macro - INFO - Global macro engineering complete. Expanded Matrix Shape: (782, 33)
+2026-06-17 11:39:49,532 - src.ingestion.market_api - INFO - Fetching market pricing for target SAP.DE.
+2026-06-17 11:39:49,558 - src.processing.features - INFO - Engineering features with horizon=126 and threshold=0.15
+2026-06-17 11:39:49,562 - src.modeling.step1_macro - INFO - Executing Step 1 Macro Model.
+2026-06-17 11:39:49,566 - src.modeling.step1_macro - ERROR - Failed to generate CV probabilities: cross_val_predict only works for partitions
+2026-06-17 11:40:05,799 - src.orchestration.batch_runner - ERROR - Error processing SAP.DE: boolean index did not match indexed array along axis 0; size of axis is 45 but size of corresponding boolean axis is 44
+Traceback (most recent call last):
+  File "C:\Users\klein\Desktop\stock-predictor\src\orchestration\batch_runner.py", line 34, in run_single
+    metrics_1, filtered_df_1 = execute_step1(features_df)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\klein\Desktop\stock-predictor\src\modeling\step1_macro.py", line 73, in execute_step1
+    anova_features = X_train.columns[anova_mask]
+                     ~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "C:\Users\klein\AppData\Roaming\Python\Python312\site-packages\pandas\core\indexes\base.py", line 5416, in __getitem__
+    result = getitem(key)
+             ^^^^^^^^^^^^
+IndexError: boolean index did not match indexed array along axis 0; size of axis is 45 but size of corresponding boolean axis is 44
+2026-06-17 11:40:05,837 - __main__ - INFO - Engine run completed successfully.
+2026-06-17 11:43:00,218 - __main__ - INFO - Starting Xetra Two-Step Stock Prediction Engine (v5.0)
+2026-06-17 11:43:00,218 - __main__ - INFO - Single Ticker Mode activated for: SAP.DE
+2026-06-17 11:43:00,218 - src.orchestration.batch_runner - INFO - Running Two-Step Cascade for single ticker: SAP.DE
+2026-06-17 11:43:00,218 - src.orchestration.batch_runner - INFO - Pre-caching Global Macro Universe for local execution...
+2026-06-17 11:43:00,218 - src.ingestion.global_macro - INFO - Fetching 49 YF tickers and 24 FRED indicators for Global Macro Cache.
+2026-06-17 11:43:05,032 - src.ingestion.global_macro - INFO - Applying massive quantitative feature engineering matrix to macro cache...
+2026-06-17 11:43:05,139 - src.ingestion.global_macro - INFO - Global macro engineering complete. Expanded Matrix Shape: (782, 260)
+2026-06-17 11:43:05,139 - src.ingestion.market_api - INFO - Fetching market pricing for target SAP.DE.
+2026-06-17 11:43:05,176 - src.processing.features - INFO - Engineering features with horizon=126 and threshold=0.15
+2026-06-17 11:43:05,185 - src.modeling.step1_macro - INFO - Executing Step 1 Macro Model.
+2026-06-17 11:43:23,689 - src.orchestration.json_exporter - INFO - Successfully exported feature diagnostics for SAP.DE to outputs\diagnostics\SAP.DE_feature_diagnostics.json
+2026-06-17 11:43:23,689 - src.orchestration.json_exporter - INFO - Successfully exported JSON prediction for SAP.DE to outputs\predictions\SAP.DE_prediction.json
+2026-06-17 11:43:23,689 - src.ingestion.funds_api - INFO - Fetching fundamental data for SAP.DE.
+2026-06-17 11:43:24,650 - src.modeling.step2_funds - INFO - Executing Step 2 Fundamental Model.
+2026-06-17 11:43:24,946 - src.modeling.step2_funds - ERROR - Failed to generate CV probabilities for Step 2: Found array with 0 feature(s) (shape=(20, 0)) while a minimum of 1 is required by VarianceThreshold.
+2026-06-17 11:43:24,950 - src.orchestration.batch_runner - ERROR - Error processing SAP.DE: Found array with 0 feature(s) (shape=(31, 0)) while a minimum of 1 is required by VarianceThreshold.
+joblib.externals.loky.process_executor._RemoteTraceback: 
+"""
+Traceback (most recent call last):
+  File "C:\ProgramData\anaconda3\Lib\site-packages\joblib\externals\loky\process_executor.py", line 490, in _process_worker
+    r = call_item()
+        ^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\joblib\externals\loky\process_executor.py", line 291, in __call__
+    return self.fn(*self.args, **self.kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\joblib\parallel.py", line 607, in __call__
+    return [func(*args, **kwargs) for func, args, kwargs in self.items]
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\utils\parallel.py", line 184, in __call__
+    return self.function(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\model_selection\_validation.py", line 1328, in _fit_and_predict
+    estimator.fit(X_train, y_train, **fit_params)
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\base.py", line 1403, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\pipeline.py", line 636, in fit
+    Xt = self._fit(
+         ^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\pipeline.py", line 565, in _fit
+    X, fitted_transformer = fit_transform_one_cached(
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\joblib\memory.py", line 326, in __call__
+    return self.func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\pipeline.py", line 1593, in _fit_transform_one_with_callbacks
+    Xt, transformer = _fit_transform_one(
+                      ^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\pipeline.py", line 1566, in _fit_transform_one
+    res = transformer.fit_transform(X, y, **params.get("fit_transform", {}))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\utils\_set_output.py", line 319, in wrapped
+    data_to_wrap = f(self, X, *args, **kwargs)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\base.py", line 972, in fit_transform
+    return self.fit(X, y, **fit_params).transform(X)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\base.py", line 1403, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\feature_selection\_variance_threshold.py", line 100, in fit
+    X = validate_data(
+        ^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\utils\validation.py", line 3038, in validate_data
+    out = check_array(X, input_name="X", **check_params)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\utils\validation.py", line 1119, in check_array
+    raise ValueError(
+ValueError: Found array with 0 feature(s) (shape=(20, 0)) while a minimum of 1 is required by VarianceThreshold.
+"""
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\klein\Desktop\stock-predictor\src\modeling\step2_funds.py", line 48, in execute_step2
+    y_prob_cv = cross_val_predict(pipeline, X_train, y_train, cv=cv, method='predict_proba', n_jobs=-1)[:, 1]
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\utils\_param_validation.py", line 218, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\model_selection\_validation.py", line 1240, in cross_val_predict
+    predictions = parallel(
+                  ^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\utils\parallel.py", line 91, in __call__
+    return super().__call__(iterable_with_config_and_warning_filters)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\joblib\parallel.py", line 2072, in __call__
+    return output if self.return_generator else list(output)
+                                                ^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\joblib\parallel.py", line 1682, in _get_outputs
+    yield from self._retrieve()
+  File "C:\ProgramData\anaconda3\Lib\site-packages\joblib\parallel.py", line 1784, in _retrieve
+    self._raise_error_fast()
+  File "C:\ProgramData\anaconda3\Lib\site-packages\joblib\parallel.py", line 1859, in _raise_error_fast
+    error_job.get_result(self.timeout)
+  File "C:\ProgramData\anaconda3\Lib\site-packages\joblib\parallel.py", line 758, in get_result
+    return self._return_or_raise()
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\joblib\parallel.py", line 773, in _return_or_raise
+    raise self._result
+ValueError: Found array with 0 feature(s) (shape=(20, 0)) while a minimum of 1 is required by VarianceThreshold.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\klein\Desktop\stock-predictor\src\orchestration\batch_runner.py", line 65, in run_single
+    metrics_2, latest_pred_class = execute_step2(funds_df)
+                                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\klein\Desktop\stock-predictor\src\modeling\step2_funds.py", line 51, in execute_step2
+    pipeline.fit(X_train, y_train)
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\base.py", line 1403, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\pipeline.py", line 636, in fit
+    Xt = self._fit(
+         ^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\pipeline.py", line 565, in _fit
+    X, fitted_transformer = fit_transform_one_cached(
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\joblib\memory.py", line 326, in __call__
+    return self.func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\pipeline.py", line 1593, in _fit_transform_one_with_callbacks
+    Xt, transformer = _fit_transform_one(
+                      ^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\pipeline.py", line 1566, in _fit_transform_one
+    res = transformer.fit_transform(X, y, **params.get("fit_transform", {}))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\utils\_set_output.py", line 319, in wrapped
+    data_to_wrap = f(self, X, *args, **kwargs)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\base.py", line 972, in fit_transform
+    return self.fit(X, y, **fit_params).transform(X)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\base.py", line 1403, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\feature_selection\_variance_threshold.py", line 100, in fit
+    X = validate_data(
+        ^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\utils\validation.py", line 3038, in validate_data
+    out = check_array(X, input_name="X", **check_params)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\utils\validation.py", line 1119, in check_array
+    raise ValueError(
+ValueError: Found array with 0 feature(s) (shape=(31, 0)) while a minimum of 1 is required by VarianceThreshold.
+2026-06-17 11:43:24,963 - __main__ - INFO - Engine run completed successfully.
+2026-06-17 11:46:59,384 - __main__ - INFO - Starting Xetra Two-Step Stock Prediction Engine (v5.0)
+2026-06-17 11:46:59,384 - __main__ - INFO - Single Ticker Mode activated for: SAP.DE
+2026-06-17 11:46:59,384 - src.orchestration.batch_runner - INFO - Running Two-Step Cascade for single ticker: SAP.DE
+2026-06-17 11:46:59,385 - src.orchestration.batch_runner - INFO - Pre-caching Global Macro Universe for local execution...
+2026-06-17 11:46:59,385 - src.ingestion.global_macro - INFO - Fetching 49 YF tickers and 24 FRED indicators for Global Macro Cache.
+2026-06-17 11:47:02,347 - src.ingestion.global_macro - INFO - Applying massive quantitative feature engineering matrix to macro cache...
+2026-06-17 11:47:02,466 - src.ingestion.global_macro - INFO - Global macro engineering complete. Expanded Matrix Shape: (782, 260)
+2026-06-17 11:47:02,466 - src.ingestion.market_api - INFO - Fetching market pricing for target SAP.DE.
+2026-06-17 11:47:02,495 - src.processing.features - INFO - Engineering features with horizon=126 and threshold=0.15
+2026-06-17 11:47:02,500 - src.modeling.step1_macro - INFO - Executing Step 1 Macro Model.
+2026-06-17 11:47:21,046 - src.orchestration.json_exporter - INFO - Successfully exported feature diagnostics for SAP.DE to outputs\diagnostics\SAP.DE_feature_diagnostics.json
+2026-06-17 11:47:21,046 - src.orchestration.json_exporter - INFO - Successfully exported JSON prediction for SAP.DE to outputs\predictions\SAP.DE_prediction.json
+2026-06-17 11:47:21,046 - src.ingestion.funds_api - INFO - Fetching fundamental data for SAP.DE.
+2026-06-17 11:47:21,936 - src.modeling.step2_funds - INFO - Executing Step 2 Fundamental Model.
+2026-06-17 11:47:22,184 - src.modeling.step2_funds - ERROR - Failed to generate CV probabilities for Step 2: No feature in X meets the variance threshold 0.00000
+2026-06-17 11:47:22,190 - src.orchestration.batch_runner - ERROR - Error processing SAP.DE: No feature in X meets the variance threshold 0.00000
+joblib.externals.loky.process_executor._RemoteTraceback: 
+"""
+Traceback (most recent call last):
+  File "C:\ProgramData\anaconda3\Lib\site-packages\joblib\externals\loky\process_executor.py", line 490, in _process_worker
+    r = call_item()
+        ^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\joblib\externals\loky\process_executor.py", line 291, in __call__
+    return self.fn(*self.args, **self.kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\joblib\parallel.py", line 607, in __call__
+    return [func(*args, **kwargs) for func, args, kwargs in self.items]
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\utils\parallel.py", line 184, in __call__
+    return self.function(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\model_selection\_validation.py", line 1328, in _fit_and_predict
+    estimator.fit(X_train, y_train, **fit_params)
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\base.py", line 1403, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\pipeline.py", line 636, in fit
+    Xt = self._fit(
+         ^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\pipeline.py", line 565, in _fit
+    X, fitted_transformer = fit_transform_one_cached(
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\joblib\memory.py", line 326, in __call__
+    return self.func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\pipeline.py", line 1593, in _fit_transform_one_with_callbacks
+    Xt, transformer = _fit_transform_one(
+                      ^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\pipeline.py", line 1566, in _fit_transform_one
+    res = transformer.fit_transform(X, y, **params.get("fit_transform", {}))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\utils\_set_output.py", line 319, in wrapped
+    data_to_wrap = f(self, X, *args, **kwargs)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\base.py", line 972, in fit_transform
+    return self.fit(X, y, **fit_params).transform(X)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\base.py", line 1403, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\feature_selection\_variance_threshold.py", line 128, in fit
+    raise ValueError(msg.format(self.threshold))
+ValueError: No feature in X meets the variance threshold 0.00000
+"""
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\klein\Desktop\stock-predictor\src\modeling\step2_funds.py", line 48, in execute_step2
+    y_prob_cv = cross_val_predict(pipeline, X_train, y_train, cv=cv, method='predict_proba', n_jobs=-1)[:, 1]
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\utils\_param_validation.py", line 218, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\model_selection\_validation.py", line 1240, in cross_val_predict
+    predictions = parallel(
+                  ^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\utils\parallel.py", line 91, in __call__
+    return super().__call__(iterable_with_config_and_warning_filters)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\joblib\parallel.py", line 2072, in __call__
+    return output if self.return_generator else list(output)
+                                                ^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\joblib\parallel.py", line 1682, in _get_outputs
+    yield from self._retrieve()
+  File "C:\ProgramData\anaconda3\Lib\site-packages\joblib\parallel.py", line 1784, in _retrieve
+    self._raise_error_fast()
+  File "C:\ProgramData\anaconda3\Lib\site-packages\joblib\parallel.py", line 1859, in _raise_error_fast
+    error_job.get_result(self.timeout)
+  File "C:\ProgramData\anaconda3\Lib\site-packages\joblib\parallel.py", line 758, in get_result
+    return self._return_or_raise()
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\joblib\parallel.py", line 773, in _return_or_raise
+    raise self._result
+ValueError: No feature in X meets the variance threshold 0.00000
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\klein\Desktop\stock-predictor\src\orchestration\batch_runner.py", line 65, in run_single
+    metrics_2, latest_pred_class = execute_step2(funds_df)
+                                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\klein\Desktop\stock-predictor\src\modeling\step2_funds.py", line 51, in execute_step2
+    pipeline.fit(X_train, y_train)
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\base.py", line 1403, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\pipeline.py", line 636, in fit
+    Xt = self._fit(
+         ^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\pipeline.py", line 565, in _fit
+    X, fitted_transformer = fit_transform_one_cached(
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\joblib\memory.py", line 326, in __call__
+    return self.func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\pipeline.py", line 1593, in _fit_transform_one_with_callbacks
+    Xt, transformer = _fit_transform_one(
+                      ^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\pipeline.py", line 1566, in _fit_transform_one
+    res = transformer.fit_transform(X, y, **params.get("fit_transform", {}))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\utils\_set_output.py", line 319, in wrapped
+    data_to_wrap = f(self, X, *args, **kwargs)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\base.py", line 972, in fit_transform
+    return self.fit(X, y, **fit_params).transform(X)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\base.py", line 1403, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\feature_selection\_variance_threshold.py", line 128, in fit
+    raise ValueError(msg.format(self.threshold))
+ValueError: No feature in X meets the variance threshold 0.00000
+2026-06-17 11:47:22,204 - __main__ - INFO - Engine run completed successfully.
+2026-06-17 11:56:39,534 - __main__ - INFO - Starting Xetra Two-Step Stock Prediction Engine (v5.0)
+2026-06-17 11:56:39,534 - __main__ - INFO - Single Ticker Mode activated for: SAP.DE
+2026-06-17 11:56:39,534 - src.orchestration.batch_runner - INFO - Running Two-Step Cascade for single ticker: SAP.DE
+2026-06-17 11:56:39,534 - src.orchestration.batch_runner - INFO - Pre-caching Global Macro Universe for local execution...
+2026-06-17 11:56:39,534 - src.ingestion.global_macro - INFO - Fetching 49 YF tickers and 24 FRED indicators for Global Macro Cache.
+2026-06-17 11:56:52,670 - src.ingestion.global_macro - INFO - Applying massive quantitative feature engineering matrix to macro cache...
+2026-06-17 11:56:52,785 - src.ingestion.global_macro - INFO - Global macro engineering complete. Expanded Matrix Shape: (782, 260)
+2026-06-17 11:56:52,785 - src.ingestion.market_api - INFO - Fetching market pricing for target SAP.DE.
+2026-06-17 11:56:52,817 - src.processing.features - INFO - Engineering features with horizon=126 and threshold=0.15
+2026-06-17 11:56:52,822 - src.modeling.step1_macro - INFO - Executing Step 1 Macro Model.
+2026-06-17 11:57:11,684 - src.orchestration.json_exporter - INFO - Successfully exported feature diagnostics for SAP.DE to outputs\diagnostics\SAP.DE_feature_diagnostics.json
+2026-06-17 11:57:11,685 - src.orchestration.json_exporter - INFO - Successfully exported JSON prediction for SAP.DE to outputs\predictions\SAP.DE_prediction.json
+2026-06-17 11:57:11,685 - src.ingestion.funds_api - INFO - Fetching fundamental data for SAP.DE.
+2026-06-17 11:57:12,639 - src.modeling.step2_funds - INFO - Executing Step 2 Fundamental Model.
+2026-06-17 11:57:12,971 - src.modeling.step2_funds - ERROR - Failed to generate CV probabilities for Step 2: No feature in X meets the variance threshold 0.00000
+2026-06-17 11:57:12,974 - src.orchestration.batch_runner - ERROR - Error processing SAP.DE: No feature in X meets the variance threshold 0.00000
+joblib.externals.loky.process_executor._RemoteTraceback: 
+"""
+Traceback (most recent call last):
+  File "C:\ProgramData\anaconda3\Lib\site-packages\joblib\externals\loky\process_executor.py", line 490, in _process_worker
+    r = call_item()
+        ^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\joblib\externals\loky\process_executor.py", line 291, in __call__
+    return self.fn(*self.args, **self.kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\joblib\parallel.py", line 607, in __call__
+    return [func(*args, **kwargs) for func, args, kwargs in self.items]
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\utils\parallel.py", line 184, in __call__
+    return self.function(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\model_selection\_validation.py", line 1328, in _fit_and_predict
+    estimator.fit(X_train, y_train, **fit_params)
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\base.py", line 1403, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\pipeline.py", line 636, in fit
+    Xt = self._fit(
+         ^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\pipeline.py", line 565, in _fit
+    X, fitted_transformer = fit_transform_one_cached(
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\joblib\memory.py", line 326, in __call__
+    return self.func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\pipeline.py", line 1593, in _fit_transform_one_with_callbacks
+    Xt, transformer = _fit_transform_one(
+                      ^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\pipeline.py", line 1566, in _fit_transform_one
+    res = transformer.fit_transform(X, y, **params.get("fit_transform", {}))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\utils\_set_output.py", line 319, in wrapped
+    data_to_wrap = f(self, X, *args, **kwargs)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\base.py", line 972, in fit_transform
+    return self.fit(X, y, **fit_params).transform(X)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\base.py", line 1403, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\feature_selection\_variance_threshold.py", line 128, in fit
+    raise ValueError(msg.format(self.threshold))
+ValueError: No feature in X meets the variance threshold 0.00000
+"""
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\klein\Desktop\stock-predictor\src\modeling\step2_funds.py", line 54, in execute_step2
+    y_prob_cv = cross_val_predict(pipeline, X_train, y_train, cv=cv, method='predict_proba', n_jobs=-1)[:, 1]
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\utils\_param_validation.py", line 218, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\model_selection\_validation.py", line 1240, in cross_val_predict
+    predictions = parallel(
+                  ^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\utils\parallel.py", line 91, in __call__
+    return super().__call__(iterable_with_config_and_warning_filters)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\joblib\parallel.py", line 2072, in __call__
+    return output if self.return_generator else list(output)
+                                                ^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\joblib\parallel.py", line 1682, in _get_outputs
+    yield from self._retrieve()
+  File "C:\ProgramData\anaconda3\Lib\site-packages\joblib\parallel.py", line 1784, in _retrieve
+    self._raise_error_fast()
+  File "C:\ProgramData\anaconda3\Lib\site-packages\joblib\parallel.py", line 1859, in _raise_error_fast
+    error_job.get_result(self.timeout)
+  File "C:\ProgramData\anaconda3\Lib\site-packages\joblib\parallel.py", line 758, in get_result
+    return self._return_or_raise()
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\joblib\parallel.py", line 773, in _return_or_raise
+    raise self._result
+ValueError: No feature in X meets the variance threshold 0.00000
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\klein\Desktop\stock-predictor\src\orchestration\batch_runner.py", line 65, in run_single
+    metrics_2, latest_pred_class = execute_step2(funds_df)
+                                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\klein\Desktop\stock-predictor\src\modeling\step2_funds.py", line 57, in execute_step2
+    pipeline.fit(X_train, y_train)
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\base.py", line 1403, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\pipeline.py", line 636, in fit
+    Xt = self._fit(
+         ^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\pipeline.py", line 565, in _fit
+    X, fitted_transformer = fit_transform_one_cached(
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\joblib\memory.py", line 326, in __call__
+    return self.func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\pipeline.py", line 1593, in _fit_transform_one_with_callbacks
+    Xt, transformer = _fit_transform_one(
+                      ^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\pipeline.py", line 1566, in _fit_transform_one
+    res = transformer.fit_transform(X, y, **params.get("fit_transform", {}))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\utils\_set_output.py", line 319, in wrapped
+    data_to_wrap = f(self, X, *args, **kwargs)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\base.py", line 972, in fit_transform
+    return self.fit(X, y, **fit_params).transform(X)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\base.py", line 1403, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\ProgramData\anaconda3\Lib\site-packages\sklearn\feature_selection\_variance_threshold.py", line 128, in fit
+    raise ValueError(msg.format(self.threshold))
+ValueError: No feature in X meets the variance threshold 0.00000
+2026-06-17 11:57:12,984 - __main__ - INFO - Engine run completed successfully.
+2026-06-17 12:01:43,588 - __main__ - INFO - Starting Xetra Two-Step Stock Prediction Engine (v5.0)
+2026-06-17 12:01:43,588 - __main__ - INFO - Single Ticker Mode activated for: SAP.DE
+2026-06-17 12:01:43,588 - src.orchestration.batch_runner - INFO - Running Two-Step Cascade for single ticker: SAP.DE
+2026-06-17 12:01:43,588 - src.orchestration.batch_runner - INFO - Pre-caching Global Macro Universe for local execution...
+2026-06-17 12:01:43,588 - src.ingestion.global_macro - INFO - Fetching 49 YF tickers and 24 FRED indicators for Global Macro Cache.
+2026-06-17 12:01:58,825 - src.ingestion.global_macro - INFO - Applying massive quantitative feature engineering matrix to macro cache...
+2026-06-17 12:01:58,941 - src.ingestion.global_macro - INFO - Global macro engineering complete. Expanded Matrix Shape: (782, 260)
+2026-06-17 12:01:58,941 - src.ingestion.market_api - INFO - Fetching market pricing for target SAP.DE.
+2026-06-17 12:01:58,968 - src.processing.features - INFO - Engineering features with horizon=126 and threshold=0.15
+2026-06-17 12:01:58,978 - src.modeling.step1_macro - INFO - Executing Step 1 Macro Model.
+2026-06-17 12:01:58,982 - src.modeling.step1_macro - ERROR - Failed to generate CV probabilities: got an unexpected keyword argument 'error_score'
+2026-06-17 12:02:15,235 - src.orchestration.json_exporter - INFO - Successfully exported feature diagnostics for SAP.DE to outputs\diagnostics\SAP.DE_feature_diagnostics.json
+2026-06-17 12:02:15,235 - src.orchestration.json_exporter - INFO - Successfully exported JSON prediction for SAP.DE to outputs\predictions\SAP.DE_prediction.json
+2026-06-17 12:02:15,235 - src.ingestion.funds_api - INFO - Fetching fundamental data for SAP.DE.
+2026-06-17 12:02:16,196 - src.modeling.step2_funds - INFO - Executing Step 2 Fundamental Model.
+2026-06-17 12:02:16,196 - src.modeling.step2_funds - WARNING - Failed to generate CV probabilities for Step 2, falling back to full fit. Reason: got an unexpected keyword argument 'error_score'
+2026-06-17 12:02:16,196 - src.modeling.step2_funds - ERROR - Failed to fit fallback pipeline for Step 2. Reason: No feature in X meets the variance threshold 0.00000
+2026-06-17 12:02:16,196 - src.orchestration.json_exporter - INFO - Successfully exported feature diagnostics for SAP.DE to outputs\diagnostics\SAP.DE_feature_diagnostics.json
+2026-06-17 12:02:16,196 - src.orchestration.batch_runner - INFO - SAP.DE failed Step 2.
+2026-06-17 12:02:16,196 - __main__ - INFO - Engine run completed successfully.
+2026-06-17 12:03:37,735 - __main__ - INFO - Starting Xetra Two-Step Stock Prediction Engine (v5.0)
+2026-06-17 12:03:37,736 - __main__ - INFO - Single Ticker Mode activated for: SAP.DE
+2026-06-17 12:03:37,736 - src.orchestration.batch_runner - INFO - Running Two-Step Cascade for single ticker: SAP.DE
+2026-06-17 12:03:37,736 - src.orchestration.batch_runner - INFO - Pre-caching Global Macro Universe for local execution...
+2026-06-17 12:03:37,736 - src.ingestion.global_macro - INFO - Fetching 49 YF tickers and 24 FRED indicators for Global Macro Cache.
+2026-06-17 12:03:40,722 - src.ingestion.global_macro - INFO - Applying massive quantitative feature engineering matrix to macro cache...
+2026-06-17 12:03:40,822 - src.ingestion.global_macro - INFO - Global macro engineering complete. Expanded Matrix Shape: (782, 260)
+2026-06-17 12:03:40,822 - src.ingestion.market_api - INFO - Fetching market pricing for target SAP.DE.
+2026-06-17 12:03:40,847 - src.processing.features - INFO - Engineering features with horizon=126 and threshold=0.15
+2026-06-17 12:03:40,858 - src.modeling.step1_macro - INFO - Executing Step 1 Macro Model.
+2026-06-17 12:03:59,475 - src.orchestration.json_exporter - INFO - Successfully exported feature diagnostics for SAP.DE to outputs\diagnostics\SAP.DE_feature_diagnostics.json
+2026-06-17 12:03:59,476 - src.orchestration.json_exporter - INFO - Successfully exported JSON prediction for SAP.DE to outputs\predictions\SAP.DE_prediction.json
+2026-06-17 12:03:59,476 - src.ingestion.funds_api - INFO - Fetching fundamental data for SAP.DE.
+2026-06-17 12:04:00,517 - src.modeling.step2_funds - INFO - Executing Step 2 Fundamental Model.
+2026-06-17 12:04:00,783 - src.modeling.step2_funds - WARNING - Failed to generate CV probabilities for Step 2, falling back to full fit. Reason: No feature in X meets the variance threshold 0.00000
+2026-06-17 12:04:00,802 - src.modeling.step2_funds - ERROR - Failed to fit fallback pipeline for Step 2. Reason: No feature in X meets the variance threshold 0.00000
+2026-06-17 12:04:00,803 - src.orchestration.json_exporter - INFO - Successfully exported feature diagnostics for SAP.DE to outputs\diagnostics\SAP.DE_feature_diagnostics.json
+2026-06-17 12:04:00,803 - src.orchestration.batch_runner - INFO - SAP.DE failed Step 2.
+2026-06-17 12:04:00,804 - __main__ - INFO - Engine run completed successfully.
+2026-06-17 12:07:29,356 - __main__ - INFO - Starting Xetra Two-Step Stock Prediction Engine (v5.0)
+2026-06-17 12:07:29,356 - __main__ - INFO - Single Ticker Mode activated for: SAP.DE
+2026-06-17 12:07:29,356 - src.orchestration.batch_runner - INFO - Running Two-Step Cascade for single ticker: SAP.DE
+2026-06-17 12:07:29,356 - src.orchestration.batch_runner - INFO - Pre-caching Global Macro Universe for local execution...
+2026-06-17 12:07:29,356 - src.ingestion.global_macro - INFO - Fetching 49 YF tickers and 24 FRED indicators for Global Macro Cache.
+2026-06-17 12:07:38,240 - src.ingestion.global_macro - INFO - Applying massive quantitative feature engineering matrix to macro cache...
+2026-06-17 12:07:38,366 - src.ingestion.global_macro - INFO - Global macro engineering complete. Expanded Matrix Shape: (782, 260)
+2026-06-17 12:07:38,366 - src.ingestion.market_api - INFO - Fetching market pricing for target SAP.DE.
+2026-06-17 12:07:38,399 - src.processing.features - INFO - Engineering features with horizon=126 and threshold=0.15
+2026-06-17 12:07:38,399 - src.modeling.step1_macro - INFO - Executing Step 1 Macro Model.
+2026-06-17 12:07:56,838 - src.orchestration.json_exporter - INFO - Successfully exported feature diagnostics for SAP.DE to outputs\diagnostics\SAP.DE_feature_diagnostics.json
+2026-06-17 12:07:56,838 - src.orchestration.json_exporter - INFO - Successfully exported JSON prediction for SAP.DE to outputs\predictions\SAP.DE_prediction.json
+2026-06-17 12:07:56,838 - src.ingestion.funds_api - INFO - Fetching fundamental data for SAP.DE.
+2026-06-17 12:07:57,732 - src.modeling.step2_funds - INFO - Executing Step 2 Fundamental Model.
+2026-06-17 12:07:58,005 - src.modeling.step2_funds - WARNING - Failed to generate CV probabilities for Step 2, falling back to full fit. Reason: No feature in X meets the variance threshold 0.00000
+2026-06-17 12:07:58,005 - src.modeling.step2_funds - ERROR - Failed to fit fallback pipeline for Step 2. Reason: No feature in X meets the variance threshold 0.00000
+2026-06-17 12:07:58,014 - src.orchestration.json_exporter - INFO - Successfully exported feature diagnostics for SAP.DE to outputs\diagnostics\SAP.DE_feature_diagnostics.json
+2026-06-17 12:07:58,014 - src.orchestration.batch_runner - INFO - SAP.DE failed Step 2.
+2026-06-17 12:07:58,015 - __main__ - INFO - Engine run completed successfully.
+2026-06-17 12:10:25,766 - __main__ - INFO - Starting Xetra Two-Step Stock Prediction Engine (v5.0)
+2026-06-17 12:10:25,766 - __main__ - INFO - Single Ticker Mode activated for: SAP.DE
+2026-06-17 12:10:25,766 - src.orchestration.batch_runner - INFO - Running Two-Step Cascade for single ticker: SAP.DE
+2026-06-17 12:10:25,766 - src.orchestration.batch_runner - INFO - Pre-caching Global Macro Universe for local execution...
+2026-06-17 12:10:25,766 - src.ingestion.global_macro - INFO - Fetching 49 YF tickers and 24 FRED indicators for Global Macro Cache.
+2026-06-17 12:10:29,496 - src.ingestion.global_macro - INFO - Applying massive quantitative feature engineering matrix to macro cache...
+2026-06-17 12:10:29,610 - src.ingestion.global_macro - INFO - Global macro engineering complete. Expanded Matrix Shape: (782, 260)
+2026-06-17 12:10:29,615 - src.ingestion.market_api - INFO - Fetching market pricing for target SAP.DE.
+2026-06-17 12:10:29,638 - src.processing.features - INFO - Engineering features with horizon=126 and threshold=0.15
+2026-06-17 12:10:29,646 - src.modeling.step1_macro - INFO - Executing Step 1 Macro Model.
+2026-06-17 12:10:47,815 - src.orchestration.json_exporter - INFO - Successfully exported feature diagnostics for SAP.DE to outputs\diagnostics\SAP.DE_feature_diagnostics.json
+2026-06-17 12:10:47,823 - src.orchestration.json_exporter - INFO - Successfully exported JSON prediction for SAP.DE to outputs\predictions\SAP.DE_prediction.json
+2026-06-17 12:10:47,823 - src.ingestion.funds_api - INFO - Fetching fundamental data for SAP.DE.
+2026-06-17 12:10:48,865 - src.modeling.step2_funds - INFO - Executing Step 2 Fundamental Model.
+2026-06-17 12:10:49,143 - src.modeling.step2_funds - WARNING - Failed to generate CV probabilities for Step 2, falling back to full fit. Reason: No feature in X meets the variance threshold 0.00000
+2026-06-17 12:10:49,159 - src.modeling.step2_funds - ERROR - Failed to fit fallback pipeline for Step 2. Reason: No feature in X meets the variance threshold 0.00000
+2026-06-17 12:10:49,160 - src.orchestration.json_exporter - INFO - Successfully exported feature diagnostics for SAP.DE to outputs\diagnostics\SAP.DE_feature_diagnostics.json
+2026-06-17 12:10:49,160 - src.orchestration.batch_runner - INFO - SAP.DE failed Step 2.
+2026-06-17 12:10:49,160 - __main__ - INFO - Engine run completed successfully.
+2026-06-17 12:13:58,501 - __main__ - INFO - Starting Xetra Two-Step Stock Prediction Engine (v5.0)
+2026-06-17 12:13:58,501 - __main__ - INFO - Single Ticker Mode activated for: SAP.DE
+2026-06-17 12:13:58,501 - src.orchestration.batch_runner - INFO - Running Two-Step Cascade for single ticker: SAP.DE
+2026-06-17 12:13:58,501 - src.orchestration.batch_runner - INFO - Pre-caching Global Macro Universe for local execution...
+2026-06-17 12:13:58,501 - src.ingestion.global_macro - INFO - Fetching 49 YF tickers and 24 FRED indicators for Global Macro Cache.
+2026-06-17 12:14:04,415 - src.ingestion.global_macro - INFO - Applying massive quantitative feature engineering matrix to macro cache...
+2026-06-17 12:14:04,522 - src.ingestion.global_macro - INFO - Global macro engineering complete. Expanded Matrix Shape: (782, 260)
+2026-06-17 12:14:04,522 - src.ingestion.market_api - INFO - Fetching market pricing for target SAP.DE.
+2026-06-17 12:14:04,551 - src.processing.features - INFO - Engineering features with horizon=126 and threshold=0.15
+2026-06-17 12:14:04,556 - src.modeling.step1_macro - INFO - Executing Step 1 Macro Model.
+2026-06-17 12:14:22,726 - src.orchestration.json_exporter - INFO - Successfully exported feature diagnostics for SAP.DE to outputs\diagnostics\SAP.DE_feature_diagnostics.json
+2026-06-17 12:14:22,726 - src.orchestration.json_exporter - INFO - Successfully exported JSON prediction for SAP.DE to outputs\predictions\SAP.DE_prediction.json
+2026-06-17 12:14:22,726 - src.ingestion.funds_api - INFO - Fetching fundamental data for SAP.DE.
+2026-06-17 12:14:24,031 - src.modeling.step2_funds - INFO - Executing Step 2 Fundamental Model.
+2026-06-17 12:14:24,267 - src.modeling.step2_funds - WARNING - Failed to generate CV probabilities for Step 2, falling back to full fit. Reason: Found array with 0 feature(s) (shape=(18, 0)) while a minimum of 1 is required by VarianceThreshold.
+2026-06-17 12:14:24,267 - src.modeling.step2_funds - ERROR - Failed to fit fallback pipeline for Step 2. Reason: Found array with 0 feature(s) (shape=(27, 0)) while a minimum of 1 is required by VarianceThreshold.
+2026-06-17 12:14:24,267 - src.orchestration.json_exporter - INFO - Successfully exported feature diagnostics for SAP.DE to outputs\diagnostics\SAP.DE_feature_diagnostics.json
+2026-06-17 12:14:24,267 - src.orchestration.batch_runner - INFO - SAP.DE failed Step 2.
+2026-06-17 12:14:24,267 - __main__ - INFO - Engine run completed successfully.

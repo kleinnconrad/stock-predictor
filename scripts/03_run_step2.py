@@ -11,9 +11,9 @@ import glob
 import argparse
 import pandas as pd
 from tqdm import tqdm
-from src.ingestion.funds_api import fetch_step2_fundamentals
-from src.modeling.step2_funds import run_step2_model
-from src.orchestration.json_exporter import export_prediction_json, export_diagnostics_json
+from src.ingestion.funds_api import fetch_fundamentals
+from src.modeling.step2_funds import execute_step2
+from src.orchestration.json_exporter import export_prediction_json, export_feature_diagnostics_json
 
 def apply_anti_jitter():
     """
@@ -67,17 +67,48 @@ def main():
             step1_dates = pd.to_datetime(valid_dates_str)
             
             # Fetch fundamentals and run Step 2
-            funds_df = fetch_step2_fundamentals(ticker, history_years=3)
+            funds_df = fetch_fundamentals(ticker)
             if funds_df.empty:
                 continue
                 
-            final_decision, feature_diagnostics, pred_payload = run_step2_model(funds_df, step1_dates)
+            # Since Step 2 is completely decoupled via Actions, we must re-calculate Target
+            import datetime
+            import yfinance as yf
+            import yaml
+            import numpy as np
             
-            export_diagnostics_json(ticker, feature_diagnostics, step=2)
+            end_date = datetime.date.today()
+            start_date = end_date - datetime.timedelta(days=10 * 365)
+            price_df = yf.download(ticker, start=start_date, end=end_date, progress=False)
+            if isinstance(price_df.columns, pd.MultiIndex):
+                price_df.columns = price_df.columns.droplevel('Ticker')
+                
+            with open('config/settings.yaml', 'r') as f:
+                settings = yaml.safe_load(f)
+            horizon = settings.get('horizon_days', 126)
+            threshold = settings.get('threshold', 0.15)
+            
+            price_df['Future_Return'] = price_df['Close'].shift(-horizon) / price_df['Close'] - 1.0
+            price_df['Target'] = (price_df['Future_Return'] >= threshold).astype(float)
+            price_df.loc[price_df['Future_Return'].isna(), 'Target'] = np.nan
+            
+            funds_df = funds_df.join(price_df[['Target']], how='inner')
+                
+            # Filter funds_df by step1 dates
+            funds_df = funds_df.loc[funds_df.index.intersection(step1_dates)]
+            if funds_df.empty:
+                 continue
+                 
+            metrics, latest_pred_class = execute_step2(funds_df)
+            feature_diagnostics = metrics.pop('feature_diagnostics', {}) if metrics else {}
+            pred_payload = metrics
+            final_decision = latest_pred_class == "UP"
+            
+            export_feature_diagnostics_json(ticker, feature_diagnostics)
             
             if final_decision:
                 final_buy_candidates.append(ticker)
-                export_prediction_json(ticker, pred_payload, step=2)
+                export_prediction_json(ticker, pred_payload)
                 
         except Exception as e:
             print(f"Failed {ticker} in Step 2: {e}")
