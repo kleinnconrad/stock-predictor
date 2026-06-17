@@ -28,8 +28,10 @@ jobs:
 
       - name: Move artifacts to state
         run: |
-          rsync -a artifacts_temp/*/data/ data/ || true
-          rsync -a artifacts_temp/*/outputs/ outputs/ || true
+          mkdir -p data/state outputs/predictions outputs/diagnostics
+          find artifacts_temp/step1-state-shard-*/ -type f -exec cp {} data/state/ \;
+          find artifacts_temp/step1-outputs-shard-*/predictions/ -type f -exec cp {} outputs/predictions/ \;
+          find artifacts_temp/step1-outputs-shard-*/diagnostics/ -type f -exec cp {} outputs/diagnostics/ \;
 
       - name: Execute Step 2 Model
         run: python scripts/03_run_step2.py --shard ${{ matrix.shard }} --total 3
