@@ -80,16 +80,17 @@ def main():
                 "final_prediction": "PENDING"
             } if metrics else {}
             
-            if not step1_dates.empty:
-                passed_tickers.append(ticker)
-                # Store valid dates for Step 2 execution
-                step1_dates_dict[ticker] = [str(d) for d in step1_dates]
-                
             # Export JSON payloads
             export_feature_diagnostics_json(ticker, feature_diagnostics)
             if pred_payload:
-                pred_payload["final_prediction"] = "UP" if not step1_dates.empty else "NOT_UP"
+                latest_is_up = (metrics.get('predicted_class') == 'UP')
+                pred_payload["final_prediction"] = "UP" if latest_is_up else "NOT_UP"
                 export_prediction_json(ticker, pred_payload)
+                
+            if metrics.get('predicted_class') == 'UP':
+                passed_tickers.append(ticker)
+                # Store valid dates for Step 2 execution
+                step1_dates_dict[ticker] = [str(d) for d in step1_dates]
                 
         except Exception as e:
             print(f"Failed {ticker} in Step 1: {e}")
