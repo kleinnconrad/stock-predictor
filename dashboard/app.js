@@ -11,16 +11,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const kpiBuys = document.getElementById('kpi-buys');
   const kpiAcc = document.getElementById('kpi-acc');
 
+  // Determine correct data URL based on environment (local vs GitHub Pages)
+  const isGitHubPages = window.location.hostname.includes('github.io');
+  const dataUrl = isGitHubPages ? './data/full_batch_report.json' : '../data/processed/full_batch_report.json';
+
   // Fetch data
-  fetch('../data/processed/full_batch_report.json')
+  fetch(dataUrl)
     .then(response => {
-      if (!response.ok) {
-        // Fallback for GitHub pages if serving from root
-        return fetch('./data/full_batch_report.json').then(res => {
-          if (!res.ok) throw new Error("Failed fallback fetch");
-          return res.json();
-        });
-      }
+      if (!response.ok) throw new Error("Network response was not ok");
       return response.json();
     })
     .then(data => {
