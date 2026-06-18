@@ -16,13 +16,14 @@ document.addEventListener('DOMContentLoaded', () => {
     .then(response => {
       if (!response.ok) {
         // Fallback for GitHub pages if serving from root
-        return fetch('./data/full_batch_report.json');
+        return fetch('./data/full_batch_report.json').then(res => {
+          if (!res.ok) throw new Error("Failed fallback fetch");
+          return res.json();
+        });
       }
       return response.json();
     })
     .then(data => {
-      // If the first fetch fails and the fallback returns raw text instead of json, it will throw here.
-      // Assuming it works.
       reportData = data;
       calculateKPIs();
       renderTable();
