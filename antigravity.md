@@ -16,6 +16,7 @@ This file contains foundational instructions and conventions for developing in t
 - The `src` directory is strictly reserved for the core logic of the application. 
 - Do not place auxiliary code in `src`. Place supporting files in meaningfully named directories (e.g., `utilities`, `scripts`, `data_generation`, `sql`).
 - Maintain a separate `tests` directory for unit and integration tests to keep the core codebase clean.
+- The `README.md` must contain the folder structure of the repository, including information on what to find in each folder. Every time something changes with the folder structure, the folder structure in the `README.md` must be updated.
 
 ## 2. Dependencies
 - Always maintain a `requirements.txt` file at the root of the project.

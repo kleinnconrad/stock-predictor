@@ -5,6 +5,7 @@
 - [Architecture Diagram](#architecture-diagram)
 - [The 360-Degree Data Universe](#the-360-degree-data-universe)
 - [Execution Guide](#execution-guide)
+- [Directory Structure](#directory-structure)
 - [Outputs & Diagnostics](#outputs--diagnostics)
 
 A modular, distributed machine learning pipeline designed to predict German Xetra (`.DE`) stock price movements over a 6-month (126 trading day) horizon. The system utilizes a 360-degree global macroeconomic universe coupled with target company fundamentals, passing data through a Two-Step Cascade using Kolmogorov-Smirnov (KS) optimized Logistic Regression models.
@@ -110,8 +111,31 @@ The `main.py` entry point acts as your local CLI.
 For execution and bypass of API rate limits, you can manually trigger the decoupled Actions via the "Actions" tab on GitHub. **You must run them in this exact order**, as they pass state and payloads to each other via GitHub Artifacts:
 
 1. **`1. T7 Download (Initialization)`**: Fetches the master list of qualified `.DE` tickers.
-2. **`2. Execute Step 1 (Macro)`**: Automatically spawns 3 parallel runners. Evaluates global macro conditions for all tickers.
-3. **`3. Execute Step 2 (Fundamentals)`**: Automatically spawns 3 parallel runners. Merges the surviving tickers from Step 1 and evaluates company balance sheets.
+2. **`2. Execute Pipeline (Step 1 & 2)`**: Automatically spawns 3 parallel runners. Evaluates global macro conditions for all tickers, merges surviving tickers, and evaluates company balance sheets.
+
+---
+
+## Directory Structure
+
+Here is the directory layout of the repository and what you can find in each folder:
+
+- **`.github/`**: Contains the GitHub Actions workflows for running the decoupled ML pipeline in the cloud.
+- **`config/`**: Configuration files and parameters (e.g., `settings.yaml`) used by the models.
+- **`data/`**: Stores data artifacts at various stages of processing:
+  - `data/raw/`: Raw datasets downloaded from APIs or data providers.
+  - `data/state/`: Intermediate state artifacts passed between pipeline steps.
+  - `data/processed/`: Final aggregated outputs (like `final_buy_signals.csv` and `full_batch_report.json`).
+- **`devcontainer/`**: Devcontainer configuration to spin up isolated, reproducible development environments.
+- **`logs/`**: Local log files generated during system execution for debugging.
+- **`outputs/`**: System output payloads for evaluated stocks:
+  - `outputs/diagnostics/`: Feature survival tracking and ANOVA filtering diagnostics.
+  - `outputs/predictions/`: Full model state payloads including optimized KS cutoffs, weights, and final predictions.
+- **`scripts/`**: Entry point scripts specifically designed to be executed by GitHub Actions runners.
+- **`src/`**: The core application logic:
+  - `src/ingestion/`: API connectors (Yahoo Finance, FRED, etc.) and macroeconomic dataset pre-fetching.
+  - `src/modeling/`: The Step 1 (Macro Momentum) and Step 2 (Company Fundamentals) evaluators.
+  - `src/processing/`: Feature engineering, variable expansion, and data manipulation.
+  - `src/orchestration/`: Utilities for exporting JSON payloads and system coordination.
 
 ---
 
