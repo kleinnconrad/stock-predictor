@@ -1,5 +1,7 @@
 # Xetra Two-Step Stock Prediction
 
+**Stock Batch Analysis Dashboard:** [![Stock Quant Engine](https://img.shields.io/badge/Launch-Interactive_Dashboard-2ea44f?style=for-the-badge&logo=html5)](https://kleinnconrad.github.io/stock-predictor/)
+
 ## Table of Contents
 - [How the Engine Works: The Two-Step Cascade](#how-the-engine-works-the-two-step-cascade)
 - [Architecture Diagram](#architecture-diagram)
