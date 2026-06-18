@@ -121,6 +121,7 @@ Here is the directory layout of the repository and what you can find in each fol
 
 - **`.github/`**: Contains the GitHub Actions workflows for running the decoupled ML pipeline in the cloud.
 - **`config/`**: Configuration files and parameters (e.g., `settings.yaml`) used by the models.
+- **`dashboard/`**: A frontend web application containing the HTML/JS/CSS for a glassmorphic data visualization dashboard deployed to GitHub Pages.
 - **`data/`**: Stores data artifacts at various stages of processing:
   - `data/raw/`: Raw datasets downloaded from APIs or data providers.
   - `data/state/`: Intermediate state artifacts passed between pipeline steps.

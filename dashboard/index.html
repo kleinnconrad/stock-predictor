@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Xetra Predictor Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="background-orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <div class="container">
+    <header class="glass-panel main-header">
+      <h1 class="gradient-text">Xetra Predictor Dashboard</h1>
+      <p class="subtitle">Real-time prediction metrics powered by a two-step cascade engine.</p>
+    </header>
+
+    <section class="kpi-grid">
+      <div class="glass-panel kpi-card">
+        <h3>Total Stocks</h3>
+        <p class="kpi-value" id="kpi-total">-</p>
+      </div>
+      <div class="glass-panel kpi-card">
+        <h3>Final Buys (UP_FINAL_BUY)</h3>
+        <p class="kpi-value highlight" id="kpi-buys">-</p>
+      </div>
+      <div class="glass-panel kpi-card">
+        <h3>Avg CV Accuracy</h3>
+        <p class="kpi-value" id="kpi-acc">-</p>
+      </div>
+    </section>
+
+    <section class="glass-panel table-container">
+      <div class="controls">
+        <input type="text" id="search-input" placeholder="Search Ticker..." class="glass-input">
+        <select id="filter-status" class="glass-select">
+          <option value="ALL">All Statuses</option>
+          <option value="UP_FINAL_BUY">UP_FINAL_BUY</option>
+          <option value="UP">UP</option>
+          <option value="NOT_UP">NOT_UP</option>
+        </select>
+      </div>
+
+      <div class="table-wrapper">
+        <table id="predictions-table">
+          <thead>
+            <tr>
+              <th data-sort="stock_name">Ticker <span class="sort-icon"></span></th>
+              <th data-sort="final_prediction">Final Status <span class="sort-icon"></span></th>
+              <th data-sort="step1_class">Step 1 Status <span class="sort-icon"></span></th>
+              <th data-sort="cv_accuracy">CV Accuracy <span class="sort-icon"></span></th>
+              <th data-sort="ks_cutoff">KS Cutoff <span class="sort-icon"></span></th>
+            </tr>
+          </thead>
+          <tbody id="table-body">
+            <!-- Data will be injected here -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
