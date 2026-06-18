@@ -1,9 +1,57 @@
-name: "3. Execute Step 2 (Fundamentals)"
+name: "2. Execute Pipeline (Step 1 & 2)"
 on:
   workflow_dispatch:
 
 jobs:
+  step1-matrix:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        shard: [0, 1, 2]
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      - name: Download T7 Artifact
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: 01_t7_download.yml
+          name: t7-state-artifact
+          path: data/state/
+
+      - name: Execute Step 1 Model
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+        run: python scripts/02_run_step1.py --shard ${{ matrix.shard }} --total 3
+
+      - name: Upload Step 1 State Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: step1-state-shard-${{ matrix.shard }}
+          path: |
+            data/state/step1_passed_shard_${{ matrix.shard }}.csv
+            data/state/step1_dates_shard_${{ matrix.shard }}.json
+          retention-days: 7
+          
+      - name: Upload Step 1 Outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: step1-outputs-shard-${{ matrix.shard }}
+          path: |
+            outputs/predictions/
+            outputs/diagnostics/
+          retention-days: 7
+
   step2-matrix:
+    needs: step1-matrix
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -21,17 +69,18 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Download Step 1 Artifacts
-        uses: dawidd6/action-download-artifact@v6
+        uses: actions/download-artifact@v4
         with:
-          workflow: 02_run_step1.yml
-          path: artifacts_temp/
+          pattern: step1-state-shard-*
+          path: .
+          merge-multiple: true
 
-      - name: Move artifacts to state
-        run: |
-          mkdir -p data/state outputs/predictions outputs/diagnostics
-          find artifacts_temp/step1-state-shard-*/ -type f -exec cp {} data/state/ \;
-          find artifacts_temp/step1-outputs-shard-*/predictions/ -type f -exec cp {} outputs/predictions/ \;
-          find artifacts_temp/step1-outputs-shard-*/diagnostics/ -type f -exec cp {} outputs/diagnostics/ \;
+      - name: Download Step 1 Outputs
+        uses: actions/download-artifact@v4
+        with:
+          pattern: step1-outputs-shard-*
+          path: .
+          merge-multiple: true
 
       - name: Execute Step 2 Model
         run: python scripts/03_run_step2.py --shard ${{ matrix.shard }} --total 3
@@ -72,7 +121,10 @@ jobs:
           for f in glob.glob("step2_artifacts/outputs/predictions/*.json"):
               try:
                   with open(f, "r") as file:
-                      payloads.append(json.load(file))
+                      data = json.load(file)
+                      if data.get("final_prediction") not in ["UP", "NOT_UP", "UP_FINAL_BUY"]:
+                          data["final_prediction"] = "NOT_UP"
+                      payloads.append(data)
               except Exception as e:
                   print(f"Failed to read {f}: {e}")
           with open("data/processed/full_batch_report.json", "w") as out:

@@ -105,21 +105,21 @@ def main():
             
             export_feature_diagnostics_json(ticker, feature_diagnostics)
             
+            # Load the existing payload from Step 1
+            pred_path = os.path.join('outputs', 'predictions', f"{ticker}_prediction.json")
+            if os.path.exists(pred_path):
+                with open(pred_path, 'r', encoding='utf-8') as f:
+                    combined_payload = json.load(f)
+            else:
+                combined_payload = {"stock_name": ticker}
+                
+            combined_payload["step2_model"] = metrics
+            combined_payload["final_prediction"] = "UP_FINAL_BUY" if final_decision else "UP"
+            
+            export_prediction_json(ticker, combined_payload)
+            
             if final_decision:
                 final_buy_candidates.append(ticker)
-                
-                # Load the existing payload from Step 1
-                pred_path = os.path.join('outputs', 'predictions', f"{ticker}_prediction.json")
-                if os.path.exists(pred_path):
-                    with open(pred_path, 'r', encoding='utf-8') as f:
-                        combined_payload = json.load(f)
-                else:
-                    combined_payload = {"stock_name": ticker}
-                    
-                combined_payload["step2_model"] = metrics
-                combined_payload["final_prediction"] = "UP"
-                
-                export_prediction_json(ticker, combined_payload)
                 
         except Exception as e:
             print(f"Failed {ticker} in Step 2: {e}")

@@ -88,6 +88,7 @@ def main():
             # Export JSON payloads
             export_feature_diagnostics_json(ticker, feature_diagnostics)
             if pred_payload:
+                pred_payload["final_prediction"] = "UP" if not step1_dates.empty else "NOT_UP"
                 export_prediction_json(ticker, pred_payload)
                 
         except Exception as e:
