@@ -72,14 +72,14 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           pattern: step1-state-shard-*
-          path: .
+          path: data/state
           merge-multiple: true
 
       - name: Download Step 1 Outputs
         uses: actions/download-artifact@v4
         with:
           pattern: step1-outputs-shard-*
-          path: .
+          path: outputs
           merge-multiple: true
 
       - name: Execute Step 2 Model
