@@ -63,7 +63,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const filterStatus = filterSelect.value;
 
     let filtered = reportData.filter(d => {
-      const matchSearch = d.stock_name.toLowerCase().includes(searchTerm);
+      const stockName = d.stock_name || 'UNKNOWN';
+      const matchSearch = stockName.toLowerCase().includes(searchTerm);
       const matchStatus = filterStatus === 'ALL' || d.final_prediction === filterStatus;
       return matchSearch && matchStatus;
     });
@@ -74,8 +75,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const col = currentSort.column;
       
       if (col === 'stock_name') {
-        valA = a.stock_name;
-        valB = b.stock_name;
+        valA = a.stock_name || 'UNKNOWN';
+        valB = b.stock_name || 'UNKNOWN';
       } else if (col === 'final_prediction') {
         valA = a.final_prediction || '';
         valB = b.final_prediction || '';
@@ -105,12 +106,13 @@ document.addEventListener('DOMContentLoaded', () => {
     filtered.forEach(d => {
       const tr = document.createElement('tr');
       
+      const stockName = d.stock_name || 'UNKNOWN';
       const acc = d.step1_model?.cv_accuracy ? (d.step1_model.cv_accuracy * 100).toFixed(1) : 0;
       const ks = d.step1_model?.ks_cutoff ? d.step1_model.ks_cutoff.toFixed(3) : 'N/A';
       const step1Class = d.step1_model?.predicted_class || 'N/A';
 
       tr.innerHTML = `
-        <td class="ticker-name">${d.stock_name}</td>
+        <td class="ticker-name">${stockName}</td>
         <td>${getStatusHtml(d.final_prediction)}</td>
         <td>${getStatusHtml(step1Class)}</td>
         <td>
