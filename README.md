@@ -131,6 +131,14 @@ For execution and bypass of API rate limits, you can manually trigger the decoup
 1. **`1. T7 Download (Initialization)`**: Fetches the master list of qualified `.DE` tickers.
 2. **`2. Execute Pipeline (Step 1 & 2)`**: Automatically spawns 3 parallel runners. Evaluates global macro conditions for all tickers, merges surviving tickers, and evaluates company balance sheets.
 
+### ⚠️ CRITICAL WARNING: The Intraday Data Glitch
+Because GitHub Actions run in the UTC timezone, triggering a Cloud Batch run while the European or US markets are still actively trading can result in severe data desynchronization. `yfinance` fetches historical data up to `datetime.date.today()`, which means the cloud runner might fetch data that ends on *yesterday's* trading candle, while a local run in your timezone fetches up to the *live* trading candle. 
+
+This 1-day data offset can cause massive momentum metric shifts (`Dist_SMA_200`, multi-timeframe returns), violently swinging a stock's prediction probability from a solid Buy down to a Reject within the exact same hour.
+
+> [!WARNING]
+> **Always double-check dashboard candidates!** Before executing any real trades based on an `UP_FINAL_BUY` candidate displayed on the cloud dashboard, you **must** manually run `python main.py --ticker <TICKER>` on your local machine to verify the prediction using fully propagated, localized market data.
+
 ---
 
 ## Directory Structure

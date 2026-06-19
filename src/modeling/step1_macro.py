@@ -143,6 +143,7 @@ def execute_step1(df: pd.DataFrame, ticker: str = "UNKNOWN", n_features_out: int
     metrics = {
         "cv_accuracy": float(cv_accuracy),
         "ks_cutoff": float(ks_cutoff),
+        "latest_prob": float(latest_prob) if len(y_pred_prob) > 0 else None,
         "predicted_class": latest_pred_class,
         "selected_predictors_and_weights": selected_predictors_and_weights,
         "feature_diagnostics": feature_diagnostics
