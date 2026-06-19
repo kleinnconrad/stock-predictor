@@ -1,22 +1,22 @@
 {
   "step1_model": {
     "cv_accuracy": 0.9291338582677166,
-    "ks_cutoff": 0.5229899995222554,
+    "ks_cutoff": 0.5229872523801954,
     "predicted_class": "NOT_UP",
     "selected_predictors_and_weights": {
-      "BRK-B_126D_ret": 0.5892217296216286,
-      "LE=F_63D_ret": -1.300281678291968,
-      "LE=F_126D_ret": -0.7454860671852529,
-      "LE=F_252D_ret": 0.7685862197868282,
-      "XLV_252D_ret": 0.09262535812233633,
-      "PAYEMS_Level": -1.6123908462643153,
-      "UNRATE_Level": 0.6813884254878089,
-      "CP00MI15EA20M086NEST_Level": 0.6061065772196851,
-      "GBRCPIALLMINMEI_Level": -0.26639693575724066,
-      "LRHUTTTTGBM156S_Level": -3.2761521916771206,
-      "DGORDER_Level": -0.5097349970756768,
-      "ratio_consumer_risk_252D_diff": -1.026612444235636
+      "BRK-B_126D_ret": 0.5892217721254737,
+      "LE=F_63D_ret": -1.3002818699995813,
+      "LE=F_126D_ret": -0.7454862280162593,
+      "LE=F_252D_ret": 0.7685860275406773,
+      "XLV_252D_ret": 0.09262498508533311,
+      "PAYEMS_Level": -1.6123914464217026,
+      "UNRATE_Level": 0.6813883948665215,
+      "CP00MI15EA20M086NEST_Level": 0.6061072223697372,
+      "GBRCPIALLMINMEI_Level": -0.2663975044732054,
+      "LRHUTTTTGBM156S_Level": -3.276152411147287,
+      "DGORDER_Level": -0.5097347600590564,
+      "ratio_consumer_risk_252D_diff": -1.0266111539714897
     }
   },
-  "final_prediction": "PENDING"
+  "final_prediction": "NOT_UP"
 }
