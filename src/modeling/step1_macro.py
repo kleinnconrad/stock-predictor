@@ -6,6 +6,7 @@ from .base_pipeline import build_pipeline
 from .diagnostics import calculate_ks_and_cutoff, calculate_cv_accuracy, generate_confusion_matrix, generate_lift_chart
 from sklearn.model_selection import cross_val_predict, StratifiedKFold
 import os
+import yaml
 
 logger = logging.getLogger(__name__)
 
@@ -114,12 +115,21 @@ def execute_step1(df: pd.DataFrame, ticker: str = "UNKNOWN", n_features_out: int
         "removed_by_sfs": removed_by_sfs
     }
     
+    # Load minimum CV accuracy from settings
+    try:
+        with open('config/settings.yaml', 'r') as f:
+            settings = yaml.safe_load(f)
+            min_cv_accuracy = float(settings.get('min_cv_accuracy', 0.65))
+    except Exception as e:
+        logger.warning(f"Failed to load min_cv_accuracy from settings.yaml: {e}. Defaulting to 0.65")
+        min_cv_accuracy = 0.65
+
     # Determine predicted class for the most recent date
     latest_pred_class = "NOT_UP"
     if len(y_pred_prob) > 0:
         latest_prob = y_pred_prob[-1]
-        if cv_accuracy < 0.65:
-            logger.info(f"Failed Step 1 for {ticker}: CV Accuracy ({cv_accuracy:.2f}) is below the 0.65 threshold.")
+        if cv_accuracy < min_cv_accuracy:
+            logger.info(f"Failed Step 1 for {ticker}: CV Accuracy ({cv_accuracy:.2f}) is below the {min_cv_accuracy} threshold.")
         elif latest_prob >= ks_cutoff:
             latest_pred_class = "UP"
             
