@@ -116,7 +116,12 @@ jobs:
           find step2_artifacts/data/processed/ -name "final_buy_signals_shard_*.csv" -exec awk 'FNR>1' {} + >> data/processed/final_buy_signals.csv
           
           python -c '
-          import os, json, glob
+          import os, json, glob, yaml
+          from datetime import datetime
+          
+          with open("config/settings.yaml", "r") as f:
+              settings = yaml.safe_load(f)
+
           payloads = []
           for f in glob.glob("step2_artifacts/outputs/predictions/*.json"):
               try:
@@ -127,8 +132,15 @@ jobs:
                       payloads.append(data)
               except Exception as e:
                   print(f"Failed to read {f}: {e}")
+                  
+          report = {
+              "execution_date": datetime.utcnow().isoformat() + "Z",
+              "parameters": settings,
+              "predictions": payloads
+          }
+          
           with open("data/processed/full_batch_report.json", "w") as out:
-              json.dump(payloads, out, indent=2)
+              json.dump(report, out, indent=2)
           '
 
       - name: Commit and Push Final Buy Signals

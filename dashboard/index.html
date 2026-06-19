@@ -20,6 +20,15 @@
     <header class="glass-panel main-header">
       <h1 class="gradient-text">Xetra Predictor Dashboard</h1>
       <p class="subtitle">Real-time prediction metrics powered by a two-step cascade engine.</p>
+      
+      <div class="metadata-section">
+        <div class="metadata-item">
+          <strong>Execution Date (UTC):</strong> <span id="meta-date">Loading...</span>
+        </div>
+        <div class="metadata-parameters" id="meta-params">
+          <!-- Parameters injected here -->
+        </div>
+      </div>
     </header>
 
     <section class="kpi-grid">
@@ -28,8 +37,16 @@
         <p class="kpi-value" id="kpi-total">-</p>
       </div>
       <div class="glass-panel kpi-card">
-        <h3>Final Buys (UP_FINAL_BUY)</h3>
+        <h3>Final Buys</h3>
         <p class="kpi-value highlight" id="kpi-buys">-</p>
+      </div>
+      <div class="glass-panel kpi-card">
+        <h3>Step 1 Passes (UP)</h3>
+        <p class="kpi-value" id="kpi-up">-</p>
+      </div>
+      <div class="glass-panel kpi-card">
+        <h3>Rejects (NOT_UP)</h3>
+        <p class="kpi-value" id="kpi-notup">-</p>
       </div>
       <div class="glass-panel kpi-card">
         <h3>Avg CV Accuracy</h3>
@@ -37,26 +54,49 @@
       </div>
     </section>
 
-    <section class="glass-panel table-container">
-      <div class="controls">
-        <input type="text" id="search-input" placeholder="Search Ticker..." class="glass-input">
-        <select id="filter-status" class="glass-select">
-          <option value="ALL">All Statuses</option>
-          <option value="UP_FINAL_BUY">UP_FINAL_BUY</option>
-          <option value="UP">UP</option>
-          <option value="NOT_UP">NOT_UP</option>
-        </select>
-      </div>
+    <div class="controls glass-panel">
+      <input type="text" id="search-input" placeholder="Search Ticker..." class="glass-input">
+      <select id="filter-status" class="glass-select">
+        <option value="ALL">All Statuses</option>
+        <option value="UP_FINAL_BUY">UP_FINAL_BUY</option>
+        <option value="UP">UP</option>
+        <option value="NOT_UP">NOT_UP</option>
+      </select>
+    </div>
 
+    <!-- Section 1: Buy Candidates -->
+    <section class="glass-panel table-container highlighted-table-container">
+      <h2 class="table-title">🏆 Confirmed Buy Candidates</h2>
+      <div class="table-wrapper">
+        <table id="buys-table">
+          <thead>
+            <tr>
+              <th data-sort="stock_name" data-target="buys">Ticker <span class="sort-icon"></span></th>
+              <th data-sort="final_prediction" data-target="buys">Final Status <span class="sort-icon"></span></th>
+              <th data-sort="step1_class" data-target="buys">Step 1 Status <span class="sort-icon"></span></th>
+              <th data-sort="cv_accuracy" data-target="buys">CV Accuracy <span class="sort-icon"></span></th>
+              <th data-sort="ks_cutoff" data-target="buys">KS Cutoff <span class="sort-icon"></span></th>
+            </tr>
+          </thead>
+          <tbody id="buys-table-body">
+            <!-- Data will be injected here -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Section 2: Other Stocks -->
+    <section class="glass-panel table-container">
+      <h2 class="table-title">Other Evaluated Stocks</h2>
       <div class="table-wrapper">
         <table id="predictions-table">
           <thead>
             <tr>
-              <th data-sort="stock_name">Ticker <span class="sort-icon"></span></th>
-              <th data-sort="final_prediction">Final Status <span class="sort-icon"></span></th>
-              <th data-sort="step1_class">Step 1 Status <span class="sort-icon"></span></th>
-              <th data-sort="cv_accuracy">CV Accuracy <span class="sort-icon"></span></th>
-              <th data-sort="ks_cutoff">KS Cutoff <span class="sort-icon"></span></th>
+              <th data-sort="stock_name" data-target="other">Ticker <span class="sort-icon"></span></th>
+              <th data-sort="final_prediction" data-target="other">Final Status <span class="sort-icon"></span></th>
+              <th data-sort="step1_class" data-target="other">Step 1 Status <span class="sort-icon"></span></th>
+              <th data-sort="cv_accuracy" data-target="other">CV Accuracy <span class="sort-icon"></span></th>
+              <th data-sort="ks_cutoff" data-target="other">KS Cutoff <span class="sort-icon"></span></th>
             </tr>
           </thead>
           <tbody id="table-body">
