@@ -69,35 +69,17 @@ def main():
             # Fetch fundamentals and run Step 2
             funds_df = fetch_fundamentals(ticker)
             if funds_df.empty:
+                # If there are no fundamentals, we still need to write out the UP status from Step 1
+                pred_path = os.path.join('outputs', 'predictions', f"{ticker}_prediction.json")
+                if os.path.exists(pred_path):
+                    with open(pred_path, 'r', encoding='utf-8') as f:
+                        combined_payload = json.load(f)
+                else:
+                    combined_payload = {"stock_name": ticker}
+                
+                combined_payload["final_prediction"] = "UP"
+                export_prediction_json(ticker, combined_payload)
                 continue
-                
-            # Since Step 2 is completely decoupled via Actions, we must re-calculate Target
-            import datetime
-            import yfinance as yf
-            import yaml
-            import numpy as np
-            
-            end_date = datetime.date.today()
-            start_date = end_date - datetime.timedelta(days=10 * 365)
-            price_df = yf.download(ticker, start=start_date, end=end_date, progress=False)
-            if isinstance(price_df.columns, pd.MultiIndex):
-                price_df.columns = price_df.columns.droplevel('Ticker')
-                
-            with open('config/settings.yaml', 'r') as f:
-                settings = yaml.safe_load(f)
-            horizon = settings.get('horizon_days', 126)
-            threshold = settings.get('threshold', 0.15)
-            
-            price_df['Future_Return'] = price_df['Close'].shift(-horizon) / price_df['Close'] - 1.0
-            price_df['Target'] = (price_df['Future_Return'] >= threshold).astype(float)
-            price_df.loc[price_df['Future_Return'].isna(), 'Target'] = np.nan
-            
-            funds_df = funds_df.join(price_df[['Target']], how='inner')
-                
-            # Filter funds_df by step1 dates
-            funds_df = funds_df.loc[funds_df.index.intersection(step1_dates)]
-            if funds_df.empty:
-                 continue
                  
             metrics, latest_pred_class = execute_step2(funds_df)
             feature_diagnostics = metrics.pop('feature_diagnostics', {}) if metrics else {}

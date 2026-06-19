@@ -53,9 +53,14 @@ def run_single(ticker: str, macro_df: pd.DataFrame = None) -> bool:
             
         # Step 2
         funds_df = fetch_fundamentals(ticker)
+        
+        mat_dir = os.path.join('outputs', 'matrices')
+        os.makedirs(mat_dir, exist_ok=True)
+        funds_df.to_csv(os.path.join(mat_dir, f"{ticker}_step2_funds.csv"))
+        
         if funds_df.empty:
              logger.warning(f"No fundamental data for {ticker}. Aborting.")
-             combined_payload["final_prediction"] = "NOT_UP"
+             combined_payload["final_prediction"] = "UP"
              export_prediction_json(ticker, combined_payload)
              return False
              
@@ -68,7 +73,7 @@ def run_single(ticker: str, macro_df: pd.DataFrame = None) -> bool:
         export_feature_diagnostics_json(ticker, combined_diagnostics)
         
         combined_payload["step2_model"] = pred_payload_2
-        combined_payload["final_prediction"] = "UP" if final_decision else "NOT_UP"
+        combined_payload["final_prediction"] = "UP_FINAL_BUY" if final_decision else "UP"
         
         # Unconditionally export the final updated payload regardless of outcome
         export_prediction_json(ticker, combined_payload)

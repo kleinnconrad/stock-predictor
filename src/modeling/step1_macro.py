@@ -136,4 +136,9 @@ def execute_step1(df: pd.DataFrame, ticker: str = "UNKNOWN", n_features_out: int
         "feature_diagnostics": feature_diagnostics
     }
     
+    mat_dir = os.path.join('outputs', 'matrices')
+    os.makedirs(mat_dir, exist_ok=True)
+    train_df.to_csv(os.path.join(mat_dir, f"{ticker}_step1_train.csv"))
+    pred_df.to_csv(os.path.join(mat_dir, f"{ticker}_step1_pred.csv"))
+    
     return metrics, filtered_df

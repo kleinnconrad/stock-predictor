@@ -1,24 +1,24 @@
 {
   "step1_model": {
     "cv_accuracy": 0.952755905511811,
-    "ks_cutoff": 0.7099251365569985,
+    "ks_cutoff": 0.7099224071863997,
     "predicted_class": "UP",
     "selected_predictors_and_weights": {
-      "BTC-USD_252D_ret": 0.32487551919718544,
-      "IWM_126D_ret": -0.28165091006116455,
-      "IYT_252D_ret": -0.6556593787054475,
-      "JPM_252D_ret": 0.17039114606554645,
-      "MSFT_252D_ret": -2.129062385007202,
-      "SMH_252D_ret": 0.47379426629236493,
-      "^VIX_Level": -0.7628991382736059,
-      "^VIX_63D_diff": 0.5524604179960036,
-      "USEPUINDXD_Level": -0.3291187169389831,
-      "ratio_consumer_risk_63D_diff": -0.3713084326840877,
-      "ratio_risk_on_off_252D_diff": -0.6497192333668546,
-      "ratio_tech_dominance_Level": 0.28594993161722887
+      "BTC-USD_252D_ret": 0.3248750802611981,
+      "IWM_126D_ret": -0.28165483238877886,
+      "IYT_252D_ret": -0.6556628761061999,
+      "JPM_252D_ret": 0.17038966439522393,
+      "MSFT_252D_ret": -2.129063301152689,
+      "SMH_252D_ret": 0.4737998845779321,
+      "^VIX_Level": -0.7629063094734488,
+      "^VIX_63D_diff": 0.5524655527430372,
+      "USEPUINDXD_Level": -0.32911592923453864,
+      "ratio_consumer_risk_63D_diff": -0.3712928287809845,
+      "ratio_risk_on_off_252D_diff": -0.6497312527210403,
+      "ratio_tech_dominance_Level": 0.2859439067228717
     }
   },
-  "final_prediction": "UP",
+  "final_prediction": "UP_FINAL_BUY",
   "step2_model": {
     "predicted_class": "UP"
   }
