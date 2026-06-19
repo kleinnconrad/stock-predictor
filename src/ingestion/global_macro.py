@@ -74,6 +74,18 @@ def fetch_global_macro_universe(history_years: int) -> pd.DataFrame:
     col_dict = {}
     
     for col in global_macro_df.columns:
+        if col in ALL_FRED_INDICATORS:
+            # FRED indicators are updated infrequently (e.g. monthly/quarterly).
+            # We only keep their forward-filled levels and a rolling Z-score.
+            # (Forward fill is already applied globally via resample('B').ffill())
+            col_dict[f'{col}_Level'] = global_macro_df[col]
+            
+            # Z-scale using a rolling 2-Year window to prevent look-ahead bias
+            roll_mean = global_macro_df[col].rolling(window=504).mean()
+            roll_std = global_macro_df[col].rolling(window=504).std() + 1e-8
+            col_dict[f'{col}_ZScore'] = (global_macro_df[col] - roll_mean) / roll_std
+            continue
+
         is_rate_or_spread = any(kw in col for kw in RATE_KEYWORDS)
         
         # 0. Preserve Stationary Levels
