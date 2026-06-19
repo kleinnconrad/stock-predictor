@@ -525,3 +525,90 @@ SELECT
         ELSE 0.0 
     END AS Target
 FROM target_features;
+
+-- ==============================================================================
+-- STEP 2: FUNDAMENTAL RULESET ENGINE (QUARTERLY DATA)
+-- ==============================================================================
+
+-- Example SQL logic for the deterministic Step 2 evaluation
+-- Assuming a table `quarterly_fundamentals` with the following columns:
+-- ticker, date, total_revenue, net_income, operating_cash_flow, free_cash_flow,
+-- operating_income, current_assets, current_liabilities, total_debt, stockholders_equity
+
+/*
+WITH lagged_fundamentals AS (
+    SELECT 
+        ticker,
+        date,
+        total_revenue,
+        LAG(total_revenue) OVER (PARTITION BY ticker ORDER BY date) AS prev_total_revenue,
+        
+        net_income,
+        LAG(net_income) OVER (PARTITION BY ticker ORDER BY date) AS prev_net_income,
+        
+        operating_cash_flow,
+        free_cash_flow,
+        
+        operating_income,
+        LAG(operating_income) OVER (PARTITION BY ticker ORDER BY date) AS prev_operating_income,
+        
+        current_assets,
+        current_liabilities,
+        
+        total_debt,
+        LAG(total_debt) OVER (PARTITION BY ticker ORDER BY date) AS prev_total_debt,
+        
+        stockholders_equity
+    FROM quarterly_fundamentals
+),
+rules_evaluation AS (
+    SELECT
+        ticker,
+        date,
+        
+        -- 1. Revenue Growth
+        CASE WHEN total_revenue > prev_total_revenue THEN 1 ELSE 0 END AS rule_1_pass,
+        
+        -- 2. Profitability
+        CASE WHEN net_income > 0 THEN 1 ELSE 0 END AS rule_2_pass,
+        
+        -- 3. Earnings Momentum
+        CASE WHEN net_income > prev_net_income THEN 1 ELSE 0 END AS rule_3_pass,
+        
+        -- 4. Cash Flow Health
+        CASE WHEN operating_cash_flow > 0 THEN 1 ELSE 0 END AS rule_4_pass,
+        
+        -- 5. Quality of Earnings
+        CASE WHEN operating_cash_flow > net_income THEN 1 ELSE 0 END AS rule_5_pass,
+        
+        -- 6. Free Cash Flow
+        CASE WHEN free_cash_flow > 0 THEN 1 ELSE 0 END AS rule_6_pass,
+        
+        -- 7. Margin Improvement
+        CASE WHEN 
+            (total_revenue > 0 AND prev_total_revenue > 0) AND 
+            (operating_income / total_revenue) > (prev_operating_income / prev_total_revenue) 
+        THEN 1 ELSE 0 END AS rule_7_pass,
+        
+        -- 8. Liquidity (Current Ratio)
+        CASE WHEN current_liabilities > 0 AND (current_assets / current_liabilities) > 1.2 THEN 1 ELSE 0 END AS rule_8_pass,
+        
+        -- 9. De-leveraging
+        CASE WHEN total_debt < prev_total_debt THEN 1 ELSE 0 END AS rule_9_pass,
+        
+        -- 10. ROE Proxy
+        CASE WHEN stockholders_equity > 0 AND (net_income / stockholders_equity) > 0.03 THEN 1 ELSE 0 END AS rule_10_pass
+        
+    FROM lagged_fundamentals
+)
+SELECT 
+    ticker,
+    date,
+    (rule_1_pass + rule_2_pass + rule_3_pass + rule_4_pass + rule_5_pass + 
+     rule_6_pass + rule_7_pass + rule_8_pass + rule_9_pass + rule_10_pass) AS total_score,
+    CASE WHEN 
+        (rule_1_pass + rule_2_pass + rule_3_pass + rule_4_pass + rule_5_pass + 
+         rule_6_pass + rule_7_pass + rule_8_pass + rule_9_pass + rule_10_pass) >= 7 
+    THEN 'UP' ELSE 'NOT_UP' END AS step2_prediction
+FROM rules_evaluation;
+*/
