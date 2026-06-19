@@ -44,8 +44,9 @@ def run_single(ticker: str, macro_df: pd.DataFrame = None) -> bool:
         if pred_payload_1:
             export_prediction_json(ticker, combined_payload)
             
-        if step1_dates.empty:
-            logger.info(f"{ticker} failed Step 1. Not proceeding to Step 2.")
+        latest_macro_pred = metrics_1.get("predicted_class", "NOT_UP")
+        if latest_macro_pred != "UP":
+            logger.info(f"{ticker} failed Step 1 macro threshold (Predicted: {latest_macro_pred}). Not proceeding to Step 2.")
             return False
             
         # Step 2
