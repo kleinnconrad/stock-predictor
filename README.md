@@ -145,6 +145,7 @@ Here is the directory layout of the repository and what you can find in each fol
   - `data/state/`: Intermediate state artifacts passed between pipeline steps.
   - `data/processed/`: Final aggregated outputs (like `final_buy_signals.csv` and `full_batch_report.json`).
 - **`devcontainer/`**: Devcontainer configuration to spin up isolated, reproducible development environments.
+- **`docs/`**: Documentation files, such as SQL logic reference files for feature engineering.
 - **`logs/`**: Local log files generated during system execution for debugging.
 - **`outputs/`**: System output payloads for evaluated stocks:
   - `outputs/diagnostics/`: Feature survival tracking and ANOVA filtering diagnostics.
