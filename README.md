@@ -34,8 +34,23 @@ The engine separates macro momentum prediction (Step 1) from fundamental account
 * **KS-Optimized Logistic Regression**: Outputs probabilities, converted to binary 0s and 1s by dynamically calculating the threshold that maximizes the Kolmogorov-Smirnov (KS) statistic.
 * **Cross-Validation Accuracy Safeguard**: Before making a final prediction, the model performs a 3-Fold Cross-Validation on the historical dataset. The ticker must achieve a minimum **CV Accuracy of 65%** `(True Positives + True Negatives) / Total Observations` to proceed. If the algorithm cannot accurately model the historical patterns above this threshold, it rejects the ticker as "NOT_UP" regardless of the current day's prediction.
 
-**Step 2 (Company Fundamentals) utilizes a Deterministic Ruleset Engine:**
-Because historical fundamental data is sparse, Step 2 bypasses ML and evaluates the raw Q/Q changes on the last 2 financial statements against 10 hard rules (Revenue Growth, Profitability, Earnings Momentum, Cash Flow Health, Quality of Earnings, Free Cash Flow, Margin Improvement, Liquidity, De-leveraging, and ROE Proxy). A score of 7/10 is required to pass.
+### Step 2: The 10-Point Fundamental Ruleset Engine
+Because historical fundamental data is often too sparse for robust machine learning, Step 2 bypasses ML entirely. Instead, it acts as a strict, deterministic financial auditor. It compares the company's **most recent quarterly financial statement (Latest)** against the **immediately preceding quarter (Prev)** across 10 rigorous institutional value-investing rules.
+
+**A minimum score of 7 out of 10 is strictly required to pass.**
+
+| # | Rule Name | Formula / Logic | Financial Rationale |
+|---|---|---|---|
+| 1 | **Revenue Growth** | `Total Revenue (Latest) > Total Revenue (Prev)` | Ensures the company is actually growing its top-line sales. |
+| 2 | **Profitability** | `Net Income (Latest) > 0` | The company must be currently profitable. Speculative, cash-burning companies are rejected. |
+| 3 | **Earnings Momentum** | `Net Income (Latest) > Net Income (Prev)` | Bottom-line profits must be expanding quarter-over-quarter. |
+| 4 | **Cash Flow Health** | `Operating Cash Flow (Latest) > 0` | The core day-to-day business operations must be generating positive cash. |
+| 5 | **Quality of Earnings** | `Operating Cash Flow (Latest) > Net Income (Latest)` | A classic forensic accounting check. If paper profits exceed actual cash generated, earnings may be artificially inflated by accruals. |
+| 6 | **Free Cash Flow** | `Free Cash Flow (Latest) > 0` | Ensures the company generates surplus cash *after* maintaining its capital assets (CapEx), available for dividends or growth. |
+| 7 | **Margin Improvement** | `Operating Margin (Latest) > Operating Margin (Prev)` | Measures efficiency. Revenue growth is only valuable if the cost to generate it isn't rising even faster. |
+| 8 | **Liquidity** | `Current Assets / Current Liabilities > 1.2` | The Current Ratio. Ensures the company can cover short-term obligations and survive an economic shock. |
+| 9 | **De-leveraging** | `Total Debt (Latest) < Total Debt (Prev)` | Rewards companies that are actively paying down their principal debt load rather than accumulating leverage. |
+| 10 | **ROE Proxy** | `Net Income / Stockholders Equity > 0.03` | Measures capital efficiency. Ensures management is generating at least a ~12% annualized return on shareholder equity. |
 
 ---
 
