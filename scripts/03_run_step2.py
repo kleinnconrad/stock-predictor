@@ -60,11 +60,7 @@ def main():
         apply_anti_jitter()
         try:
             # Reconstruct the DatetimeIndex of valid dates from Step 1
-            valid_dates_str = step1_dates_dict.get(ticker, [])
-            if not valid_dates_str:
-                continue
-                
-            step1_dates = pd.to_datetime(valid_dates_str)
+            # (Removed: no longer intersecting historical dates with fundamentals)
             
             # Fetch fundamentals and run Step 2
             funds_df = fetch_fundamentals(ticker)
