@@ -19,11 +19,31 @@ def fetch_step1_data(ticker: str, global_macro_df: pd.DataFrame, history_years: 
     """
     logger.info(f"Fetching market pricing for target {ticker}.")
     try:
+        import time
+        import random
+        
         end_date = datetime.date.today()
         start_date = end_date - datetime.timedelta(days=history_years * 365)
-        df = yf.download(ticker, start=start_date, end=end_date, progress=False)
+        
+        df = pd.DataFrame()
+        max_retries = 3
+        
+        for attempt in range(max_retries):
+            try:
+                df = yf.download(ticker, start=start_date, end=end_date, progress=False)
+                if not df.empty:
+                    break
+            except Exception as e:
+                logger.warning(f"Exception during yf.download for {ticker} on attempt {attempt + 1}: {e}")
+                
+            logger.warning(f"Attempt {attempt + 1}/{max_retries}: No pricing data fetched for {ticker}. Retrying...")
+            if attempt < max_retries - 1:
+                # Exponential backoff with jitter to prevent concurrent thundering herd
+                sleep_time = (2 ** attempt) + random.uniform(0.5, 2.0)
+                time.sleep(sleep_time)
+                
         if df.empty:
-            logger.warning(f"No pricing data found for {ticker}.")
+            logger.error(f"Failed to fetch pricing data for {ticker} after {max_retries} attempts.")
             return df
         
         # Flatten multi-index columns if present (yf >= 0.2.31 might return multi-index)
