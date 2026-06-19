@@ -55,6 +55,8 @@ def run_single(ticker: str, macro_df: pd.DataFrame = None) -> bool:
         funds_df = fetch_fundamentals(ticker)
         if funds_df.empty:
              logger.warning(f"No fundamental data for {ticker}. Aborting.")
+             combined_payload["final_prediction"] = "NOT_UP"
+             export_prediction_json(ticker, combined_payload)
              return False
              
         metrics_2, latest_pred_class = execute_step2(funds_df)
@@ -68,8 +70,10 @@ def run_single(ticker: str, macro_df: pd.DataFrame = None) -> bool:
         combined_payload["step2_model"] = pred_payload_2
         combined_payload["final_prediction"] = "UP" if final_decision else "NOT_UP"
         
+        # Unconditionally export the final updated payload regardless of outcome
+        export_prediction_json(ticker, combined_payload)
+        
         if final_decision:
-            export_prediction_json(ticker, combined_payload)
             logger.info(f"*** {ticker} PASSED STEP 2 AND IS A BUY CANDIDATE! ***")
             return True
         else:
