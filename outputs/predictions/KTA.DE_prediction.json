@@ -1,0 +1,25 @@
+{
+  "step1_model": {
+    "cv_accuracy": 0.952755905511811,
+    "ks_cutoff": 0.7099251365569985,
+    "predicted_class": "UP",
+    "selected_predictors_and_weights": {
+      "BTC-USD_252D_ret": 0.32487551919718544,
+      "IWM_126D_ret": -0.28165091006116455,
+      "IYT_252D_ret": -0.6556593787054475,
+      "JPM_252D_ret": 0.17039114606554645,
+      "MSFT_252D_ret": -2.129062385007202,
+      "SMH_252D_ret": 0.47379426629236493,
+      "^VIX_Level": -0.7628991382736059,
+      "^VIX_63D_diff": 0.5524604179960036,
+      "USEPUINDXD_Level": -0.3291187169389831,
+      "ratio_consumer_risk_63D_diff": -0.3713084326840877,
+      "ratio_risk_on_off_252D_diff": -0.6497192333668546,
+      "ratio_tech_dominance_Level": 0.28594993161722887
+    }
+  },
+  "final_prediction": "UP",
+  "step2_model": {
+    "predicted_class": "UP"
+  }
+}
