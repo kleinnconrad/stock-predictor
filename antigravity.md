@@ -28,6 +28,7 @@ This file contains foundational instructions and conventions for developing in t
 
 ## 4. Code Quality & Formatting
 - Avoid hardcoding paths without environment checks; use relative paths or standard library path resolution (e.g., `pathlib`).
+- **Configuration & Parameters:** User-defined parameters and thresholds must *never* be hardcoded in Python scripts. They must always be defined centrally in `config/settings.yaml`, and scripts must dynamically load and use the parameters from this file.
 - Use the standard Python `logging` module instead of `print()` statements for proper log leveling, observability, and debugging.
 - Implement Python type hinting (PEP 484) across all function signatures and class definitions to improve readability and catch type errors early.
 - Follow PEP 8 style guidelines for Python code.
