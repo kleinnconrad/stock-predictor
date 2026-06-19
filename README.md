@@ -35,7 +35,7 @@ The engine separates macro momentum prediction (Step 1) from fundamental account
 * **Cross-Validation Accuracy Safeguard**: Before making a final prediction, the model performs a 3-Fold Cross-Validation on the historical dataset. The ticker must achieve a minimum **CV Accuracy of 65%** `(True Positives + True Negatives) / Total Observations` to proceed. If the algorithm cannot accurately model the historical patterns above this threshold, it rejects the ticker as "NOT_UP" regardless of the current day's prediction.
 
 **Step 2 (Company Fundamentals) utilizes a Deterministic Ruleset Engine:**
-Because historical fundamental data is sparse, Step 2 bypasses ML and evaluates the raw Q/Q changes on the last 2 financial statements against 4 hard rules (Revenue Growth, Profitability, Earnings Momentum, Cash Flow Health). A score of 3/4 is required to pass.
+Because historical fundamental data is sparse, Step 2 bypasses ML and evaluates the raw Q/Q changes on the last 2 financial statements against 10 hard rules (Revenue Growth, Profitability, Earnings Momentum, Cash Flow Health, Quality of Earnings, Free Cash Flow, Margin Improvement, Liquidity, De-leveraging, and ROE Proxy). A score of 7/10 is required to pass.
 
 ---
 
