@@ -40,7 +40,11 @@ def run_single(ticker: str, macro_df: pd.DataFrame = None) -> bool:
         export_feature_diagnostics_json(ticker, combined_diagnostics)
         
         # We will export the combined payload at the end. For now, export Step 1 alone.
-        combined_payload = {"step1_model": pred_payload_1, "final_prediction": "PENDING"}
+        combined_payload = {
+            "stock_name": ticker,
+            "step1_model": pred_payload_1, 
+            "final_prediction": "PENDING"
+        }
         if pred_payload_1:
             export_prediction_json(ticker, combined_payload)
             
