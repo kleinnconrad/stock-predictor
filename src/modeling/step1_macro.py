@@ -118,7 +118,9 @@ def execute_step1(df: pd.DataFrame, ticker: str = "UNKNOWN", n_features_out: int
     latest_pred_class = "NOT_UP"
     if len(y_pred_prob) > 0:
         latest_prob = y_pred_prob[-1]
-        if latest_prob >= ks_cutoff:
+        if cv_accuracy < 0.65:
+            logger.info(f"Failed Step 1 for {ticker}: CV Accuracy ({cv_accuracy:.2f}) is below the 0.65 threshold.")
+        elif latest_prob >= ks_cutoff:
             latest_pred_class = "UP"
             
     # Also filter the df dates where the *historical* model prediction >= ks_cutoff to pass to Step 2

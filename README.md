@@ -32,6 +32,7 @@ The engine separates macro momentum prediction (Step 1) from fundamental account
 * **ANOVA Pre-filter (`SelectKBest`)**: Slices the universe down to the statistically significant features.
 * **Sequential Feature Selection (SFS)**: Iteratively selects 12 independent variables.
 * **KS-Optimized Logistic Regression**: Outputs probabilities, converted to binary 0s and 1s by dynamically calculating the threshold that maximizes the Kolmogorov-Smirnov (KS) statistic.
+* **Cross-Validation Accuracy Safeguard**: Before making a final prediction, the model performs a 3-Fold Cross-Validation on the historical dataset. The ticker must achieve a minimum **CV Accuracy of 65%** `(True Positives + True Negatives) / Total Observations` to proceed. If the algorithm cannot accurately model the historical patterns above this threshold, it rejects the ticker as "NOT_UP" regardless of the current day's prediction.
 
 **Step 2 (Company Fundamentals) utilizes a Deterministic Ruleset Engine:**
 Because historical fundamental data is sparse, Step 2 bypasses ML and evaluates the raw Q/Q changes on the last 2 financial statements against 4 hard rules (Revenue Growth, Profitability, Earnings Momentum, Cash Flow Health). A score of 3/4 is required to pass.
