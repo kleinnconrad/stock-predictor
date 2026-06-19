@@ -6,3 +6,4 @@ step2_history_years: 4
 quantiles: 10
 xetra_t7_url: "https://www.cashmarket.deutsche-boerse.com/resource/blob/1528/6249e15bf93885fd91bd411663a0ff82/data/t7-xetr-allTradableInstruments.csv"
 min_cv_accuracy: 0.65
+min_step2_score: 7

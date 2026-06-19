@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import logging
+import yaml
 from typing import Dict, Any, Tuple
 
 logger = logging.getLogger(__name__)
@@ -23,6 +24,14 @@ def execute_step2(funds_df: pd.DataFrame) -> Tuple[Dict[str, Any], str]:
     if funds_df.empty or len(funds_df) < 2:
         logger.warning("Not enough quarterly fundamental data to evaluate ruleset.")
         return {}, "NOT_UP"
+        
+    try:
+        with open('config/settings.yaml', 'r') as f:
+            settings = yaml.safe_load(f)
+            min_step2_score = int(settings.get('min_step2_score', 7))
+    except Exception as e:
+        logger.warning(f"Failed to load min_step2_score from settings.yaml: {e}. Defaulting to 7")
+        min_step2_score = 7
         
     # Get the two most recent quarters
     q_latest = funds_df.iloc[-1]
@@ -85,13 +94,13 @@ def execute_step2(funds_df: pd.DataFrame) -> Tuple[Dict[str, Any], str]:
         rule_9_pass, rule_10_pass
     ])
     
-    # Require at least 7 out of 10 rules to pass
-    latest_pred_class = "UP" if rules_passed >= 7 else "NOT_UP"
+    # Require at least min_step2_score out of 10 rules to pass
+    latest_pred_class = "UP" if rules_passed >= min_step2_score else "NOT_UP"
     
     if latest_pred_class == "UP":
-        logger.info(f"Fundamental Ruleset Passed! Score: {rules_passed}/10")
+        logger.info(f"Fundamental Ruleset Passed! Score: {rules_passed}/10 (Required: {min_step2_score})")
     else:
-        logger.info(f"Fundamental Ruleset Failed. Score: {rules_passed}/10")
+        logger.info(f"Fundamental Ruleset Failed. Score: {rules_passed}/10 (Required: {min_step2_score})")
     
     diagnostics = {
         "Rule 1 (Revenue Growth)": bool(rule_1_pass),
@@ -105,7 +114,7 @@ def execute_step2(funds_df: pd.DataFrame) -> Tuple[Dict[str, Any], str]:
         "Rule 9 (De-leveraging)": bool(rule_9_pass),
         "Rule 10 (ROE Proxy)": bool(rule_10_pass),
         "Total Score": int(rules_passed),
-        "Required Score": 7,
+        "Required Score": min_step2_score,
         "Q_latest_date": str(q_latest.name.date()),
         "Q_prev_date": str(q_prev.name.date()),
         "Metrics_latest": {
