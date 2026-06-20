@@ -17,6 +17,7 @@ from src.ingestion.market_api import fetch_step1_data
 from src.processing.features import engineer_features
 from src.modeling.step1_macro import execute_step1
 from src.orchestration.json_exporter import export_prediction_json, export_feature_diagnostics_json
+from src.ingestion.company_profile import fetch_company_profile
 
 def apply_anti_jitter():
     """
@@ -66,8 +67,17 @@ def main():
             with open('config/settings.yaml', 'r') as f:
                 settings = yaml.safe_load(f)
                 
+            # Get the last available close price
+            latest_price = float(merged_df['Close'].iloc[-1]) if 'Close' in merged_df.columns else None
+
+            # Fetch company profile from Gemini API
+            profile = fetch_company_profile(ticker)
+
             pred_payload = {
                 "stock_name": ticker,
+                "company_name": profile.get("full_name", "Unknown"),
+                "company_description": profile.get("description", "No description available."),
+                "latest_price": latest_price,
                 "prediction_date": str(datetime.date.today()),
                 "applied_parameters": {
                     "horizon_days": settings.get('horizon_days', 126),
