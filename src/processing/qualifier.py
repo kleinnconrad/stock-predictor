@@ -27,9 +27,10 @@ def filter_qualified_tickers(df: pd.DataFrame) -> list:
             
         valid_df = df.dropna(subset=['Mnemonic'])
         
-        # Filter by Instrument Type (Common Stock) and Country
+        # Filter by Instrument Type (Common Stock) and Country/Indices
         valid_df = valid_df[valid_df['Instrument Type'] == 'CS']
-        valid_df = valid_df[valid_df['Product Assignment Group Description'] == 'DEUTSCHLAND']
+        valid_groups = ['DEUTSCHLAND', 'DAX', 'MDAX', 'SDAX']
+        valid_df = valid_df[valid_df['Product Assignment Group Description'].isin(valid_groups)]
         
         tickers = (valid_df['Mnemonic'] + '.DE').tolist()
         
