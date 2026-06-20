@@ -22,7 +22,9 @@ def fetch_step1_data(ticker: str, global_macro_df: pd.DataFrame, history_years: 
         import time
         import random
         
-        end_date = datetime.date.today()
+        # Use Europe/Berlin time to ensure consistency between local and cloud runs
+        current_german_date = pd.Timestamp.now(tz='Europe/Berlin').date()
+        end_date = current_german_date
         start_date = end_date - datetime.timedelta(days=history_years * 365)
         
         df = pd.DataFrame()
@@ -32,7 +34,10 @@ def fetch_step1_data(ticker: str, global_macro_df: pd.DataFrame, history_years: 
             try:
                 df = yf.download(ticker, start=start_date, end=end_date, progress=False)
                 if not df.empty:
-                    break
+                    # Explicitly strip intraday/live data to stabilize the model
+                    df = df[df.index.date < current_german_date]
+                    if not df.empty:
+                        break
             except Exception as e:
                 logger.warning(f"Exception during yf.download for {ticker} on attempt {attempt + 1}: {e}")
                 

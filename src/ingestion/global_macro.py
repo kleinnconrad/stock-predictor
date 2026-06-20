@@ -20,13 +20,19 @@ def fetch_global_macro_universe(history_years: int) -> pd.DataFrame:
     Returns:
         pd.DataFrame: A heavily expanded, pre-cached, stationary global macroeconomic dataframe.
     """
-    start_date = datetime.date.today() - datetime.timedelta(days=365 * history_years)
-    end_date = datetime.date.today()
+    # Use Europe/Berlin time to ensure consistency between local and cloud runs
+    current_german_date = pd.Timestamp.now(tz='Europe/Berlin').date()
+    start_date = current_german_date - datetime.timedelta(days=365 * history_years)
+    end_date = current_german_date
     
     logger.info(f"Fetching {len(ALL_YF_TICKERS)} YF tickers and {len(ALL_FRED_INDICATORS)} FRED indicators for Global Macro Cache.")
     
     # 1. Fetch Yahoo Finance macro indices
     yf_df = yf.download(ALL_YF_TICKERS, start=start_date, end=end_date, progress=False)
+    
+    # Explicitly strip intraday/live data to stabilize the model
+    yf_df = yf_df[yf_df.index.date < current_german_date]
+    
     if 'Adj Close' in yf_df.columns:
         yf_df = yf_df['Adj Close']
     elif 'Close' in yf_df.columns:
