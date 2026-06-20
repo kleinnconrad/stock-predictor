@@ -30,6 +30,7 @@ jobs:
       - name: Execute Step 1 Model
         env:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python scripts/02_run_step1.py --shard ${{ matrix.shard }} --total 3
 
       - name: Upload Step 1 State Artifact
