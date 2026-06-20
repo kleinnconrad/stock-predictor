@@ -22,6 +22,7 @@ graph TD
     GM[ingestion/global_macro.py]
     MA[ingestion/market_api.py]
     FA[ingestion/funds_api.py]
+    CP[ingestion/company_profile.py]
 
     %% Processing Layer
     QUAL{processing/qualifier.py}
@@ -41,6 +42,7 @@ graph TD
     BR -->|2. Build Macro Matrix| GM
 
     BR -->|3. Start Ticker Loop| MA
+    MA -->|Fetch Company Profile| CP
     MA -->|Join target OHLCV with Macro| FEAT
     FEAT -->|Engineer Target & Technicals| S1
     
@@ -68,6 +70,7 @@ Responsible for extracting data from external APIs (Yahoo Finance, FRED, Xetra) 
 * **`global_macro.py`**: Pre-fetches the entire 360-degree global macro universe (80+ series from FRED & Yahoo Finance). Crucially, this script executes a quantitative feature engineering block to create a stationary matrix of ~400+ features (e.g., interaction ratios, multi-timeframe momentums, regime Z-scores, acceleration derivatives). It caches this data to prevent IP bans.
 * **`market_api.py`**: Fetches the daily historical OHLCV price data exclusively for the target stock being evaluated. It ensures dates align properly and then left-joins the target stock's data with the pre-cached global macro matrix from `global_macro.py`.
 * **`funds_api.py`**: Fetches raw quarterly financial statements (Income Statement, Balance Sheet, Cash Flow) from Yahoo Finance. It drops duplicate or sparse rows and strictly filters the remaining data against the curated `FUNDAMENTAL_UNIVERSE` defined in the project configuration.
+* **`company_profile.py`**: Integrates with the Gemini 2.5 Flash API to dynamically fetch the full company name and a brief description for a given ticker. It implements a local JSON caching system (`company_profiles_cache.json`) to prevent redundant LLM API calls and optimize execution speed across batch runs.
 
 ## 2. `processing/`
 Responsible for transforming raw data structures, engineering target variables, and filtering criteria before data reaches the machine learning models.

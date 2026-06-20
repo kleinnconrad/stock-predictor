@@ -11,6 +11,7 @@ from ..processing.features import engineer_features
 from ..modeling.step1_macro import execute_step1
 from ..modeling.step2_funds import execute_step2
 from .json_exporter import export_prediction_json, export_feature_diagnostics_json
+from ..ingestion.company_profile import fetch_company_profile
 
 logger = logging.getLogger(__name__)
 
@@ -39,9 +40,18 @@ def run_single(ticker: str, macro_df: pd.DataFrame = None) -> bool:
         combined_diagnostics = {"step1_macro": feature_diagnostics_1}
         export_feature_diagnostics_json(ticker, combined_diagnostics)
         
+        # Get the last available close price
+        latest_price = float(merged_df['Close'].iloc[-1]) if 'Close' in merged_df.columns else None
+
+        # Fetch company profile from Gemini API
+        profile = fetch_company_profile(ticker)
+
         # We will export the combined payload at the end. For now, export Step 1 alone.
         combined_payload = {
             "stock_name": ticker,
+            "company_name": profile.get("full_name", "Unknown"),
+            "company_description": profile.get("description", "No description available."),
+            "latest_price": latest_price,
             "step1_model": pred_payload_1, 
             "final_prediction": "PENDING"
         }

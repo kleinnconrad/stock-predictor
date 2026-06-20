@@ -103,12 +103,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function createRowHtml(d) {
     const stockName = d.stock_name || 'UNKNOWN';
+    const companyName = d.company_name ? d.company_name : '';
+    const companyDesc = d.company_description ? d.company_description : '';
+    const priceStr = typeof d.latest_price === 'number' ? `€${d.latest_price.toFixed(2)}` : 'N/A';
     const acc = d.step1_model?.cv_accuracy ? (d.step1_model.cv_accuracy * 100).toFixed(1) : 0;
     const ks = d.step1_model?.ks_cutoff ? d.step1_model.ks_cutoff.toFixed(3) : 'N/A';
     const step1Class = d.step1_model?.predicted_class || 'N/A';
 
+    let priceHtml = `<td>${priceStr}</td>`;
+    if (typeof d.latest_price === 'number' && d.latest_price <= 30) {
+      priceHtml = `<td style="color: var(--status-red); font-weight: bold;" title="Warning: Small price differences change the model outcome completely. Robust prediction not possible for stocks <= 30€.">
+        ${priceStr} ⚠️
+      </td>`;
+    }
+
     return `
-      <td class="ticker-name">${stockName}</td>
+      <td class="ticker-name">
+        <div style="font-weight: bold;">${stockName}</div>
+        ${companyName ? `<div style="font-size: 0.85em; color: var(--text-muted); margin-top: 4px; font-weight: normal;">${companyName}</div>` : ''}
+        ${companyDesc ? `<div style="font-size: 0.75em; color: var(--text-muted); opacity: 0.8; margin-top: 2px; font-weight: normal; max-width: 300px; white-space: normal;">${companyDesc}</div>` : ''}
+      </td>
+      ${priceHtml}
       <td>${getStatusHtml(d.final_prediction)}</td>
       <td>${getStatusHtml(step1Class)}</td>
       <td>
@@ -141,6 +156,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (col === 'stock_name') {
         valA = a.stock_name || 'UNKNOWN';
         valB = b.stock_name || 'UNKNOWN';
+      } else if (col === 'latest_price') {
+        valA = typeof a.latest_price === 'number' ? a.latest_price : -1;
+        valB = typeof b.latest_price === 'number' ? b.latest_price : -1;
       } else if (col === 'final_prediction') {
         valA = a.final_prediction || '';
         valB = b.final_prediction || '';
