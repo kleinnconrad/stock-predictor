@@ -38,8 +38,12 @@ def main():
     if not os.path.exists('data/state/qualified_tickers.csv'):
         raise FileNotFoundError("qualified_tickers.csv missing! Did Action 1 run and persist the artifact?")
         
-    all_tickers = pd.read_csv('data/state/qualified_tickers.csv')['Ticker'].tolist()
-    all_tickers.sort() # Ensure deterministic ordering
+    tickers_df = pd.read_csv('data/state/qualified_tickers.csv')
+    if 'Company' not in tickers_df.columns:
+        tickers_df['Company'] = "Unknown Company"
+        
+    all_tickers = tickers_df.to_dict('records')
+    all_tickers.sort(key=lambda x: x['Ticker']) # Ensure deterministic ordering
     
     # Mathematical Sharding for Distributed GitHub Actions
     shard_tickers = all_tickers[args.shard :: args.total]
@@ -51,7 +55,9 @@ def main():
     passed_tickers = []
     step1_dates_dict = {}
     
-    for ticker in tqdm(shard_tickers, desc=f"Step 1 - Shard {args.shard}"):
+    for row in tqdm(shard_tickers, desc=f"Step 1 - Shard {args.shard}"):
+        ticker = row['Ticker']
+        company_name = row['Company']
         apply_anti_jitter()
         try:
             merged_df = fetch_step1_data(ticker, macro_df, history_years=3)
@@ -71,7 +77,7 @@ def main():
             latest_price = float(merged_df['Close'].iloc[-1]) if 'Close' in merged_df.columns else None
 
             # Fetch company profile from Gemini API
-            profile = fetch_company_profile(ticker)
+            profile = fetch_company_profile(ticker, company_name)
 
             pred_payload = {
                 "stock_name": ticker,

@@ -23,7 +23,7 @@ def main():
     qualified_tickers = filter_qualified_tickers(raw_df)
     
     output_path = 'data/state/qualified_tickers.csv'
-    pd.DataFrame({'Ticker': qualified_tickers}).to_csv(output_path, index=False)
+    pd.DataFrame(qualified_tickers).to_csv(output_path, index=False)
     print(f"Successfully saved {len(qualified_tickers)} qualified tickers to {output_path}")
 
 if __name__ == "__main__":

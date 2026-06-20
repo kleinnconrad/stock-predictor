@@ -15,11 +15,13 @@ from ..ingestion.company_profile import fetch_company_profile
 
 logger = logging.getLogger(__name__)
 
-def run_single(ticker: str, macro_df: pd.DataFrame = None) -> bool:
+def run_single(ticker_data: dict, macro_df: pd.DataFrame = None) -> bool:
     """
     Runs the full Step 1 and Step 2 pipeline for a single ticker.
     """
-    logger.info(f"Running Two-Step Cascade for single ticker: {ticker}")
+    ticker = ticker_data['Ticker']
+    company_name = ticker_data['Company']
+    logger.info(f"Running Two-Step Cascade for single ticker: {ticker} ({company_name})")
     if macro_df is None:
         logger.info("Pre-caching Global Macro Universe for local execution...")
         macro_df = fetch_global_macro_universe(history_years=3)
@@ -44,7 +46,7 @@ def run_single(ticker: str, macro_df: pd.DataFrame = None) -> bool:
         latest_price = float(merged_df['Close'].iloc[-1]) if 'Close' in merged_df.columns else None
 
         # Fetch company profile from Gemini API
-        profile = fetch_company_profile(ticker)
+        profile = fetch_company_profile(ticker, company_name)
 
         # We will export the combined payload at the end. For now, export Step 1 alone.
         combined_payload = {
@@ -125,10 +127,10 @@ def run_batch():
     
     buy_candidates = []
     
-    for ticker in tqdm(qualified_tickers, desc="Processing Tickers"):
+    for ticker_data in tqdm(qualified_tickers, desc="Processing Tickers"):
         # We process sequentially in the local batch runner
-        if run_single(ticker, macro_df=macro_df):
-            buy_candidates.append(ticker)
+        if run_single(ticker_data, macro_df=macro_df):
+            buy_candidates.append(ticker_data['Ticker'])
             
     out_dir = os.path.join('data', 'processed')
     os.makedirs(out_dir, exist_ok=True)

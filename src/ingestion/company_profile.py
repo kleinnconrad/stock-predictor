@@ -33,9 +33,9 @@ def save_cache(cache: dict):
     except Exception as e:
         logger.error(f"Failed to save company profile cache: {e}")
 
-def fetch_company_profile(ticker: str) -> dict:
+def fetch_company_profile(ticker: str, company_name: str) -> dict:
     """
-    Fetches the full company name and a brief description using Gemini 2.5 Flash.
+    Fetches a brief description using Gemini 2.5 Flash given the ticker and known company name.
     Utilizes a local cache to avoid redundant API calls.
     
     Returns:
@@ -48,12 +48,12 @@ def fetch_company_profile(ticker: str) -> dict:
     api_key = os.environ.get('GEMINI_API_KEY')
     if not api_key:
         logger.warning(f"GEMINI_API_KEY not found. Cannot fetch profile for {ticker}.")
-        return {"full_name": "Unknown", "description": "No description available."}
+        return {"full_name": company_name, "description": "No description available."}
         
     try:
         client = genai.Client(api_key=api_key)
         
-        prompt = f"Provide the full company name and a 1-sentence brief description for the German stock with ticker symbol '{ticker}'."
+        prompt = f"Provide a 1-sentence brief description for the German stock '{company_name}' (Ticker symbol '{ticker}')."
         
         response = client.models.generate_content(
             model='gemini-2.5-flash',
@@ -66,9 +66,10 @@ def fetch_company_profile(ticker: str) -> dict:
         
         try:
             profile_data = json.loads(response.text)
+            profile_data['full_name'] = company_name # Enforce the known correct name
         except json.JSONDecodeError:
             logger.error(f"Failed to parse Gemini response for {ticker}: {response.text}")
-            return {"full_name": "Unknown", "description": "Failed to parse description."}
+            return {"full_name": company_name, "description": "Failed to parse description."}
             
         # Cache and save
         cache[ticker] = profile_data
@@ -78,4 +79,4 @@ def fetch_company_profile(ticker: str) -> dict:
         
     except Exception as e:
         logger.error(f"Error fetching company profile for {ticker} from Gemini: {e}")
-        return {"full_name": "Unknown", "description": "Error fetching description."}
+        return {"full_name": company_name, "description": "Error fetching description."}
