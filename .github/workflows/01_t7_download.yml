@@ -26,3 +26,11 @@ jobs:
           name: t7-state-artifact
           path: data/state/qualified_tickers.csv
           retention-days: 7
+
+      - name: Commit and Push T7 Dump and Qualified Tickers
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f data/state/qualified_tickers.csv data/raw/t7-xetr-allTradableInstruments.csv
+          git commit -m "chore: Auto-update T7 dump and qualified tickers" || echo "No changes to commit"
+          git push
