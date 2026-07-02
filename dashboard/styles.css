@@ -1,14 +1,14 @@
 :root {
-  --bg-color: #0a0a0a;
-  --text-main: #33ff33;
-  --text-muted: #1f991f;
-  --accent: #33ff33;
+  --bg-color: #000000;
+  --text-main: #ffffff;
+  --text-muted: #888888;
+  --accent: #ffffff;
   
-  --status-green: #33ff33;
-  --status-orange: #ffaa00;
-  --status-red: #ff3333;
+  --status-green: #ffffff;
+  --status-orange: #cccccc;
+  --status-red: #ff5555;
   
-  --border-color: #33ff33;
+  --border-color: #ffffff;
 }
 
 * {
@@ -44,7 +44,7 @@ body {
 /* Base Panel */
 .glass-panel {
   background: transparent;
-  border: 1px solid var(--border-color);
+  border: 1px dashed var(--border-color);
   padding: 1.5rem;
   border-radius: 0;
   box-shadow: none;
@@ -53,7 +53,7 @@ body {
 /* Header */
 .main-header {
   text-align: left;
-  border-left: 4px solid var(--border-color);
+  border-left: 4px dashed var(--border-color);
 }
 
 .gradient-text {
@@ -85,12 +85,12 @@ body {
   align-items: flex-start;
   justify-content: center;
   text-align: left;
-  border: 1px solid var(--border-color);
+  border: 1px dashed var(--border-color);
   transition: none;
 }
 
 .kpi-card:hover {
-  background-color: rgba(51, 255, 51, 0.1);
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .kpi-card h3 {
@@ -121,7 +121,7 @@ body {
 
 .glass-input, .glass-select {
   background: transparent;
-  border: 1px solid var(--border-color);
+  border: 1px dashed var(--border-color);
   color: var(--text-main);
   padding: 0.5rem;
   border-radius: 0;
@@ -162,24 +162,24 @@ th {
   text-transform: uppercase;
   font-size: 0.9rem;
   padding: 0.75rem;
-  border: 1px solid var(--border-color);
+  border: 1px dashed var(--border-color);
   cursor: pointer;
   user-select: none;
   white-space: nowrap;
 }
 
 th:hover {
-  background: rgba(51, 255, 51, 0.2);
+  background: rgba(255, 255, 255, 0.2);
 }
 
 td {
   padding: 0.75rem;
-  border: 1px solid var(--border-color);
+  border: 1px dashed var(--border-color);
   vertical-align: middle;
 }
 
 tbody tr:hover {
-  background: rgba(51, 255, 51, 0.1);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .ticker-name {
@@ -226,7 +226,7 @@ tbody tr:hover {
   width: 100px;
   height: 12px;
   background: transparent;
-  border: 1px solid var(--border-color);
+  border: 1px dashed var(--border-color);
   border-radius: 0;
   overflow: hidden;
   display: inline-block;
@@ -315,7 +315,7 @@ tbody tr:hover {
 
 .param-badge {
   background: transparent;
-  border: 1px solid var(--border-color);
+  border: 1px dashed var(--border-color);
   padding: 0.2rem 0.5rem;
   border-radius: 0;
   font-size: 0.8rem;
@@ -329,7 +329,7 @@ tbody tr:hover {
 
 /* Highlighted Table */
 .highlighted-table-container {
-  border: 2px solid var(--status-green);
+  border: 2px dashed var(--border-color);
   margin-bottom: 2rem;
 }
 
