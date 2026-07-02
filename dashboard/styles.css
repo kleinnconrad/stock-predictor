@@ -296,7 +296,7 @@ tbody tr:hover {
   .param-badge {
     font-size: 0.7rem;
     padding: 0.15rem 0.3rem;
-    overflow-wrap: break-word;
+    word-break: break-all;
   }
 }
 
@@ -309,6 +309,7 @@ tbody tr:hover {
   flex-direction: column;
   align-items: flex-start;
   gap: 0.5rem;
+  width: 100%;
 }
 
 .metadata-item {
@@ -325,6 +326,7 @@ tbody tr:hover {
   flex-wrap: wrap;
   gap: 0.5rem;
   justify-content: flex-start;
+  width: 100%;
 }
 
 .param-badge {
@@ -334,6 +336,8 @@ tbody tr:hover {
   border-radius: 0;
   font-size: 0.8rem;
   color: var(--text-muted);
+  max-width: 100%;
+  word-break: break-all;
 }
 
 .param-badge strong {
