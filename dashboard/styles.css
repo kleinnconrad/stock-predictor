@@ -5,8 +5,8 @@
   --accent: #ffffff;
   
   --status-green: #ffffff;
-  --status-orange: #cccccc;
-  --status-red: #ff5555;
+  --status-orange: #ffffff;
+  --status-red: #ffffff;
   
   --border-color: #ffffff;
 }
@@ -18,7 +18,7 @@
 }
 
 body {
-  font-family: 'Fira Code', 'Courier New', Courier, monospace;
+  font-family: Consolas, 'Courier New', Courier, monospace;
   background-color: var(--bg-color);
   color: var(--text-main);
   min-height: 100vh;
