@@ -248,7 +248,9 @@ tbody tr:hover {
   }
 
   .gradient-text {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
+    overflow-wrap: break-word;
+    word-break: break-word;
   }
 
   .gradient-text::before {
@@ -256,7 +258,8 @@ tbody tr:hover {
   }
 
   .subtitle {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
+    overflow-wrap: break-word;
   }
 
   .kpi-value {
@@ -283,6 +286,17 @@ tbody tr:hover {
 
   .table-title {
     font-size: 1rem;
+  }
+
+  .metadata-item {
+    font-size: 0.8rem;
+    overflow-wrap: break-word;
+  }
+
+  .param-badge {
+    font-size: 0.7rem;
+    padding: 0.15rem 0.3rem;
+    overflow-wrap: break-word;
   }
 }
 
