@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let priceHtml = `<td>${priceStr}</td>`;
     if (typeof d.latest_price === 'number' && d.latest_price <= 30) {
       priceHtml = `<td style="color: var(--status-red); font-weight: bold;" title="Warning: Small price differences change the model outcome completely. Robust prediction not possible for stocks <= 30€.">
-        ${priceStr} ⚠️
+        ${priceStr} [!WARN]
       </td>`;
     }
 
