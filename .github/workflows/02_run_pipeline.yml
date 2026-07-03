@@ -108,13 +108,12 @@ jobs:
         with:
           pattern: step2-final-shard-*
           path: step2_artifacts
-          merge-multiple: true
 
       - name: Consolidate Shards
         run: |
           mkdir -p data/processed
           echo "Ticker" > data/processed/final_buy_signals.csv
-          find step2_artifacts/data/processed/ -name "final_buy_signals_shard_*.csv" -exec awk 'FNR>1' {} + >> data/processed/final_buy_signals.csv
+          find step2_artifacts/ -name "final_buy_signals_shard_*.csv" -exec awk 'FNR>1' {} + >> data/processed/final_buy_signals.csv
           
           python -c '
           import os, json, glob, yaml
@@ -123,21 +122,31 @@ jobs:
           with open("config/settings.yaml", "r") as f:
               settings = yaml.safe_load(f)
 
-          payloads = []
-          for f in glob.glob("step2_artifacts/outputs/predictions/*.json"):
+          payload_dict = {}
+          for f in glob.glob("step2_artifacts/*/outputs/predictions/*.json"):
               try:
                   with open(f, "r") as file:
                       data = json.load(file)
+                      ticker = data.get("stock_name")
+                      if not ticker: continue
+                      
                       if data.get("final_prediction") not in ["UP", "NOT_UP", "UP_FINAL_BUY"]:
                           data["final_prediction"] = "NOT_UP"
-                      payloads.append(data)
+                      
+                      if ticker not in payload_dict:
+                          payload_dict[ticker] = data
+                      else:
+                          current_pred = payload_dict[ticker].get("final_prediction")
+                          new_pred = data.get("final_prediction")
+                          if new_pred == "UP_FINAL_BUY" and current_pred == "UP":
+                              payload_dict[ticker] = data
               except Exception as e:
                   print(f"Failed to read {f}: {e}")
                   
           report = {
               "execution_date": datetime.utcnow().isoformat() + "Z",
               "parameters": settings,
-              "predictions": payloads
+              "predictions": list(payload_dict.values())
           }
           
           with open("data/processed/full_batch_report.json", "w") as out:
