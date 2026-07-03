@@ -265,17 +265,25 @@ document.addEventListener('DOMContentLoaded', () => {
         let items = '';
         for (const [k, v] of Object.entries(d.step2_model.feature_diagnostics)) {
           if (typeof v === 'object' && v !== null) {
-            items += `<div style="grid-column: 1 / -1; margin-top: 0.5rem; border-top: 1px dotted var(--text-muted); padding-top: 0.5rem;"><strong>${k}</strong></div>`;
+            items += `<div style="grid-column: 1 / -1; margin-top: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 0.5rem;"><strong>${k}</strong></div>`;
             for (const [subK, subV] of Object.entries(v)) {
-              let disp = typeof subV === 'number' ? Number(subV).toFixed(4) : subV;
-              items += `<div class="var-item" style="padding-left: 1rem;"><span class="var-key">${subK}</span><span class="var-value">${disp}</span></div>`;
+              let disp = typeof subV === 'number' ? Number(subV).toFixed(2) : subV;
+              items += `<div class="var-item" style="padding-left: 1rem;"><span class="var-key">${subK}</span><span class="var-value" style="font-weight: bold;">${disp}</span></div>`;
             }
           } else {
-            let disp = typeof v === 'boolean' ? (v ? 'PASS' : 'FAIL') : v;
+            let disp = v;
+            if (typeof v === 'boolean') {
+              disp = v ? '<span style="color: var(--status-green);">PASS</span>' : '<span style="color: var(--status-red);">FAIL</span>';
+            } else if (typeof v === 'number') {
+              disp = Number(v).toFixed(2);
+            }
             items += `<div class="var-item"><span class="var-key">${k}</span><span class="var-value">${disp}</span></div>`;
           }
         }
-        step2Html = `<h4>Step 2: Fundamental Ruleset Diagnostics</h4><div class="var-grid">${items}</div>`;
+        step2Html = `<div style="margin-top: 2rem; border-top: 2px dashed var(--border-color); padding-top: 1rem;">
+          <h4 style="color: var(--status-orange); margin-bottom: 1rem; text-transform: uppercase;">Step 2: Fundamental Ruleset Diagnostics</h4>
+          <div class="var-grid">${items}</div>
+        </div>`;
       }
       
       if (step1Html || step2Html) {
