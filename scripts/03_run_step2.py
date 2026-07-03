@@ -78,7 +78,7 @@ def main():
                 continue
                  
             metrics, latest_pred_class = execute_step2(funds_df)
-            feature_diagnostics = metrics.pop('feature_diagnostics', {}) if metrics else {}
+            feature_diagnostics = metrics.get('feature_diagnostics', {}) if metrics else {}
             final_decision = latest_pred_class == "UP"
             
             export_feature_diagnostics_json(ticker, feature_diagnostics)

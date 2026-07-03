@@ -81,7 +81,7 @@ def run_single(ticker_data: dict, macro_df: pd.DataFrame = None) -> bool:
              return False
              
         metrics_2, latest_pred_class = execute_step2(funds_df)
-        feature_diagnostics_2 = metrics_2.pop('feature_diagnostics', {}) if metrics_2 else {}
+        feature_diagnostics_2 = metrics_2.get('feature_diagnostics', {}) if metrics_2 else {}
         pred_payload_2 = metrics_2
         final_decision = latest_pred_class == "UP"
         

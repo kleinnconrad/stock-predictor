@@ -42,6 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
       renderMetadata();
       calculateKPIs();
       renderTables();
+      renderVariables();
     })
     .catch(error => {
       console.error("Failed to load JSON data", error);
@@ -232,4 +233,68 @@ document.addEventListener('DOMContentLoaded', () => {
       renderTables();
     });
   });
+
+  // Event Listeners for variables
+  const varSearchInput = document.getElementById('var-search-input');
+  if (varSearchInput) {
+    varSearchInput.addEventListener('input', renderVariables);
+  }
+
+  function renderVariables() {
+    const container = document.getElementById('variables-container');
+    if (!container) return;
+    
+    const search = varSearchInput ? varSearchInput.value.toLowerCase() : '';
+    
+    let html = '';
+    reportData.forEach(d => {
+      const stockName = d.stock_name || 'UNKNOWN';
+      if (search && !stockName.toLowerCase().includes(search)) return;
+      
+      let step1Html = '';
+      if (d.step1_model && d.step1_model.selected_predictors_and_weights) {
+        let items = '';
+        for (const [k, v] of Object.entries(d.step1_model.selected_predictors_and_weights)) {
+          items += `<div class="var-item"><span class="var-key">${k}</span><span class="var-value">${Number(v).toFixed(4)}</span></div>`;
+        }
+        step1Html = `<h4>Step 1: Macro Predictors & Weights</h4><div class="var-grid">${items}</div>`;
+      }
+      
+      let step2Html = '';
+      if (d.step2_model && d.step2_model.feature_diagnostics) {
+        let items = '';
+        for (const [k, v] of Object.entries(d.step2_model.feature_diagnostics)) {
+          if (typeof v === 'object' && v !== null) {
+            items += `<div style="grid-column: 1 / -1; margin-top: 0.5rem; border-top: 1px dotted var(--text-muted); padding-top: 0.5rem;"><strong>${k}</strong></div>`;
+            for (const [subK, subV] of Object.entries(v)) {
+              let disp = typeof subV === 'number' ? Number(subV).toFixed(4) : subV;
+              items += `<div class="var-item" style="padding-left: 1rem;"><span class="var-key">${subK}</span><span class="var-value">${disp}</span></div>`;
+            }
+          } else {
+            let disp = typeof v === 'boolean' ? (v ? 'PASS' : 'FAIL') : v;
+            items += `<div class="var-item"><span class="var-key">${k}</span><span class="var-value">${disp}</span></div>`;
+          }
+        }
+        step2Html = `<h4>Step 2: Fundamental Ruleset Diagnostics</h4><div class="var-grid">${items}</div>`;
+      }
+      
+      if (step1Html || step2Html) {
+        html += `
+          <details class="stock-variables">
+            <summary>${stockName} ${d.company_name ? '- ' + d.company_name : ''}</summary>
+            <div class="variables-content">
+              ${step1Html}
+              ${step2Html}
+            </div>
+          </details>
+        `;
+      }
+    });
+    
+    if (!html) {
+      html = '<div style="color: var(--text-muted);">No variables found for the given search.</div>';
+    }
+    
+    container.innerHTML = html;
+  }
 });

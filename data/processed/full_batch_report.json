@@ -9858,7 +9858,28 @@
           "Vol_21D": -0.6574353215391547
         }
       },
-      "final_prediction": "UP"
+      "final_prediction": "UP",
+      "step2_model": {
+        "feature_diagnostics": {
+          "Rule 1 (Revenue Growth)": false,
+          "Rule 2 (Profitability)": true,
+          "Rule 3 (Earnings Momentum)": false,
+          "Rule 4 (Cash Flow Health)": true,
+          "Total Score": 2,
+          "Required Score": 3,
+          "Q_latest_date": "2026-03-31",
+          "Q_prev_date": "2025-12-31",
+          "Metrics_latest": {
+            "Total Revenue": 111335000.0,
+            "Net Income": 2217000.0,
+            "Operating Cash Flow": 8103000.0
+          },
+          "Metrics_prev": {
+            "Total Revenue": 140408000.0,
+            "Net Income": 9628000.0
+          }
+        }
+      }
     },
     {
       "stock_name": "SYZ.DE",
@@ -10464,7 +10485,26 @@
       },
       "final_prediction": "UP",
       "step2_model": {
-        "predicted_class": "NOT_UP"
+        "predicted_class": "NOT_UP",
+        "feature_diagnostics": {
+          "Rule 1 (Revenue Growth)": true,
+          "Rule 2 (Profitability)": true,
+          "Rule 3 (Earnings Momentum)": false,
+          "Rule 4 (Cash Flow Health)": true,
+          "Total Score": 3,
+          "Required Score": 3,
+          "Q_latest_date": "2026-03-31",
+          "Q_prev_date": "2025-12-31",
+          "Metrics_latest": {
+            "Total Revenue": 17342000000.0,
+            "Net Income": 335000000.0,
+            "Operating Cash Flow": 1588000000.0
+          },
+          "Metrics_prev": {
+            "Total Revenue": 16125000000.0,
+            "Net Income": 837000000.0
+          }
+        }
       }
     },
     {
@@ -12402,7 +12442,42 @@
           "Vol_21D": -0.026071732992601786
         }
       },
-      "final_prediction": "NOT_UP"
+      "final_prediction": "NOT_UP",
+      "step2_model": {
+        "feature_diagnostics": {
+          "Rule 1 (Revenue Growth)": true,
+          "Rule 2 (Profitability)": true,
+          "Rule 3 (Earnings Momentum)": true,
+          "Rule 4 (Cash Flow Health)": true,
+          "Rule 5 (Quality of Earnings)": true,
+          "Rule 6 (Free Cash Flow)": true,
+          "Rule 7 (Margin Improvement)": true,
+          "Rule 8 (Current Ratio)": false,
+          "Rule 9 (De-leveraging)": true,
+          "Rule 10 (ROE Proxy)": true,
+          "Total Score": 9,
+          "Required Score": 7,
+          "Q_latest_date": "2026-03-31",
+          "Q_prev_date": "2025-12-31",
+          "Metrics_latest": {
+            "Total Revenue": 249146000.0,
+            "Net Income": 3787000.0,
+            "Operating Cash Flow": 32588000.0,
+            "Free Cash Flow": 30379000.0,
+            "Operating Income": 8351000.0,
+            "Current Assets": 271810000.0,
+            "Current Liabilities": 312961000.0,
+            "Total Debt": 283012000.0,
+            "Stockholders Equity": 80817000.0
+          },
+          "Metrics_prev": {
+            "Total Revenue": 240648000.0,
+            "Net Income": -17392000.0,
+            "Operating Income": -5916000.0,
+            "Total Debt": 311032000.0
+          }
+        }
+      }
     },
     {
       "stock_name": "C1V0.DE",
