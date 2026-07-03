@@ -131,8 +131,13 @@ def execute_step2(funds_df: pd.DataFrame) -> Tuple[Dict[str, Any], str]:
         "Metrics_prev": {
             "Total Revenue": rev_prev,
             "Net Income": ni_prev,
+            "Operating Cash Flow": safe_get(q_prev, 'Operating Cash Flow'),
+            "Free Cash Flow": safe_get(q_prev, 'Free Cash Flow'),
             "Operating Income": op_inc_prev,
-            "Total Debt": debt_prev
+            "Current Assets": safe_get(q_prev, 'Current Assets'),
+            "Current Liabilities": safe_get(q_prev, 'Current Liabilities'),
+            "Total Debt": debt_prev,
+            "Stockholders Equity": safe_get(q_prev, 'Stockholders Equity')
         }
     }
     

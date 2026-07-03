@@ -5372,8 +5372,13 @@
           "Metrics_prev": {
             "Total Revenue": 33690000000.0,
             "Net Income": 1375000000.0,
+            "Operating Cash Flow": 2777000000.0,
+            "Free Cash Flow": -1071000000.0,
             "Operating Income": 1561000000.0,
-            "Total Debt": 82267000000.0
+            "Current Assets": 102132000000.0,
+            "Current Liabilities": 73768000000.0,
+            "Total Debt": 82267000000.0,
+            "Stockholders Equity": 93257000000.0
           }
         }
       }
