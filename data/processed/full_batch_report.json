@@ -5341,7 +5341,42 @@
           "Vol_21D": -0.6316231364924801
         }
       },
-      "final_prediction": "UP"
+      "final_prediction": "UP",
+      "step2_model": {
+        "feature_diagnostics": {
+          "Rule 1 (Revenue Growth)": false,
+          "Rule 2 (Profitability)": true,
+          "Rule 3 (Earnings Momentum)": true,
+          "Rule 4 (Cash Flow Health)": true,
+          "Rule 5 (Quality of Earnings)": true,
+          "Rule 6 (Free Cash Flow)": true,
+          "Rule 7 (Margin Improvement)": true,
+          "Rule 8 (Current Ratio)": true,
+          "Rule 9 (De-leveraging)": true,
+          "Rule 10 (ROE Proxy)": false,
+          "Total Score": 8,
+          "Required Score": 7,
+          "Q_latest_date": "2026-03-31",
+          "Q_prev_date": "2025-12-31",
+          "Metrics_latest": {
+            "Total Revenue": 31602000000.0,
+            "Net Income": 1418000000.0,
+            "Operating Cash Flow": 3785000000.0,
+            "Free Cash Flow": 2001000000.0,
+            "Operating Income": 1700000000.0,
+            "Current Assets": 104803000000.0,
+            "Current Liabilities": 75435000000.0,
+            "Total Debt": 81424000000.0,
+            "Stockholders Equity": 94199000000.0
+          },
+          "Metrics_prev": {
+            "Total Revenue": 33690000000.0,
+            "Net Income": 1375000000.0,
+            "Operating Income": 1561000000.0,
+            "Total Debt": 82267000000.0
+          }
+        }
+      }
     },
     {
       "stock_name": "G24.DE",
