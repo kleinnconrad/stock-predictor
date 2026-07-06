@@ -284,6 +284,11 @@ document.addEventListener('DOMContentLoaded', () => {
           <h4 style="color: var(--status-orange); margin-bottom: 1rem; text-transform: uppercase;">Step 2: Fundamental Ruleset Diagnostics</h4>
           <div class="var-grid">${items}</div>
         </div>`;
+      } else if (d.final_prediction === 'UP') {
+        step2Html = `<div style="margin-top: 2rem; border-top: 2px dashed var(--border-color); padding-top: 1rem;">
+          <h4 style="color: var(--status-orange); margin-bottom: 1rem; text-transform: uppercase;">Step 2: Fundamental Ruleset Diagnostics</h4>
+          <div style="color: var(--status-red); margin-top: 0.5rem;">FAIL: Insufficient quarterly fundamental data to evaluate ruleset.</div>
+        </div>`;
       }
       
       if (step1Html || step2Html) {
