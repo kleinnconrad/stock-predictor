@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const kpiUp = document.getElementById('kpi-up');
   const kpiNotUp = document.getElementById('kpi-notup');
   const kpiAcc = document.getElementById('kpi-acc');
+  const kpiMissingData = document.getElementById('kpi-missing-data');
   
   const metaDate = document.getElementById('meta-date');
   const metaParams = document.getElementById('meta-params');
@@ -79,6 +80,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const notUp = reportData.filter(d => d.final_prediction === 'NOT_UP').length;
     kpiNotUp.textContent = notUp;
+
+    const missingData = reportData.filter(d => d.final_prediction === 'UP' && (!d.step2_model || !d.step2_model.feature_diagnostics)).length;
+    kpiMissingData.textContent = missingData;
 
     const accuracies = reportData
       .filter(d => d.step1_model && d.step1_model.cv_accuracy)
