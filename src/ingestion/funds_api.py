@@ -1,3 +1,4 @@
+import os
 import yfinance as yf
 import pandas as pd
 import logging
@@ -18,6 +19,15 @@ def fetch_fundamentals(ticker: str) -> pd.DataFrame:
     Returns:
         pd.DataFrame: A time-indexed DataFrame containing fundamentals, forward-filled.
     """
+    # 1. Check local cache first (created by scripts/update_fundamentals.py)
+    safe_ticker = ticker.replace('.', '_')
+    cache_path = os.path.join('data', 'raw', 'fundamentals', f"{safe_ticker}.csv")
+    if os.path.exists(cache_path):
+        logger.info(f"Loaded cached fundamentals for {ticker} from {cache_path}")
+        df = pd.read_csv(cache_path, index_col=0, parse_dates=True)
+        return df
+
+    # 2. If not in cache, try fetching from Yahoo Finance (fallback for local runs)
     session = requests.Session()
     # Use a standard Chrome user agent to help prevent silent blocks by Yahoo Finance
     session.headers.update({

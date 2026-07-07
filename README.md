@@ -123,11 +123,20 @@ The `main.py` entry point acts as your local CLI.
   python main.py
   ```
 
-### 2. Cloud Execution (GitHub Actions)
+### 2. Fundamental Data Caching (Important for Cloud)
+Due to strict anti-bot IP bans by Yahoo Finance on GitHub Actions datacenters, company fundamental data must be fetched and cached locally before running the cloud pipeline.
+* **Update the Cache (Quarterly):** Once a quarter, after running Step 1 or updating `qualified_tickers.csv`, run the local fetching script. This bypasses the block by using your unblocked residential IP:
+  ```bash
+  python scripts/update_fundamentals.py
+  ```
+* After the script finishes, commit and push the generated CSV files in `data/raw/fundamentals/` to the repository. The cloud pipeline will seamlessly read from this cache.
+
+### 3. Cloud Execution (GitHub Actions)
 For execution and bypass of API rate limits, you can manually trigger the decoupled Actions via the "Actions" tab on GitHub. **You must run them in this exact order**, as they pass state and payloads to each other via GitHub Artifacts:
 
 1. **`1. T7 Download (Initialization)`**: Fetches the master list of qualified `.DE` tickers.
-2. **`2. Execute Pipeline (Step 1 & 2)`**: Automatically spawns 3 parallel runners. Evaluates global macro conditions for all tickers, merges surviving tickers, and evaluates company balance sheets.
+2. **Fundamental Caching (Manual step)**: Run `scripts/update_fundamentals.py` locally and push the cache to GitHub (if not already up-to-date for the quarter).
+3. **`2. Execute Pipeline (Step 1 & 2)`**: Automatically spawns 3 parallel runners. Evaluates global macro conditions for all tickers, merges surviving tickers, and evaluates company balance sheets using the local cache.
 
 ### Data Synchronization
 

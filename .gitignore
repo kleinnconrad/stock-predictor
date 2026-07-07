@@ -7,7 +7,10 @@ __pycache__/
 .ruff_cache/
 
 # Data & outputs (Do not commit large state files or logs)
-data/
+data/*
+!data/raw/
+data/raw/*
+!data/raw/fundamentals/
 outputs/
 artifacts_temp/
 logs/
