@@ -45,3 +45,6 @@ Whenever you start working on this repository, you MUST proactively check if the
 
 ## 8. Error Handling
 - Use specific exception handling (`try...except` blocks) instead of catching generic `Exception`s where possible, and provide informative error messages.
+
+## 9. Version Control & Committing
+- You MUST NEVER run `git commit` or push changes to the repository by yourself unless the user explicitly asks you to do so. Prepare the changes locally and inform the user so they can review and commit them manually.
