@@ -138,7 +138,10 @@ jobs:
                       else:
                           current_pred = payload_dict[ticker].get("final_prediction")
                           new_pred = data.get("final_prediction")
-                          if new_pred == "UP_FINAL_BUY" and current_pred == "UP":
+                          
+                          if "step2_model" in data and "step2_model" not in payload_dict[ticker]:
+                              payload_dict[ticker] = data
+                          elif new_pred == "UP_FINAL_BUY" and current_pred == "UP":
                               payload_dict[ticker] = data
               except Exception as e:
                   print(f"Failed to read {f}: {e}")
