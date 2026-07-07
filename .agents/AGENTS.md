@@ -1,16 +1,11 @@
-# Antigravity Guidelines
+# Agent Behavioral Rules for Stock Predictor
 
-This file contains foundational instructions and conventions for developing in this repository. AI agents and developers must strictly adhere to these rules.
-
-## Table of Contents
-- [1. Directory Structure](#1-directory-structure)
-- [2. Dependencies](#2-dependencies)
-- [3. Environment Execution](#3-environment-execution)
-- [4. Code Quality & Formatting](#4-code-quality--formatting)
-- [5. Language & Documentation Style](#5-language--documentation-style)
-- [6. Linting & Validation](#6-linting--validation)
-- [7. Security Best Practices](#7-security-best-practices)
-- [8. Error Handling](#8-error-handling)
+## Fundamental Data Cache Maintenance
+Whenever you start working on this repository, you MUST proactively check if the fundamental data cache is outdated.
+1. Check the current date. The financial quarters begin on January 1st (01.01), April 1st (01.04), July 1st (01.07), and October 1st (01.10).
+2. Check the last modified date of the files in `data/raw/fundamentals/`. 
+3. If a new quarter boundary has been crossed since the files were last updated, you MUST automatically run the `python scripts/update_fundamentals.py` script to refresh the fundamentals cache.
+4. Inform the user that you are running the quarterly fundamentals update in the background.
 
 ## 1. Directory Structure
 - The `src` directory is strictly reserved for the core logic of the application. 
