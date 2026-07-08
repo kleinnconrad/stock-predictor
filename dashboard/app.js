@@ -18,6 +18,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const kpiAcc = document.getElementById('kpi-acc');
   const kpiFailedStep2 = document.getElementById('kpi-failed-step2');
   const kpiMissingData = document.getElementById('kpi-missing-data');
+  const kpiSuppressed = document.getElementById('kpi-suppressed');
+  let suppressedCount = 0;
   
   const metaDate = document.getElementById('meta-date');
   const metaParams = document.getElementById('meta-params');
@@ -41,6 +43,14 @@ document.addEventListener('DOMContentLoaded', () => {
          executionDate = data.execution_date;
          parameters = data.parameters || {};
       }
+      
+      const originalLength = reportData.length;
+      reportData = reportData.filter(d => {
+        if (typeof d.latest_price === 'number' && d.latest_price <= 10) return false;
+        return true;
+      });
+      suppressedCount = originalLength - reportData.length;
+
       renderMetadata();
       calculateKPIs();
       renderTables();
@@ -87,6 +97,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const missingData = reportData.filter(d => d.final_prediction === 'UP' && (!d.step2_model || !d.step2_model.feature_diagnostics)).length;
     kpiMissingData.textContent = missingData;
+
+    if (kpiSuppressed) kpiSuppressed.textContent = suppressedCount;
 
     const accuracies = reportData
       .filter(d => d.step1_model && d.step1_model.cv_accuracy)

@@ -36,6 +36,23 @@ def execute_step2(funds_df: pd.DataFrame) -> Tuple[Dict[str, Any], str]:
     # Get the two most recent quarters
     q_latest = funds_df.iloc[-1]
     q_prev = funds_df.iloc[-2]
+
+    required_columns = [
+        'Total Revenue', 'Net Income', 'Operating Cash Flow',
+        'Free Cash Flow', 'Operating Income', 'Current Assets',
+        'Current Liabilities', 'Total Debt', 'Stockholders Equity'
+    ]
+
+    # Check for missing required columns
+    missing_cols = [col for col in required_columns if col not in funds_df.columns]
+    if missing_cols:
+        logger.warning(f"Missing required columns in fundamental data: {missing_cols}. Failing Step 2.")
+        return {}, "NOT_UP"
+
+    # Fail Step 2 if any required value is missing
+    if q_latest[required_columns].isna().any() or q_prev[required_columns].isna().any():
+        logger.warning("Financial statements have missing values for required fields. Failing Step 2.")
+        return {}, "NOT_UP"
     
     def safe_get(series, key):
         val = series.get(key, np.nan)
