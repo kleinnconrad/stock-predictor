@@ -18,7 +18,7 @@ Whenever you start working on this repository, you MUST proactively check if the
 - Any time a new Python dependency is introduced, it must be explicitly added to `requirements.txt` with appropriate version pinning to ensure reproducible builds.
 
 ## 3. Environment Execution
-- Execute local scripts using the Conda `myenv` environment to ensure consistency across local development setups.
+- Execute local scripts using the Conda `base` environment to ensure consistency across local development setups.
 - Provide clear instructions in the `README.md` if the Conda environment requires updating due to new dependencies.
 
 ## 4. Code Quality & Formatting
