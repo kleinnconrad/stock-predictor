@@ -4,7 +4,7 @@ import logging
 from typing import Dict, Any, Tuple
 from .base_pipeline import build_pipeline
 from .diagnostics import calculate_ks_and_cutoff, calculate_cv_accuracy, generate_confusion_matrix, generate_lift_chart
-from sklearn.model_selection import cross_val_predict, StratifiedKFold
+from sklearn.model_selection import TimeSeriesSplit
 import os
 import yaml
 
@@ -41,30 +41,40 @@ def execute_step1(df: pd.DataFrame, ticker: str = "UNKNOWN", n_features_out: int
     max_features = min(n_features_out, X_train.shape[1])
     pipeline = build_pipeline(n_features_out=max_features)
     
-    # Generate Cross-Validation probabilities.
-    # TimeSeriesSplit doesn't test the first fold, causing cross_val_predict to fail.
-    # We use StratifiedKFold just for generating full out-of-fold probabilities.
-    cv = StratifiedKFold(n_splits=3, shuffle=True, random_state=42)
-    # We need proba, cross_val_predict can return it if method='predict_proba'
+    # Generate Cross-Validation probabilities using strict TimeSeriesSplit
+    tscv = TimeSeriesSplit(n_splits=5)
+    y_prob_cv_all = np.full(len(y_train), np.nan)
+    
     try:
-        # Use error_score='raise' to catch fold exceptions and suppress the ugly FitFailedWarning stack traces
-        y_prob_cv = cross_val_predict(pipeline, X_train, y_train, cv=cv, method='predict_proba', n_jobs=-1)[:, 1]
+        # Manual loop to prevent data leakage in time series
+        for train_index, test_index in tscv.split(X_train):
+            X_train_fold, X_test_fold = X_train.iloc[train_index], X_train.iloc[test_index]
+            y_train_fold = y_train[train_index]
+            
+            pipeline.fit(X_train_fold, y_train_fold)
+            # Store predictions at the exact index of the test set
+            y_prob_cv_all[test_index] = pipeline.predict_proba(X_test_fold)[:, 1]
+            
     except Exception as e:
-        logger.error(f"Failed to generate CV probabilities: {e}")
-        # Fallback if there's an issue with CV splitting due to small dataset size
+        logger.error(f"Failed to generate TimeSeries CV probabilities: {e}")
         pipeline.fit(X_train, y_train)
-        y_prob_cv = pipeline.predict_proba(X_train)[:, 1]
-
-    # Calculate KS and Cutoff
-    ks_stat, ks_cutoff = calculate_ks_and_cutoff(y_train, y_prob_cv)
-    cv_accuracy = calculate_cv_accuracy(y_train, y_prob_cv, ks_cutoff)
+        y_prob_cv_all = pipeline.predict_proba(X_train)[:, 1]
+    
+    # Remove NaNs (affects the first training fold which has no test data)
+    valid_indices = ~np.isnan(y_prob_cv_all)
+    y_prob_cv_clean = y_prob_cv_all[valid_indices]
+    y_train_clean = y_train[valid_indices]
+    
+    # Calculate KS and Cutoff on clean data
+    ks_stat, ks_cutoff = calculate_ks_and_cutoff(y_train_clean, y_prob_cv_clean)
+    cv_accuracy = calculate_cv_accuracy(y_train_clean, y_prob_cv_clean, ks_cutoff)
     
     diag_dir = os.path.join('outputs', 'diagnostics', ticker)
     os.makedirs(diag_dir, exist_ok=True)
     
     # Generate Visual Artifacts for Cross Validation
-    generate_confusion_matrix(y_train, y_prob_cv, ks_cutoff, os.path.join(diag_dir, f"{ticker}_cv_confusion_matrix.png"))
-    generate_lift_chart(y_train, y_prob_cv, 10, os.path.join(diag_dir, f"{ticker}_cv_lift_chart.png"))
+    generate_confusion_matrix(y_train_clean, y_prob_cv_clean, ks_cutoff, os.path.join(diag_dir, f"{ticker}_cv_confusion_matrix.png"))
+    generate_lift_chart(y_train_clean, y_prob_cv_clean, 10, os.path.join(diag_dir, f"{ticker}_cv_lift_chart.png"))
     
     # Now fit on the entire historical dataset to get the final model weights for prediction
     pipeline.fit(X_train, y_train)

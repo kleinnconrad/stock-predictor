@@ -1,5 +1,6 @@
 import logging
 import pandas as pd
+import yaml
 import os
 from tqdm import tqdm
 from ..ingestion.xetra_t7 import fetch_xetra_t7

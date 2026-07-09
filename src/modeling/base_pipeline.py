@@ -3,7 +3,7 @@ from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler
 from sklearn.feature_selection import SelectKBest, f_classif, SequentialFeatureSelector, VarianceThreshold
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import TimeSeriesSplit
 
 def build_pipeline(n_features_out: int = 12) -> Pipeline:
     """
@@ -32,7 +32,7 @@ def build_pipeline(n_features_out: int = 12) -> Pipeline:
     logreg = LogisticRegression(class_weight='balanced', solver='liblinear', random_state=42)
     
     # 6. Sequential Feature Selector
-    cv = StratifiedKFold(n_splits=3, shuffle=True, random_state=42)
+    cv = TimeSeriesSplit(n_splits=5)
     sfs = SequentialFeatureSelector(logreg, n_features_to_select=n_features_out, cv=cv, n_jobs=-1)
     
     # Build the strict pipeline

@@ -30,7 +30,7 @@ def main():
     try:
         if args.ticker:
             logger.info(f"Single Ticker Mode activated for: {args.ticker}")
-            run_single(args.ticker)
+            run_single({"Ticker": args.ticker, "Company": args.ticker})
         else:
             logger.info("Batch Mode activated.")
             run_batch()
