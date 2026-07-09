@@ -520,7 +520,7 @@ target_features AS (
 SELECT 
     *,
     CASE 
-        WHEN Future_Return >= 0.15 THEN 1.0 
+        WHEN Future_Return >= 0.10 THEN 1.0 
         WHEN Future_Return IS NULL THEN NULL 
         ELSE 0.0 
     END AS Target

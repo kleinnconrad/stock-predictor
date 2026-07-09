@@ -87,7 +87,7 @@ def main():
                 "prediction_date": str(datetime.date.today()),
                 "applied_parameters": {
                     "horizon_days": settings.get('horizon_days', 126),
-                    "threshold": settings.get('threshold', 0.15),
+                    "threshold": settings.get('threshold', 0.10),
                     "step1_history_years": settings.get('step1_history_years', 10),
                     "step2_history_years": settings.get('step2_history_years', 4),
                     "features_to_select": settings.get('features_to_select', 12)

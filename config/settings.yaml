@@ -1,5 +1,5 @@
 horizon_days: 126
-threshold: 0.15
+threshold: 0.10
 features_to_select: 12
 step1_history_years: 10
 step2_history_years: 4

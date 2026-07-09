@@ -4,14 +4,14 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def engineer_features(df: pd.DataFrame, horizon_days: int = 126, threshold: float = 0.15) -> pd.DataFrame:
+def engineer_features(df: pd.DataFrame, horizon_days: int = 126, threshold: float = 0.10) -> pd.DataFrame:
     """
     Engineers technical indicators, macroeconomic features, and the target variable.
     
     Args:
         df (pd.DataFrame): The combined pricing and macro/fundamental DataFrame.
         horizon_days (int): The prediction horizon in days.
-        threshold (float): The target threshold for positive classification (e.g., 0.15 for 15%).
+        threshold (float): The target threshold for positive classification (e.g., 0.10 for 10%).
         
     Returns:
         pd.DataFrame: DataFrame with engineered features and the 'Target' column.

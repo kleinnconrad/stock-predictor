@@ -16,7 +16,7 @@ To improve computational efficiency, logically mimic human institutional investi
 
 1. **Action 1 (T7 Initialization & Qualification):** Extracts the universe of ~5,000 Xetra instruments directly from the Deutsche Börse network. It applies deterministic Pandas filters (`Instrument Type == 'CS'` and `Product Assignment Group Description == 'DEUTSCHLAND'`) to strip out ETFs, ETNs, warrants, and foreign listings. This narrows the dataset down to the ~250 relevant, domestic German equities, reducing compute requirements without relying on external LLM APIs.
 2. **Action 2 (Step 1 - Macro & Market Environment):** 
-   The system assesses whether the *global economic climate* and the stock's *specific price momentum* are conducive to a +15% gain over the next 6 months. If the Logistic Regression pipeline predicts "UP" for the most recent unobservable date (and its probability clears the dynamically calculated KS cutoff), the stock is passed to Step 2 via GitHub Artifacts.
+   The system assesses whether the *global economic climate* and the stock's *specific price momentum* are conducive to a +10% gain over the next 6 months. If the Logistic Regression pipeline predicts "UP" for the most recent unobservable date (and its probability clears the dynamically calculated KS cutoff), the stock is passed to Step 2 via GitHub Artifacts.
 3. **Action 3 (Step 2 - Company Fundamentals):** 
    If Step 1 flags the stock's current environment as "UP", the system evaluates the target company's latest quarterly financial health (Income Statements, Balance Sheets, Cash Flows) using a **Deterministic Rules Engine**. If the stock passes at least 3 out of 4 fundamental health rules, it is flagged as a Buy Candidate.
 

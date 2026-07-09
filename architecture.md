@@ -13,7 +13,7 @@ This document provides a detailed, modular architecture for a batch-processed, t
 **Core Parameters & Default Configurations:**
 *   **Target Classes:** `UP` (1) vs `NOT_UP` (0)
 *   **Prediction Horizon:** 126 trading days (~0.5 years)
-*   **Target Threshold:** 15% (+0.15)
+*   **Target Threshold:** 10% (+0.10)
 *   **Step 1 Data History:** 10 years (Target OHLCV + Global Macroeconomic Universe)
 *   **Step 2 Data History:** 4 years (Fundamental financial statement data)
 *   **Feature Selection Limit:** 12 variables per step
@@ -85,7 +85,7 @@ xetra_predictor/
 **Purpose:** Store all default hyperparameters.
 **Agent Instructions:** Create this YAML file with:
 *   `horizon_days`: 126
-*   `threshold`: 0.15
+*   `threshold`: 0.10
 *   `features_to_select`: 12
 *   `step1_history_years`: 10
 *   `step2_history_years`: 4
@@ -150,7 +150,7 @@ Crucially, define these two aggregate variables at the bottom of the file for th
       "prediction_date": "2026-06-17",
       "applied_parameters": {
         "horizon_days": 126,
-        "threshold": 0.15,
+        "threshold": 0.10,
         "step1_history_years": 10,
         "step2_history_years": 4,
         "features_to_select": 12
