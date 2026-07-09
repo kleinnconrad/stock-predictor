@@ -32,7 +32,12 @@ document.addEventListener('DOMContentLoaded', () => {
   fetch(dataUrl)
     .then(response => {
       if (!response.ok) throw new Error("Network response was not ok");
-      return response.json();
+      return response.text();
+    })
+    .then(text => {
+      // Python's json.dump writes float('inf') as Infinity which breaks JSON.parse
+      const safeText = text.replace(/(:\s*)(Infinity|-Infinity|NaN)\b/g, '$1"$2"');
+      return JSON.parse(safeText);
     })
     .then(data => {
       if (Array.isArray(data)) {
