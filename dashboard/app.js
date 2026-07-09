@@ -133,7 +133,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const companyDesc = d.company_description ? d.company_description : '';
     const priceStr = typeof d.latest_price === 'number' ? `€${d.latest_price.toFixed(2)}` : 'N/A';
     const acc = d.step1_model?.cv_accuracy ? (d.step1_model.cv_accuracy * 100).toFixed(1) : 0;
-    const ks = d.step1_model?.ks_cutoff ? d.step1_model.ks_cutoff.toFixed(3) : 'N/A';
+    const ksRaw = d.step1_model?.ks_cutoff;
+    const ks = typeof ksRaw === 'number' ? ksRaw.toFixed(3) : (ksRaw || 'N/A');
     const step1Class = d.step1_model?.predicted_class || 'N/A';
 
     let priceHtml = `<td>${priceStr}</td>`;
