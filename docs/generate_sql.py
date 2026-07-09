@@ -1,9 +1,15 @@
 import sys
 import os
 
-sys.path.append(r'c:\Users\klein\Desktop\stock-predictor')
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(project_root)
 
 from config.universe import ALL_FRED_INDICATORS, ALL_YF_TICKERS
+import yaml
+
+with open(os.path.join(project_root, 'config', 'settings.yaml'), 'r') as f:
+    settings = yaml.safe_load(f)
+threshold = settings.get('threshold', 0.10)
 
 RATE_KEYWORDS = ['TNX', 'IRX', 'VIX', 'UNRATE', 'T10Y2Y', 'EPU', 'ratio_', 'HUTTTT', 'NFCI', 'BAML', 'UMCSENT']
 MACRO_KEYWORDS = ['CPIAUCSL', 'M2SL', 'PAYEMS', 'UNRATE', 'ASSETS', 'PROIND', 'PERMIT']
@@ -137,14 +143,14 @@ sql_lines.append("-- 3. FINAL OUTPUT WITH BINARY TARGET")
 sql_lines.append("SELECT ")
 sql_lines.append("    *,")
 sql_lines.append("    CASE ")
-sql_lines.append("        WHEN Future_Return >= 0.10 THEN 1.0 ")
+sql_lines.append(f"        WHEN Future_Return >= {threshold} THEN 1.0 ")
 sql_lines.append("        WHEN Future_Return IS NULL THEN NULL ")
 sql_lines.append("        ELSE 0.0 ")
 sql_lines.append("    END AS Target")
 sql_lines.append("FROM target_features;")
 sql_lines.append("")
 
-out_path = r'c:\Users\klein\Desktop\stock-predictor\docs\feature_engineering.sql'
+out_path = os.path.join(project_root, 'docs', 'feature_engineering.sql')
 with open(out_path, 'w') as f:
     f.write('\n'.join(sql_lines))
 
