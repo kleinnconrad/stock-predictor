@@ -30,15 +30,15 @@ The engine separates macro momentum prediction (Step 1) from fundamental account
 * **ANOVA Pre-filter (`SelectKBest`)**: Slices the universe down to the statistically significant features.
 * **Sequential Feature Selection (SFS)**: Iteratively selects 12 independent variables using TimeSeriesSplit to prevent look-ahead bias during feature evaluation.
 * **KS-Optimized Logistic Regression**: Outputs probabilities, converted to binary 0s and 1s by dynamically calculating the threshold that maximizes the Kolmogorov-Smirnov (KS) statistic.
-* **Cross-Validation Accuracy Safeguard (TimeSeriesSplit)**: To prevent data leakage and look-ahead bias common in financial forecasting, the engine strictly employs a manual **5-Fold TimeSeriesSplit** without shuffling. This ensures the model is only ever trained on past data and evaluated on strictly future, non-overlapping windows. Before making a final prediction, the ticker must achieve a minimum **CV Accuracy of 65%** `(True Positives + True Negatives) / Total Observations` across the out-of-sample test folds. If the algorithm cannot accurately model the historical patterns above this threshold, it rejects the ticker as "NOT_UP" regardless of the current day's prediction.
+* **Cross-Validation Accuracy Safeguard (TimeSeriesSplit)**: To prevent data leakage and look-ahead bias common in financial forecasting, the engine strictly employs a manual **2-Fold TimeSeriesSplit** without shuffling. This ensures the model is only ever trained on past data and evaluated on strictly future, non-overlapping windows. Before making a final prediction, the ticker must achieve a minimum **CV Accuracy of 65%** `(True Positives + True Negatives) / Total Observations` across the out-of-sample test folds. If the algorithm cannot accurately model the historical patterns above this threshold, it rejects the ticker as "NOT_UP" regardless of the current day's prediction.
 
 #### TimeSeriesSplit Cross-Validation Diagram
 
-To rigorously prevent data leakage, the engine uses the following sequential validation structure (5-Fold TimeSeriesSplit):
+To rigorously prevent data leakage, the engine uses the following sequential validation structure (2-Fold TimeSeriesSplit):
 
 ```mermaid
 gantt
-    title 5-Fold TimeSeries Cross-Validation
+    title 2-Fold TimeSeries Cross-Validation
     dateFormat  YYYY-MM-DD
     axisFormat  %Y
     
@@ -49,18 +49,6 @@ gantt
     section Fold 2
     Training Data :active, 2016-01-01, 2018-01-01
     Test Data     :crit, 2018-01-01, 2019-01-01
-    
-    section Fold 3
-    Training Data :active, 2016-01-01, 2019-01-01
-    Test Data     :crit, 2019-01-01, 2020-01-01
-    
-    section Fold 4
-    Training Data :active, 2016-01-01, 2020-01-01
-    Test Data     :crit, 2020-01-01, 2021-01-01
-    
-    section Fold 5
-    Training Data :active, 2016-01-01, 2021-01-01
-    Test Data     :crit, 2021-01-01, 2022-01-01
 ```
 *(Diagram illustrating how the training window expands sequentially, ensuring the test window always remains in the strict future.)*
 

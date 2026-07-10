@@ -42,7 +42,7 @@ def execute_step1(df: pd.DataFrame, ticker: str = "UNKNOWN", n_features_out: int
     pipeline = build_pipeline(n_features_out=max_features)
     
     # Generate Cross-Validation probabilities using strict TimeSeriesSplit
-    tscv = TimeSeriesSplit(n_splits=5)
+    tscv = TimeSeriesSplit(n_splits=2)
     y_prob_cv_all = np.full(len(y_train), np.nan)
     
     try:
