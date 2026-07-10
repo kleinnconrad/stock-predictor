@@ -150,12 +150,19 @@ document.addEventListener('DOMContentLoaded', () => {
       const cm = d.step1_model.cv_confusion_matrix;
       cmHtml = `
         <td>
-          <table style="font-size: 0.8rem; text-align: center; border-collapse: collapse; margin: 0 auto;">
+          <table style="font-size: 0.75rem; text-align: center; border-collapse: collapse; margin: 0 auto;">
             <tr>
+              <td></td>
+              <td style="color: var(--text-muted); padding-bottom: 2px;">Pred NOT_UP</td>
+              <td style="color: var(--text-muted); padding-bottom: 2px;">Pred UP</td>
+            </tr>
+            <tr>
+              <td style="color: var(--text-muted); text-align: right; padding-right: 6px;">True NOT_UP</td>
               <td style="border: 1px dashed var(--border-color); padding: 4px;" class="true-negative" title="True Negative">${cm.TN}</td>
               <td style="border: 1px dashed var(--border-color); padding: 4px;" class="false-positive" title="False Positive">${cm.FP}</td>
             </tr>
             <tr>
+              <td style="color: var(--text-muted); text-align: right; padding-right: 6px;">True UP</td>
               <td style="border: 1px dashed var(--border-color); padding: 4px;" class="false-negative" title="False Negative">${cm.FN}</td>
               <td style="border: 1px dashed var(--border-color); padding: 4px;" class="true-positive" title="True Positive">${cm.TP}</td>
             </tr>
