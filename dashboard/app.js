@@ -144,6 +144,33 @@ document.addEventListener('DOMContentLoaded', () => {
       </td>`;
     }
 
+    let cmHtml = '<td style="color: var(--text-muted);">N/A</td>';
+    let cmRuleHtml = '<td style="color: var(--text-muted);">N/A</td>';
+    if (d.step1_model && d.step1_model.cv_confusion_matrix) {
+      const cm = d.step1_model.cv_confusion_matrix;
+      cmHtml = `
+        <td>
+          <table style="font-size: 0.8rem; text-align: center; border-collapse: collapse; margin: 0 auto;">
+            <tr>
+              <td style="border: 1px dashed var(--border-color); padding: 4px;" class="true-negative" title="True Negative">${cm.TN}</td>
+              <td style="border: 1px dashed var(--border-color); padding: 4px;" class="false-positive" title="False Positive">${cm.FP}</td>
+            </tr>
+            <tr>
+              <td style="border: 1px dashed var(--border-color); padding: 4px;" class="false-negative" title="False Negative">${cm.FN}</td>
+              <td style="border: 1px dashed var(--border-color); padding: 4px;" class="true-positive" title="True Positive">${cm.TP}</td>
+            </tr>
+          </table>
+        </td>
+      `;
+      cmRuleHtml = `
+        <td style="font-size: 0.9rem; font-weight: bold;">
+          ${d.step1_model.cm_rule_passed 
+            ? '<span style="color: var(--status-green);" title="TP > FN & TN > FP">✅ Pass</span>' 
+            : '<span style="color: var(--status-red);" title="TP > FN & TN > FP not met">❌ Fail</span>'}
+        </td>
+      `;
+    }
+
     return `
       <td class="ticker-name">
         <div style="font-weight: bold;">${stockName}</div>
@@ -157,6 +184,8 @@ document.addEventListener('DOMContentLoaded', () => {
         ${acc > 0 ? `${acc}% <div class="acc-bar-bg"><div class="acc-bar-fill" style="width: ${acc}%"></div></div>` : 'N/A'}
       </td>
       <td>${ks}</td>
+      ${cmHtml}
+      ${cmRuleHtml}
     `;
   }
 
@@ -284,39 +313,7 @@ document.addEventListener('DOMContentLoaded', () => {
           items += `<div class="var-item"><span class="var-key">${k}</span><span class="var-value">${Number(v).toFixed(4)}</span></div>`;
         }
         
-        let cmHtml = '';
-        if (d.step1_model.cv_confusion_matrix) {
-          const cm = d.step1_model.cv_confusion_matrix;
-          cmHtml = `
-            <div style="margin-top: 1rem;">
-              <h5 style="color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">CV Confusion Matrix</h5>
-              <table class="cm-table">
-                <tr>
-                  <th></th>
-                  <th>Pred NOT_UP</th>
-                  <th>Pred UP</th>
-                </tr>
-                <tr>
-                  <th>True NOT_UP</th>
-                  <td class="cm-cell true-negative">${cm.TN}</td>
-                  <td class="cm-cell false-positive">${cm.FP}</td>
-                </tr>
-                <tr>
-                  <th>True UP</th>
-                  <td class="cm-cell false-negative">${cm.FN}</td>
-                  <td class="cm-cell true-positive">${cm.TP}</td>
-                </tr>
-              </table>
-              <div style="margin-top: 1rem; font-size: 0.9rem; font-weight: bold;">
-                ${d.step1_model.cm_rule_passed 
-                  ? '<span style="color: var(--status-green);">✅ CM Rule Passed (TP > FN & TN > FP)</span>' 
-                  : '<span style="color: var(--status-red);">❌ CM Rule Failed (TP > FN & TN > FP not met)</span>'}
-              </div>
-            </div>
-          `;
-        }
-        
-        step1Html = `<h4>Step 1: Macro Predictors & Weights</h4><div class="var-grid">${items}</div>${cmHtml}`;
+        step1Html = `<h4>Step 1: Macro Predictors & Weights</h4><div class="var-grid">${items}</div>`;
       }
       
       let step2Html = '';
