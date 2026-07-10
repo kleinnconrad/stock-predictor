@@ -307,6 +307,11 @@ document.addEventListener('DOMContentLoaded', () => {
                   <td class="cm-cell true-positive">${cm.TP}</td>
                 </tr>
               </table>
+              <div style="margin-top: 1rem; font-size: 0.9rem; font-weight: bold;">
+                ${d.step1_model.cm_rule_passed 
+                  ? '<span style="color: var(--status-green);">✅ CM Rule Passed (TP > FN & TN > FP)</span>' 
+                  : '<span style="color: var(--status-red);">❌ CM Rule Failed (TP > FN & TN > FP not met)</span>'}
+              </div>
             </div>
           `;
         }

@@ -135,12 +135,23 @@ def execute_step1(df: pd.DataFrame, ticker: str = "UNKNOWN", n_features_out: int
         logger.warning(f"Failed to load min_cv_accuracy from settings.yaml: {e}. Defaulting to 0.65")
         min_cv_accuracy = 0.65
 
+    # Evaluate Confusion Matrix Rule: TP > FN and TN > FP
+    cm_rule_passed = False
+    if cv_confusion_matrix:
+        tp = cv_confusion_matrix.get("TP", 0)
+        fn = cv_confusion_matrix.get("FN", 0)
+        tn = cv_confusion_matrix.get("TN", 0)
+        fp = cv_confusion_matrix.get("FP", 0)
+        cm_rule_passed = (tp > fn) and (tn > fp)
+
     # Determine predicted class for the most recent date
     latest_pred_class = "NOT_UP"
     if len(y_pred_prob) > 0:
         latest_prob = y_pred_prob[-1]
         if cv_accuracy < min_cv_accuracy:
             logger.info(f"Failed Step 1 for {ticker}: CV Accuracy ({cv_accuracy:.2f}) is below the {min_cv_accuracy} threshold.")
+        elif not cm_rule_passed:
+            logger.info(f"Failed Step 1 for {ticker}: Confusion Matrix rule failed (TP: {tp}, FN: {fn}, TN: {tn}, FP: {fp}).")
         elif latest_prob >= ks_cutoff:
             latest_pred_class = "UP"
             
@@ -158,7 +169,8 @@ def execute_step1(df: pd.DataFrame, ticker: str = "UNKNOWN", n_features_out: int
         "predicted_class": latest_pred_class,
         "selected_predictors_and_weights": selected_predictors_and_weights,
         "feature_diagnostics": feature_diagnostics,
-        "cv_confusion_matrix": cv_confusion_matrix
+        "cv_confusion_matrix": cv_confusion_matrix,
+        "cm_rule_passed": cm_rule_passed
     }
     
     mat_dir = os.path.join('outputs', 'matrices')
