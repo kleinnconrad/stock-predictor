@@ -283,7 +283,35 @@ document.addEventListener('DOMContentLoaded', () => {
         for (const [k, v] of Object.entries(d.step1_model.selected_predictors_and_weights)) {
           items += `<div class="var-item"><span class="var-key">${k}</span><span class="var-value">${Number(v).toFixed(4)}</span></div>`;
         }
-        step1Html = `<h4>Step 1: Macro Predictors & Weights</h4><div class="var-grid">${items}</div>`;
+        
+        let cmHtml = '';
+        if (d.step1_model.cv_confusion_matrix) {
+          const cm = d.step1_model.cv_confusion_matrix;
+          cmHtml = `
+            <div style="margin-top: 1rem;">
+              <h5 style="color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">CV Confusion Matrix</h5>
+              <table class="cm-table">
+                <tr>
+                  <th></th>
+                  <th>Pred NOT_UP</th>
+                  <th>Pred UP</th>
+                </tr>
+                <tr>
+                  <th>True NOT_UP</th>
+                  <td class="cm-cell true-negative">${cm.TN}</td>
+                  <td class="cm-cell false-positive">${cm.FP}</td>
+                </tr>
+                <tr>
+                  <th>True UP</th>
+                  <td class="cm-cell false-negative">${cm.FN}</td>
+                  <td class="cm-cell true-positive">${cm.TP}</td>
+                </tr>
+              </table>
+            </div>
+          `;
+        }
+        
+        step1Html = `<h4>Step 1: Macro Predictors & Weights</h4><div class="var-grid">${items}</div>${cmHtml}`;
       }
       
       let step2Html = '';

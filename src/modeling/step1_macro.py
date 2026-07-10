@@ -3,7 +3,7 @@ import numpy as np
 import logging
 from typing import Dict, Any, Tuple
 from .base_pipeline import build_pipeline
-from .diagnostics import calculate_ks_and_cutoff, calculate_cv_accuracy, generate_confusion_matrix, generate_lift_chart
+from .diagnostics import calculate_ks_and_cutoff, calculate_cv_accuracy, generate_confusion_matrix, generate_lift_chart, get_confusion_matrix_dict
 from sklearn.model_selection import TimeSeriesSplit
 import os
 import yaml
@@ -68,6 +68,7 @@ def execute_step1(df: pd.DataFrame, ticker: str = "UNKNOWN", n_features_out: int
     # Calculate KS and Cutoff on clean data
     ks_stat, ks_cutoff = calculate_ks_and_cutoff(y_train_clean, y_prob_cv_clean)
     cv_accuracy = calculate_cv_accuracy(y_train_clean, y_prob_cv_clean, ks_cutoff)
+    cv_confusion_matrix = get_confusion_matrix_dict(y_train_clean, y_prob_cv_clean, ks_cutoff)
     
     diag_dir = os.path.join('outputs', 'diagnostics', ticker)
     os.makedirs(diag_dir, exist_ok=True)
@@ -156,7 +157,8 @@ def execute_step1(df: pd.DataFrame, ticker: str = "UNKNOWN", n_features_out: int
         "latest_prob": float(latest_prob) if len(y_pred_prob) > 0 else None,
         "predicted_class": latest_pred_class,
         "selected_predictors_and_weights": selected_predictors_and_weights,
-        "feature_diagnostics": feature_diagnostics
+        "feature_diagnostics": feature_diagnostics,
+        "cv_confusion_matrix": cv_confusion_matrix
     }
     
     mat_dir = os.path.join('outputs', 'matrices')

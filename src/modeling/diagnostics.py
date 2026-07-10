@@ -41,6 +41,17 @@ def calculate_cv_accuracy(y_true: np.ndarray, y_prob_1: np.ndarray, cutoff: floa
     y_pred = (y_prob_1 >= cutoff).astype(int)
     return accuracy_score(y_true, y_pred)
 
+def get_confusion_matrix_dict(y_true: np.ndarray, y_prob_1: np.ndarray, cutoff: float) -> dict:
+    """
+    Returns a dictionary of TP, FP, TN, FN given the predictions and cutoff.
+    """
+    y_pred = (y_prob_1 >= cutoff).astype(int)
+    cm = confusion_matrix(y_true, y_pred)
+    if cm.shape == (2, 2):
+        tn, fp, fn, tp = cm.ravel()
+        return {"TN": int(tn), "FP": int(fp), "FN": int(fn), "TP": int(tp)}
+    return {}
+
 def generate_confusion_matrix(y_true: np.ndarray, y_prob_1: np.ndarray, cutoff: float, output_path: str):
     """
     Generates and saves a confusion matrix plot.

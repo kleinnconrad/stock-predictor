@@ -431,3 +431,36 @@ details.stock-variables[open] summary::before {
   text-align: right;
   word-break: break-word;
 }
+
+/* Confusion Matrix */
+.cm-table {
+  width: 100%;
+  max-width: 300px;
+  border-collapse: collapse;
+  text-align: center;
+  margin-top: 1rem;
+  font-family: inherit;
+}
+
+.cm-table th, .cm-table td {
+  padding: 0.5rem;
+  border: 1px dashed var(--border-color);
+  font-weight: normal;
+}
+
+.cm-table th {
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-size: 0.85rem;
+}
+
+.cm-cell {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+.cm-cell.true-positive, .cm-cell.true-negative {
+  color: var(--status-green);
+}
+.cm-cell.false-positive, .cm-cell.false-negative {
+  color: var(--status-red);
+}
