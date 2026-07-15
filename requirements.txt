@@ -24,8 +24,6 @@ cffi==2.1.0
     #   curl-cffi
 charset-normalizer==3.4.9
     # via requests
-colorama==0.4.6
-    # via tqdm
 contourpy==1.3.3
     # via matplotlib
 cryptography==49.0.0
@@ -61,7 +59,7 @@ lxml==6.1.1
     # via pandas-datareader
 markdown-it-py==4.2.0
     # via rich
-matplotlib==3.8.4
+matplotlib==3.11.0
     # via
     #   -r requirements.in
     #   seaborn
@@ -69,7 +67,9 @@ mdurl==0.1.2
     # via markdown-it-py
 multitasking==0.0.13
     # via yfinance
-numpy==2.2.0
+narwhals==2.24.0
+    # via scikit-learn
+numpy==2.5.1
     # via
     #   -r requirements.in
     #   contourpy
@@ -115,11 +115,11 @@ python-dateutil==2.9.0.post0
     # via
     #   matplotlib
     #   pandas
-python-dotenv==1.0.0
+python-dotenv==1.2.2
     # via -r requirements.in
 pytz==2026.2
     # via yfinance
-pyyaml==6.0.1
+pyyaml==6.0.3
     # via -r requirements.in
 requests==2.34.2
     # via
@@ -130,7 +130,7 @@ requests==2.34.2
     #   yfinance
 rich==15.0.0
     # via curl-cffi
-scikit-learn==1.6.0
+scikit-learn==1.9.0
     # via -r requirements.in
 scipy==1.18.0
     # via
@@ -160,8 +160,6 @@ typing-extensions==4.16.0
     #   typing-inspection
 typing-inspection==0.4.2
     # via pydantic
-tzdata==2026.3
-    # via pandas
 urllib3==2.7.0
     # via requests
 websockets==16.1
