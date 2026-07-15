@@ -15,7 +15,9 @@ jobs:
           python-version-file: '.python-version'
 
       - name: Install Dependencies
-        run: pip install -r requirements.txt
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install -r requirements.txt
 
       - name: Run T7 Extraction
         run: python scripts/01_run_t7.py
