@@ -11,6 +11,7 @@ import argparse
 import yaml
 import datetime
 import pandas as pd
+import yfinance as yf
 from tqdm import tqdm
 from src.ingestion.global_macro import fetch_global_macro_universe
 from src.ingestion.market_api import fetch_step1_data
@@ -79,11 +80,31 @@ def main():
             # Fetch company profile from Gemini API
             profile = fetch_company_profile(ticker, company_name)
 
+            # Fetch P/E ratio, Beta, and Liquidity from yfinance
+            try:
+                info = yf.Ticker(ticker).info
+                pe_ratio = info.get('trailingPE', None)
+                beta = info.get('beta', None)
+                avg_vol = info.get('averageVolume', None)
+                
+                if avg_vol is not None and latest_price is not None:
+                    liquidity = (avg_vol * latest_price) / 1_000_000
+                else:
+                    liquidity = None
+            except Exception as e:
+                print(f"Warning: Failed to fetch info for {ticker}: {e}")
+                pe_ratio = None
+                beta = None
+                liquidity = None
+
             pred_payload = {
                 "stock_name": ticker,
                 "company_name": profile.get("full_name", "Unknown"),
                 "company_description": profile.get("description", "No description available."),
                 "latest_price": latest_price,
+                "pe_ratio": pe_ratio,
+                "beta": beta,
+                "liquidity": liquidity,
                 "prediction_date": str(datetime.date.today()),
                 "applied_parameters": {
                     "horizon_days": settings.get('horizon_days', 126),

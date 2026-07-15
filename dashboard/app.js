@@ -136,6 +136,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const ksRaw = d.step1_model?.ks_cutoff;
     const ks = typeof ksRaw === 'number' ? ksRaw.toFixed(3) : (ksRaw || 'N/A');
     const step1Class = d.step1_model?.predicted_class || 'N/A';
+    const peRatio = typeof d.pe_ratio === 'number' ? d.pe_ratio.toFixed(2) : (d.pe_ratio || 'N/A');
+    const beta = typeof d.beta === 'number' ? d.beta.toFixed(2) : (d.beta || 'N/A');
+    const liquidity = typeof d.liquidity === 'number' ? d.liquidity.toFixed(2) : (d.liquidity || 'N/A');
 
     let priceHtml = `<td>${priceStr}</td>`;
     if (typeof d.latest_price === 'number' && d.latest_price <= 30) {
@@ -185,6 +188,9 @@ document.addEventListener('DOMContentLoaded', () => {
         ${companyDesc ? `<div style="font-size: 0.75em; color: var(--text-muted); opacity: 0.8; margin-top: 2px; font-weight: normal; max-width: 300px; white-space: normal;">${companyDesc}</div>` : ''}
       </td>
       ${priceHtml}
+      <td>${peRatio}</td>
+      <td>${beta}</td>
+      <td>${liquidity}</td>
       <td>${getStatusHtml(d.final_prediction)}</td>
       <td>${getStatusHtml(step1Class)}</td>
       <td>
@@ -222,6 +228,15 @@ document.addEventListener('DOMContentLoaded', () => {
       } else if (col === 'latest_price') {
         valA = typeof a.latest_price === 'number' ? a.latest_price : -1;
         valB = typeof b.latest_price === 'number' ? b.latest_price : -1;
+      } else if (col === 'pe_ratio') {
+        valA = typeof a.pe_ratio === 'number' ? a.pe_ratio : -9999;
+        valB = typeof b.pe_ratio === 'number' ? b.pe_ratio : -9999;
+      } else if (col === 'beta') {
+        valA = typeof a.beta === 'number' ? a.beta : -9999;
+        valB = typeof b.beta === 'number' ? b.beta : -9999;
+      } else if (col === 'liquidity') {
+        valA = typeof a.liquidity === 'number' ? a.liquidity : -9999;
+        valB = typeof b.liquidity === 'number' ? b.liquidity : -9999;
       } else if (col === 'final_prediction') {
         valA = a.final_prediction || '';
         valB = b.final_prediction || '';
