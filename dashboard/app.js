@@ -138,12 +138,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const step1Class = d.step1_model?.predicted_class || 'N/A';
     const peRatio = typeof d.pe_ratio === 'number' ? d.pe_ratio.toFixed(2) : (d.pe_ratio || 'N/A');
     const beta = typeof d.beta === 'number' ? d.beta.toFixed(2) : (d.beta || 'N/A');
-    const liquidity = typeof d.liquidity === 'number' ? d.liquidity.toFixed(2) : (d.liquidity || 'N/A');
+    const liquidityStr = typeof d.liquidity === 'number' ? d.liquidity.toFixed(2) : (d.liquidity || 'N/A');
 
     let priceHtml = `<td>${priceStr}</td>`;
-    if (typeof d.latest_price === 'number' && d.latest_price <= 30) {
-      priceHtml = `<td style="color: var(--status-red); font-weight: bold;" title="Warning: Small price differences change the model outcome completely. Robust prediction not possible for stocks <= 30€.">
-        ${priceStr} [!WARN]
+    
+    let liquidityHtml = `<td>${liquidityStr}</td>`;
+    if (typeof d.liquidity === 'number' && d.liquidity < 0.5) {
+      liquidityHtml = `<td style="color: var(--status-red); font-weight: bold;" title="Warning: Low liquidity (< €0.5M). High risk of orderbook slippage. Large orders may significantly impact the stock price.">
+        ${liquidityStr} [!WARN]
       </td>`;
     }
 
@@ -190,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
       ${priceHtml}
       <td>${peRatio}</td>
       <td>${beta}</td>
-      <td>${liquidity}</td>
+      ${liquidityHtml}
       <td>${getStatusHtml(d.final_prediction)}</td>
       <td>${getStatusHtml(step1Class)}</td>
       <td>
