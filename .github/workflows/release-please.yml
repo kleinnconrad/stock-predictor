@@ -14,5 +14,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: googleapis/release-please-action@v4
+        id: release
         with:
           release-type: python
+
+      - name: Append Disclaimer to Release Notes
+        if: ${{ steps.release.outputs.release_created }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.release.outputs.tag_name }}
+          append_body: true
+          body: |
+
+            ---
+            **Legal & Attribution**
+            Copyright © 2026 Conrad Kleinn. Alle Rechte vorbehalten. / All rights reserved. > This software, its architectural components, and the associated quantitative methodology are the sole property of Conrad Kleinn. Unauthorized copying, modification, or distribution of this file via any medium is strictly prohibited.
