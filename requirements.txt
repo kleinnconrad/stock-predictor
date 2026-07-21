@@ -36,9 +36,9 @@ distro==1.9.0
     # via google-genai
 fonttools==4.63.0
     # via matplotlib
-google-auth[requests]==2.55.2
+google-auth[requests]==2.56.2
     # via google-genai
-google-genai==2.12.1
+google-genai==2.13.0
     # via -r requirements.in
 h11==0.16.0
     # via httpcore
