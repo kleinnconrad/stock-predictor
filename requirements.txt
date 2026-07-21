@@ -36,9 +36,9 @@ distro==1.9.0
     # via google-genai
 fonttools==4.63.0
     # via matplotlib
-google-auth[requests]==2.56.0
+google-auth[requests]==2.55.2
     # via google-genai
-google-genai==2.11.0
+google-genai==2.12.1
     # via -r requirements.in
 h11==0.16.0
     # via httpcore
@@ -59,7 +59,7 @@ lxml==6.1.1
     # via pandas-datareader
 markdown-it-py==4.2.0
     # via rich
-matplotlib==3.11.0
+matplotlib==3.11.1
     # via
     #   -r requirements.in
     #   seaborn
@@ -148,7 +148,7 @@ tenacity==9.1.4
     # via google-genai
 threadpoolctl==3.6.0
     # via scikit-learn
-tqdm==4.68.4
+tqdm==4.69.0
     # via -r requirements.in
 typing-extensions==4.16.0
     # via
