@@ -55,8 +55,9 @@ def engineer_features(df: pd.DataFrame, horizon_days: int = 126, threshold: floa
         # So we keep Future_Return as NaN, and we'll separate training and prediction sets later.
         data.loc[data['Future_Return'].isna(), 'Target'] = np.nan
         
-        # Drop intermediary columns if desired, but SMA_50 etc might be useful
-        data = data.drop(columns=['SMA_50', 'SMA_200'])
+        # Drop intermediary columns and non-stationary absolute price/volume features
+        cols_to_drop = ['SMA_50', 'SMA_200', 'Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume']
+        data = data.drop(columns=[c for c in cols_to_drop if c in data.columns])
         
         return data
     except Exception as e:
