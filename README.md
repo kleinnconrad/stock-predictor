@@ -2,9 +2,9 @@
 [![1. T7 Download (Initialization)](https://github.com/kleinnconrad/stock-predictor/actions/workflows/01_t7_download.yml/badge.svg?branch=main)](https://github.com/kleinnconrad/stock-predictor/actions/workflows/01_t7_download.yml)
 [![2. Execute Pipeline (Step 1 & 2)](https://github.com/kleinnconrad/stock-predictor/actions/workflows/02_run_pipeline.yml/badge.svg?branch=main)](https://github.com/kleinnconrad/stock-predictor/actions/workflows/02_run_pipeline.yml)
 ## Table of Contents
-- [How the Engine Works: The Two-Step Cascade](#how-the-engine-works-the-two-step-cascade)
+- [How the Engine Works](#how-the-engine-works)
 - [Architecture Diagram](#architecture-diagram)
-- [The 360-Degree Data Universe](#the-360-degree-data-universe)
+- [The variable set](#the-variable-set)
 - [Execution Guide](#execution-guide)
 - [Dependency Management](#dependency-management)
 - [Release Management](#release-management)
@@ -13,7 +13,7 @@
 
 A modular, distributed machine learning pipeline designed to predict German Xetra (`.DE`) stock price movements over a 6-month (126 trading day) horizon. The system utilizes a 360-degree global macroeconomic universe coupled with target company fundamentals, passing data through a Two-Step Cascade using Kolmogorov-Smirnov (KS) optimized Logistic Regression models.
 
-## How the Engine Works: The Two-Step Cascade
+## How the Engine Works
 
 To improve computational efficiency, logically mimic human institutional investing, and bypass API rate limits, the model evaluates stocks across three distributed GitHub Actions:
 
@@ -94,7 +94,7 @@ graph LR
 
 ---
 
-## The 360-Degree Data Universe
+## The variable set
 
 To prevent Yahoo Finance IP bans, the entire Macro universe is pre-fetched and cached in memory *once* before the ticker loop begins. Raw asset prices are mathematically transformed into a matrix of stationary quantitative features before being injected into the models.
 
