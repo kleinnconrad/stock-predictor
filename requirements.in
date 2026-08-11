@@ -10,4 +10,4 @@ matplotlib==3.11.1
 seaborn==0.13.2
 scipy==1.18.0
 python-dotenv==1.2.2
-google-genai==2.16.0
+google-genai==2.17.0
