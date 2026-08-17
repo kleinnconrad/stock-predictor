@@ -1,7 +1,7 @@
 # Source Code Documentation (`src/`)
 
 ## Table of Contents
-- [Module Interaction Flowchart](#module-interaction-flowchart)
+- [Runtime View](#runtime-view)
 - [1. `ingestion/`](#1-ingestion)
 - [2. `processing/`](#2-processing)
 - [3. `modeling/`](#3-modeling)
@@ -9,54 +9,54 @@
 
 This directory contains the entire codebase for the Xetra Two-Step Stock Prediction Engine. The architecture is modularized into four distinct layers: Ingestion, Processing, Modeling, and Orchestration. 
 
-## Module Interaction Flowchart
+## Runtime View
 
 ```mermaid
-graph TD
-    %% Orchestration Layer
-    BR([orchestration/batch_runner.py<br/><i>Orchestrator</i>])
-    JE([orchestration/json_exporter.py])
+sequenceDiagram
+    participant BR as batch_runner.py
+    participant T7 as xetra_t7.py
+    participant QUAL as qualifier.py
+    participant GM as global_macro.py
+    participant MA as market_api.py
+    participant CP as company_profile.py
+    participant FEAT as features.py
+    participant S1 as step1_macro.py
+    participant BP as base_pipeline.py
+    participant DIAG as diagnostics.py
+    participant FA as funds_api.py
+    participant S2 as step2_funds.py
+    participant JE as json_exporter.py
 
-    %% Ingestion Layer
-    T7[ingestion/xetra_t7.py]
-    GM[ingestion/global_macro.py]
-    MA[ingestion/market_api.py]
-    FA[ingestion/funds_api.py]
-    CP[ingestion/company_profile.py]
-
-    %% Processing Layer
-    QUAL{processing/qualifier.py}
-    FEAT{processing/features.py}
-
-    %% Modeling Layer
-    BP[modeling/base_pipeline.py]
-    DIAG[modeling/diagnostics.py]
-    S1(modeling/step1_macro.py)
-    S2(modeling/step2_funds.py)
-
-    %% Flow Mapping
-    BR -->|1. Fetch Raw Tickers| T7
-    T7 --> QUAL
-    QUAL -->|Returns .DE Tickers| BR
-
-    BR -->|2. Build Macro Matrix| GM
-
-    BR -->|3. Start Ticker Loop| MA
-    MA -->|Fetch Company Profile| CP
-    MA -->|Join target OHLCV with Macro| FEAT
-    FEAT -->|Engineer Target & Technicals| S1
+    BR->>T7: 1. Fetch Raw Tickers
+    T7->>QUAL: Pass raw T7 data
+    QUAL-->>BR: Return active .DE Tickers
     
-    S1 -.->|Instantiates| BP
-    S1 -.->|Calculates KS| DIAG
-    S1 -->|Returns Passing Dates| BR
+    BR->>GM: 2. Build Macro Matrix
+    GM-->>BR: Return engineered Macro Matrix
 
-    BR -->|4. If Passed Step 1| FA
-    FA -->|Fetch Quarterlies| S2
-    
-    S2 -.->|Evaluates 4-Rule Health Checklist| BR
-    S2 -->|Returns Final Buy Signal| BR
+    loop For each ticker in .DE Tickers
+        BR->>MA: 3. Start Ticker Loop
+        MA->>CP: Fetch Company Profile
+        CP-->>MA: Name & Description
+        MA->>FEAT: Join OHLCV with Macro
+        FEAT->>S1: Engineer Target & Technicals
+        
+        S1->>BP: Instantiate Pipeline
+        BP-->>S1: Pipeline Object
+        S1->>DIAG: Calculate KS Statistic
+        DIAG-->>S1: Performance Metrics
+        S1-->>BR: Returns Passing Dates
 
-    BR -->|5. Export Payload| JE
+        opt If Passed Step 1
+            BR->>FA: 4. Fetch Quarterlies
+            FA->>S2: Forward financial statements
+            S2->>S2: Evaluate 4-Rule Health Checklist
+            S2-->>BR: Returns Final Buy Signal
+        end
+    end
+
+    BR->>JE: 5. Export Payload
+    JE-->>BR: File written to disk
 ```
 
 Below is a precise breakdown of every folder and the specific responsibilities of each script.
