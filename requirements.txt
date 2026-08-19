@@ -38,7 +38,7 @@ fonttools==4.63.0
     # via matplotlib
 google-auth[requests]==2.56.2
     # via google-genai
-google-genai==2.17.0
+google-genai==2.18.1
     # via -r requirements.in
 h11==0.16.0
     # via httpcore
@@ -56,7 +56,9 @@ joblib==1.5.3
 kiwisolver==1.5.0
     # via matplotlib
 lxml==6.1.1
-    # via pandas-datareader
+    # via
+    #   pandas-datareader
+    #   yfinance
 markdown-it-py==4.2.0
     # via rich
 matplotlib==3.11.1
@@ -69,7 +71,7 @@ multitasking==0.0.13
     # via yfinance
 narwhals==2.24.0
     # via scikit-learn
-numpy==2.5.1
+numpy==2.5.2
     # via
     #   -r requirements.in
     #   contourpy
@@ -166,7 +168,7 @@ websockets==16.1
     # via
     #   google-genai
     #   yfinance
-yfinance==1.5.2
+yfinance==1.6.0
     # via -r requirements.in
 
 # The following packages are considered to be unsafe in a requirements file:
