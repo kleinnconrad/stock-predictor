@@ -3,6 +3,8 @@ import sys
 import time
 import random
 import logging
+import re
+from datetime import datetime
 import pandas as pd
 import yfinance as yf
 from tqdm import tqdm
@@ -100,6 +102,28 @@ def update_all_fundamentals():
         if not success:
             logger.warning(f"Could not fetch fundamental data for {ticker} after all retries and fallback options.")
             
+    # Update README.md with the current date
+    readme_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'README.md')
+    if os.path.exists(readme_path):
+        try:
+            with open(readme_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            
+            # Format date for shields.io (needs double dash for a single dash display)
+            current_date = datetime.now().strftime('%Y--%m--%d')
+            pattern = r'Fundamentals_Last_Updated-\d{4}--\d{2}--\d{2}'
+            replacement = f'Fundamentals_Last_Updated-{current_date}'
+            
+            if re.search(pattern, content):
+                new_content = re.sub(pattern, replacement, content)
+                with open(readme_path, 'w', encoding='utf-8') as f:
+                    f.write(new_content)
+                logger.info(f"Updated README.md with new fundamentals date: {datetime.now().strftime('%Y-%m-%d')}")
+            else:
+                logger.warning("Could not find the last updated badge in README.md to update.")
+        except Exception as e:
+            logger.error(f"Failed to update README.md date: {e}")
+
     logger.info(f"Update complete. Successfully fetched {success_count}/{len(tickers)} tickers.")
 
 if __name__ == '__main__':

@@ -1,6 +1,7 @@
 # Xetra Two-Step Stock Prediction
 [![1. T7 Download (Initialization)](https://github.com/kleinnconrad/stock-predictor/actions/workflows/01_t7_download.yml/badge.svg?branch=main)](https://github.com/kleinnconrad/stock-predictor/actions/workflows/01_t7_download.yml)
 [![2. Execute Pipeline (Step 1 & 2)](https://github.com/kleinnconrad/stock-predictor/actions/workflows/02_run_pipeline.yml/badge.svg?branch=main)](https://github.com/kleinnconrad/stock-predictor/actions/workflows/02_run_pipeline.yml)
+![Fundamentals Last Updated](https://img.shields.io/badge/Fundamentals_Last_Updated-2026--08--31-blue)
 ## Table of Contents
 - [How the Engine Works](#how-the-engine-works)
 - [Architecture Diagram](#architecture-diagram)
