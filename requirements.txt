@@ -38,7 +38,7 @@ fonttools==4.63.0
     # via matplotlib
 google-auth[requests]==2.56.2
     # via google-genai
-google-genai==2.19.0
+google-genai==2.20.0
     # via -r requirements.in
 h11==0.16.0
     # via httpcore
@@ -168,7 +168,7 @@ websockets==16.1
     # via
     #   google-genai
     #   yfinance
-yfinance==1.6.0
+yfinance==1.7.0
     # via -r requirements.in
 
 # The following packages are considered to be unsafe in a requirements file:

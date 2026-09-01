@@ -1,7 +1,7 @@
 pandas==3.0.5
 numpy==2.5.2
 scikit-learn==1.9.0
-yfinance==1.6.0
+yfinance==1.7.0
 pandas-datareader==0.11.1
 requests==2.34.2
 pyyaml==6.0.3
@@ -10,4 +10,4 @@ matplotlib==3.11.1
 seaborn==0.13.2
 scipy==1.18.1
 python-dotenv==1.2.3
-google-genai==2.19.0
+google-genai==2.20.0
