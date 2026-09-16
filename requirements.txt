@@ -38,7 +38,7 @@ fonttools==4.63.0
     # via matplotlib
 google-auth[requests]==2.56.2
     # via google-genai
-google-genai==2.22.0
+google-genai==2.23.0
     # via -r requirements.in
 h11==0.16.0
     # via httpcore
@@ -61,7 +61,7 @@ lxml==6.1.1
     #   yfinance
 markdown-it-py==4.2.0
     # via rich
-matplotlib==3.11.1
+matplotlib==3.11.2
     # via
     #   -r requirements.in
     #   seaborn
@@ -71,7 +71,7 @@ multitasking==0.0.13
     # via yfinance
 narwhals==2.24.0
     # via scikit-learn
-numpy==2.5.2
+numpy==2.5.3
     # via
     #   -r requirements.in
     #   contourpy
@@ -132,7 +132,7 @@ requests==2.34.2
     #   yfinance
 rich==15.0.0
     # via curl-cffi
-scikit-learn==1.9.0
+scikit-learn==1.9.1
     # via -r requirements.in
 scipy==1.18.1
     # via
@@ -150,7 +150,7 @@ tenacity==9.1.4
     # via google-genai
 threadpoolctl==3.6.0
     # via scikit-learn
-tqdm==4.70.0
+tqdm==4.70.1
     # via -r requirements.in
 typing-extensions==4.16.0
     # via
