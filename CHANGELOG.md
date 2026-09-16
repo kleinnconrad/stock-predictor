@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/kleinnconrad/stock-predictor/compare/v1.3.1...v1.4.0) (2026-09-16)
+
+
+### Features
+
+* switching to pyproject.toml ([1118e23](https://github.com/kleinnconrad/stock-predictor/commit/1118e23663dbe58fcb96b8a2cd9f398e989761a1))
+
 ## [1.3.1](https://github.com/kleinnconrad/stock-predictor/compare/v1.3.0...v1.3.1) (2026-07-23)
 
 
