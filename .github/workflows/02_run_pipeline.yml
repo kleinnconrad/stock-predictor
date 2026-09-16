@@ -12,15 +12,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v3
         with:
-          python-version-file: '.python-version'
-
-      - name: Install Dependencies
-        run: |
-          python -m pip install --upgrade pip setuptools wheel
-          pip install -r requirements.txt
+          version: "latest"
+          enable-cache: true
 
       - name: Download T7 Artifact
         uses: dawidd6/action-download-artifact@v6
@@ -33,7 +29,7 @@ jobs:
         env:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: python scripts/02_run_step1.py --shard ${{ matrix.shard }} --total 3
+        run: uv run python scripts/02_run_step1.py --shard ${{ matrix.shard }} --total 3
 
       - name: Upload Step 1 State Artifact
         uses: actions/upload-artifact@v4
@@ -63,15 +59,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v3
         with:
-          python-version-file: '.python-version'
-
-      - name: Install Dependencies
-        run: |
-          python -m pip install --upgrade pip setuptools wheel
-          pip install -r requirements.txt
+          version: "latest"
+          enable-cache: true
 
       - name: Download Step 1 Artifacts
         uses: actions/download-artifact@v4
@@ -88,7 +80,7 @@ jobs:
           merge-multiple: true
 
       - name: Execute Step 2 Model
-        run: python scripts/03_run_step2.py --shard ${{ matrix.shard }} --total 3
+        run: uv run python scripts/03_run_step2.py --shard ${{ matrix.shard }} --total 3
 
       - name: Upload Final Output Artifact
         uses: actions/upload-artifact@v4
@@ -107,6 +99,12 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+          enable-cache: true
+
       - name: Download all Step 2 Shard Artifacts
         uses: actions/download-artifact@v4
         with:
@@ -119,7 +117,7 @@ jobs:
           echo "Ticker" > data/processed/final_buy_signals.csv
           find step2_artifacts/ -name "final_buy_signals_shard_*.csv" -exec awk 'FNR>1' {} + >> data/processed/final_buy_signals.csv
           
-          python -c '
+          uv run python -c '
           import os, json, glob, yaml
           from datetime import datetime
           

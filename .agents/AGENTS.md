@@ -14,12 +14,12 @@ Whenever you start working on this repository, you MUST proactively check if the
 - The `README.md` must contain the folder structure of the repository, including information on what to find in each folder. Every time something changes with the folder structure, the folder structure in the `README.md` must be updated.
 
 ## 2. Dependencies
-- Always maintain a `requirements.txt` file at the root of the project.
-- Any time a new Python dependency is introduced, it must be explicitly added to `requirements.txt` with appropriate version pinning to ensure reproducible builds.
+- Always maintain a `pyproject.toml` and `uv.lock` file at the root of the project.
+- Any time a new Python dependency is introduced, it must be explicitly added to `pyproject.toml` and locked using `uv lock` to ensure reproducible builds.
 
 ## 3. Environment Execution
-- Execute local scripts using the Conda `base` environment to ensure consistency across local development setups.
-- Provide clear instructions in the `README.md` if the Conda environment requires updating due to new dependencies.
+- Execute local scripts using `uv run` to ensure consistency across local development setups and automatic dependency resolution.
+- Provide clear instructions in the `README.md` if `uv` requires updating due to new dependencies.
 
 ## 4. Code Quality & Formatting
 - Avoid hardcoding paths without environment checks; use relative paths or standard library path resolution (e.g., `pathlib`).
