@@ -2,6 +2,9 @@ import logging
 import sys
 import os
 import argparse
+
+# Add project root to sys.path to allow execution as a script from any directory
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from dotenv import load_dotenv
 from src.orchestration.batch_runner import run_batch, run_single
 

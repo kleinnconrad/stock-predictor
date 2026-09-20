@@ -144,17 +144,17 @@ While the prediction models rely on time-series analysis and fundamental rules, 
 The engine can be executed either directly from your local terminal or distributed in the cloud via GitHub Actions.
 
 ### 1. Local Terminal Execution
-The `main.py` entry point acts as your local CLI.
+The `src/main.py` entry point acts as your local CLI.
 
 * **Single-Ticker Mode (Diagnosis):**
   If you want to diagnose a specific stock without waiting for the entire Xetra universe to process:
   ```bash
-  python main.py --ticker SAP.DE
+  uv run python src/main.py --ticker SAP.DE
   ```
 * **Full Batch Mode:**
   If you want to evaluate the entire German retail market sequentially on your local machine:
   ```bash
-  python main.py
+  uv run python src/main.py
   ```
 
 ### 2. Fundamental Data Caching (Important for Cloud)
@@ -227,6 +227,7 @@ Here is the directory layout of the repository and what you can find in each fol
   - `outputs/predictions/`: Full model state payloads including optimized KS cutoffs, weights, and final predictions.
 - **`scripts/`**: Entry point scripts specifically designed to be executed by GitHub Actions runners.
 - **`src/`**: The core application logic:
+  - `main.py`: Local CLI entry point.
   - `src/ingestion/`: API connectors (Yahoo Finance, FRED, etc.) and macroeconomic dataset pre-fetching.
   - `src/modeling/`: The Step 1 (Macro Momentum) and Step 2 (Company Fundamentals) evaluators.
   - `src/processing/`: Feature engineering, variable expansion, and data manipulation.
