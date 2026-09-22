@@ -9,7 +9,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def find_closest_report(history_dir, target_date, tolerance_days=10):
+def find_closest_report(history_dir, target_date, tolerance_days=15):
     files = glob.glob(os.path.join(history_dir, "report_*.json"))
     closest_file = None
     min_diff = timedelta(days=9999)
