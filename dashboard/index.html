@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Xetra Predictor Dashboard</title>
   <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <!-- Background orbs removed for terminal theme -->
@@ -56,6 +57,14 @@
       <div class="glass-panel kpi-card">
         <h3 title="Stocks with a price of 10 euro or below are suppressed">Suppressed (<= 10€)</h3>
         <p class="kpi-value" id="kpi-suppressed">-</p>
+      </div>
+    </section>
+
+    <!-- Section 0: Uplift Chart -->
+    <section class="glass-panel table-container highlighted-table-container">
+      <h2 class="table-title">PREDICTION UPLIFT (PERFORMANCE)</h2>
+      <div class="chart-wrapper" style="position: relative; height:40vh; width:100%">
+        <canvas id="uplift-chart"></canvas>
       </div>
     </section>
 

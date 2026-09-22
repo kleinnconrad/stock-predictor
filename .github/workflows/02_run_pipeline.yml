@@ -158,11 +158,19 @@ jobs:
               json.dump(report, out, indent=2)
           '
 
+      - name: Evaluate Uplift Performance
+        run: |
+          mkdir -p data/processed/history
+          TODAY=$(date +%Y-%m-%d)
+          cp data/processed/full_batch_report.json data/processed/history/report_$TODAY.json
+          find data/processed/history/ -name "report_*.json" -mtime +180 -exec rm {} \;
+          uv run python src/processing/uplift_evaluator.py
+
       - name: Commit and Push Final Buy Signals
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -f data/processed/final_buy_signals.csv data/processed/full_batch_report.json
+          git add -f data/processed/final_buy_signals.csv data/processed/full_batch_report.json data/processed/history/ data/processed/uplift_report.json
           git commit -m "chore: Auto-update final results and JSON batch report" || echo "No changes to commit"
           git pull --rebase origin main
           git push

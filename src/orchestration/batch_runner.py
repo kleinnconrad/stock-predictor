@@ -138,3 +138,46 @@ def run_batch():
     out_path = os.path.join(out_dir, 'final_buy_signals_local.csv')
     pd.DataFrame({'ticker': buy_candidates}).to_csv(out_path, index=False)
     logger.info(f"Local batch run complete. {len(buy_candidates)} buy candidates found. Saved to {out_path}.")
+    
+    import json
+    import glob
+    import time
+    from datetime import datetime
+    
+    payload_dict = {}
+    for f_path in glob.glob("outputs/predictions/*.json"):
+        try:
+            with open(f_path, "r") as file:
+                data = json.load(file)
+                ticker = data.get("stock_name")
+                if ticker:
+                    payload_dict[ticker] = data
+        except Exception as e:
+            logger.error(f"Failed to read {f_path}: {e}")
+            
+    report = {
+        "execution_date": datetime.utcnow().isoformat() + "Z",
+        "parameters": settings,
+        "predictions": list(payload_dict.values())
+    }
+    
+    with open(os.path.join(out_dir, 'full_batch_report.json'), "w") as out:
+        json.dump(report, out, indent=2)
+        
+    history_dir = os.path.join(out_dir, "history")
+    os.makedirs(history_dir, exist_ok=True)
+    today_str = datetime.utcnow().strftime("%Y-%m-%d")
+    hist_file = os.path.join(history_dir, f"report_{today_str}.json")
+    with open(hist_file, "w") as out:
+        json.dump(report, out, indent=2)
+        
+    now = time.time()
+    for f_path in glob.glob(os.path.join(history_dir, "report_*.json")):
+        if os.stat(f_path).st_mtime < now - 180 * 86400:
+            os.remove(f_path)
+            
+    try:
+        from ..processing.uplift_evaluator import evaluate_uplift
+        evaluate_uplift()
+    except Exception as e:
+        logger.error(f"Failed to run uplift evaluation: {e}")

@@ -68,6 +68,94 @@ document.addEventListener('DOMContentLoaded', () => {
       tableBodyBuys.innerHTML = errorHtml;
     });
 
+  const upliftDataUrl = isGitHubPages ? './data/uplift_report.json' : '../data/processed/uplift_report.json';
+  fetch(upliftDataUrl)
+    .then(r => r.json())
+    .then(upliftData => {
+      renderUpliftChart(upliftData);
+    })
+    .catch(err => {
+      console.warn("Failed to load uplift report", err);
+    });
+
+  function renderUpliftChart(data) {
+    const ctx = document.getElementById('uplift-chart');
+    if (!ctx) return;
+    
+    const labels = ["1 Month", "3 Months", "6 Months"];
+    const keys = ["1m", "3m", "6m"];
+    
+    const baselineData = keys.map(k => (data[k] && data[k].baseline ? data[k].baseline * 100 : 0));
+    const upFinalBuyData = keys.map(k => (data[k] && data[k].UP_FINAL_BUY ? data[k].UP_FINAL_BUY * 100 : 0));
+    const upData = keys.map(k => (data[k] && data[k].UP ? data[k].UP * 100 : 0));
+    const notUpData = keys.map(k => (data[k] && data[k].NOT_UP ? data[k].NOT_UP * 100 : 0));
+    
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Baseline (Market)',
+            data: baselineData,
+            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+            borderColor: 'rgba(255, 255, 255, 0.5)',
+            borderWidth: 1
+          },
+          {
+            label: 'NOT_UP',
+            data: notUpData,
+            backgroundColor: 'rgba(255, 99, 132, 0.5)',
+            borderColor: 'rgba(255, 99, 132, 1)',
+            borderWidth: 1
+          },
+          {
+            label: 'UP (Step 1)',
+            data: upData,
+            backgroundColor: 'rgba(255, 206, 86, 0.5)',
+            borderColor: 'rgba(255, 206, 86, 1)',
+            borderWidth: 1
+          },
+          {
+            label: 'UP_FINAL_BUY',
+            data: upFinalBuyData,
+            backgroundColor: 'rgba(75, 192, 192, 0.8)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { labels: { color: '#ffffff' } },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + '%';
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              color: '#ffffff',
+              callback: function(value) { return value + '%'; }
+            },
+            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+          },
+          x: {
+            ticks: { color: '#ffffff' },
+            grid: { display: false }
+          }
+        }
+      }
+    });
+  }
+
   function renderMetadata() {
     if (executionDate) {
       const d = new Date(executionDate);
