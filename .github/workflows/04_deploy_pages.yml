@@ -35,7 +35,9 @@ jobs:
           cp -r dashboard/* _site/
           mkdir -p _site/data
           cp data/processed/full_batch_report.json _site/data/full_batch_report.json
-          cp data/processed/uplift_report.json _site/data/uplift_report.json
+          if [ -f data/processed/uplift_report.json ]; then
+            cp data/processed/uplift_report.json _site/data/uplift_report.json
+          fi
 
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v4
