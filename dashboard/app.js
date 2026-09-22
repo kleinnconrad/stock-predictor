@@ -79,11 +79,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
   function renderUpliftChart(data) {
-    const ctx = document.getElementById('uplift-chart');
-    if (!ctx) return;
-    
-    const labels = ["1 Month", "3 Months", "6 Months"];
     const keys = ["1m", "3m", "6m"];
+    const labelsMap = { "1m": "1 Month", "3m": "3 Months", "6m": "6 Months" };
     
     let metaHtml = "";
     keys.forEach(k => {
@@ -99,80 +96,90 @@ document.addEventListener('DOMContentLoaded', () => {
     const metaEl = document.getElementById('uplift-metadata');
     if (metaEl) metaEl.innerHTML = metaHtml;
     
-    const baselineData = keys.map(k => (data[k] && data[k].metrics && data[k].metrics.baseline ? data[k].metrics.baseline * 100 : 0));
-    const upFinalBuyData = keys.map(k => (data[k] && data[k].metrics && data[k].metrics.UP_FINAL_BUY ? data[k].metrics.UP_FINAL_BUY * 100 : 0));
-    const upData = keys.map(k => (data[k] && data[k].metrics && data[k].metrics.UP ? data[k].metrics.UP * 100 : 0));
-    const notUpData = keys.map(k => (data[k] && data[k].metrics && data[k].metrics.NOT_UP ? data[k].metrics.NOT_UP * 100 : 0));
-    
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: labels,
-        datasets: [
-          {
-            type: 'line',
-            label: 'Baseline (Market)',
-            data: baselineData,
-            backgroundColor: 'rgba(255, 255, 255, 0.2)',
-            borderColor: 'rgba(255, 255, 255, 0.8)',
-            borderWidth: 2,
-            borderDash: [5, 5],
-            tension: 0.1,
-            fill: false,
-            pointBackgroundColor: 'rgba(255, 255, 255, 1)',
-            pointRadius: 4
-          },
-          {
-            label: 'NOT_UP',
-            data: notUpData,
-            backgroundColor: 'rgba(255, 99, 132, 0.5)',
-            borderColor: 'rgba(255, 99, 132, 1)',
-            borderWidth: 1
-          },
-          {
-            label: 'UP (Step 1)',
-            data: upData,
-            backgroundColor: 'rgba(255, 206, 86, 0.5)',
-            borderColor: 'rgba(255, 206, 86, 1)',
-            borderWidth: 1
-          },
-          {
-            label: 'UP_FINAL_BUY',
-            data: upFinalBuyData,
-            backgroundColor: 'rgba(75, 192, 192, 0.8)',
-            borderColor: 'rgba(75, 192, 192, 1)',
-            borderWidth: 1
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { labels: { color: '#ffffff' } },
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + '%';
+    keys.forEach(k => {
+      const ctx = document.getElementById(`uplift-chart-${k}`);
+      if (!ctx) return;
+      
+      let baseline = 0, upFinalBuy = 0, up = 0, notUp = 0;
+      if (data[k] && data[k].metrics) {
+        baseline = data[k].metrics.baseline ? data[k].metrics.baseline * 100 : 0;
+        upFinalBuy = data[k].metrics.UP_FINAL_BUY ? data[k].metrics.UP_FINAL_BUY * 100 : 0;
+        up = data[k].metrics.UP ? data[k].metrics.UP * 100 : 0;
+        notUp = data[k].metrics.NOT_UP ? data[k].metrics.NOT_UP * 100 : 0;
+      }
+      
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['NOT_UP', 'UP', 'UP_FINAL_BUY'],
+          datasets: [
+            {
+              type: 'line',
+              label: 'Baseline (Market)',
+              data: [baseline, baseline, baseline],
+              borderColor: 'rgba(255, 255, 255, 0.8)',
+              borderWidth: 2,
+              borderDash: [5, 5],
+              tension: 0,
+              fill: false,
+              pointRadius: 0,
+              pointHoverRadius: 0
+            },
+            {
+              type: 'bar',
+              label: 'Cohort Performance',
+              data: [notUp, up, upFinalBuy],
+              backgroundColor: [
+                'rgba(255, 99, 132, 0.5)',
+                'rgba(255, 206, 86, 0.5)',
+                'rgba(75, 192, 192, 0.8)'
+              ],
+              borderColor: [
+                'rgba(255, 99, 132, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)'
+              ],
+              borderWidth: 1
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            title: {
+              display: true,
+              text: labelsMap[k],
+              color: '#ffffff',
+              font: { size: 14 }
+            },
+            legend: { 
+              labels: { color: '#ffffff' } 
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + '%';
+                }
               }
             }
-          }
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: {
-              color: '#ffffff',
-              callback: function(value) { return value + '%'; }
-            },
-            grid: { color: 'rgba(255, 255, 255, 0.1)' }
           },
-          x: {
-            ticks: { color: '#ffffff' },
-            grid: { display: false }
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                color: '#ffffff',
+                callback: function(value) { return value + '%'; }
+              },
+              grid: { color: 'rgba(255, 255, 255, 0.1)' }
+            },
+            x: {
+              ticks: { color: '#ffffff' },
+              grid: { display: false }
+            }
           }
         }
-      }
+      });
     });
   }
 

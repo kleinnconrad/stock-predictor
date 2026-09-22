@@ -64,8 +64,16 @@
     <section class="glass-panel table-container highlighted-table-container">
       <h2 class="table-title">PREDICTION UPLIFT (PERFORMANCE)</h2>
       <p id="uplift-metadata" style="text-align: center; color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;"></p>
-      <div class="chart-wrapper" style="position: relative; height:40vh; width:100%">
-        <canvas id="uplift-chart"></canvas>
+      <div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; width: 100%;">
+        <div class="chart-wrapper" style="position: relative; height:35vh; flex: 1; min-width: 30%;">
+          <canvas id="uplift-chart-1m"></canvas>
+        </div>
+        <div class="chart-wrapper" style="position: relative; height:35vh; flex: 1; min-width: 30%;">
+          <canvas id="uplift-chart-3m"></canvas>
+        </div>
+        <div class="chart-wrapper" style="position: relative; height:35vh; flex: 1; min-width: 30%;">
+          <canvas id="uplift-chart-6m"></canvas>
+        </div>
       </div>
     </section>
 
