@@ -110,11 +110,17 @@ document.addEventListener('DOMContentLoaded', () => {
         labels: labels,
         datasets: [
           {
+            type: 'line',
             label: 'Baseline (Market)',
             data: baselineData,
             backgroundColor: 'rgba(255, 255, 255, 0.2)',
-            borderColor: 'rgba(255, 255, 255, 0.5)',
-            borderWidth: 1
+            borderColor: 'rgba(255, 255, 255, 0.8)',
+            borderWidth: 2,
+            borderDash: [5, 5],
+            tension: 0.1,
+            fill: false,
+            pointBackgroundColor: 'rgba(255, 255, 255, 1)',
+            pointRadius: 4
           },
           {
             label: 'NOT_UP',
