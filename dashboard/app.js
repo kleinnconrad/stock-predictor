@@ -85,10 +85,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const labels = ["1 Month", "3 Months", "6 Months"];
     const keys = ["1m", "3m", "6m"];
     
-    const baselineData = keys.map(k => (data[k] && data[k].baseline ? data[k].baseline * 100 : 0));
-    const upFinalBuyData = keys.map(k => (data[k] && data[k].UP_FINAL_BUY ? data[k].UP_FINAL_BUY * 100 : 0));
-    const upData = keys.map(k => (data[k] && data[k].UP ? data[k].UP * 100 : 0));
-    const notUpData = keys.map(k => (data[k] && data[k].NOT_UP ? data[k].NOT_UP * 100 : 0));
+    let metaHtml = "";
+    keys.forEach(k => {
+      if (data[k]) {
+        let dateStr = new Date(data[k].date).toLocaleDateString();
+        let dummyFlag = data[k].is_dummy ? '<span style="color:var(--status-orange)">(Dummy Data)</span>' : '';
+        metaHtml += `<strong>${k.toUpperCase()}</strong>: ${dateStr} ${dummyFlag} &nbsp;&nbsp;|&nbsp;&nbsp; `;
+      }
+    });
+    if (metaHtml.endsWith(" &nbsp;&nbsp;|&nbsp;&nbsp; ")) {
+      metaHtml = metaHtml.slice(0, -29);
+    }
+    const metaEl = document.getElementById('uplift-metadata');
+    if (metaEl) metaEl.innerHTML = metaHtml;
+    
+    const baselineData = keys.map(k => (data[k] && data[k].metrics && data[k].metrics.baseline ? data[k].metrics.baseline * 100 : 0));
+    const upFinalBuyData = keys.map(k => (data[k] && data[k].metrics && data[k].metrics.UP_FINAL_BUY ? data[k].metrics.UP_FINAL_BUY * 100 : 0));
+    const upData = keys.map(k => (data[k] && data[k].metrics && data[k].metrics.UP ? data[k].metrics.UP * 100 : 0));
+    const notUpData = keys.map(k => (data[k] && data[k].metrics && data[k].metrics.NOT_UP ? data[k].metrics.NOT_UP * 100 : 0));
     
     new Chart(ctx, {
       type: 'bar',

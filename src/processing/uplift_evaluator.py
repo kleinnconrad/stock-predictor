@@ -125,7 +125,11 @@ def evaluate_uplift():
             else:
                 metrics[cohort] = 0.0
                 
-        report_data[label] = metrics
+        report_data[label] = {
+            "metrics": metrics,
+            "date": data.get("execution_date", target_date.isoformat()),
+            "is_dummy": data.get("parameters", {}).get("dummy", False)
+        }
         
     out_dir = os.path.join("data", "processed")
     os.makedirs(out_dir, exist_ok=True)
