@@ -2,7 +2,7 @@ name: "1. T7 Download (Initialization)"
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 5 * * 1' # 7 AM Berlin time (CEST) / 6 AM (CET)
+    - cron: '0 1 * * 1' # 2 AM
 
 jobs:
   t7-download:
