@@ -176,3 +176,32 @@ jobs:
           git commit -m "chore: Auto-update final results and JSON batch report" || echo "No changes to commit"
           git pull --rebase --autostash origin main
           git push
+
+  notify:
+    needs: [step1-matrix, step2-matrix, consolidate-and-commit]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify on Success
+        if: ${{ needs.consolidate-and-commit.result == 'success' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.repos.createCommitComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.sha,
+              body: '@${{ github.repository_owner }} ✅ Workflow **${{ github.workflow }}** completed successfully! See run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+            })
+
+      - name: Notify on Failure
+        if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.repos.createCommitComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.sha,
+              body: '@${{ github.repository_owner }} ❌ Workflow **${{ github.workflow }}** failed! See run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+            })

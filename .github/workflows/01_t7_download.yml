@@ -35,3 +35,32 @@ jobs:
           git commit -m "chore: Auto-update T7 dump and qualified tickers" || echo "No changes to commit"
           git pull --rebase --autostash origin main
           git push
+
+  notify:
+    needs: [t7-download]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify on Success
+        if: ${{ needs.t7-download.result == 'success' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.repos.createCommitComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.sha,
+              body: '@${{ github.repository_owner }} ✅ Workflow **${{ github.workflow }}** completed successfully! See run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+            })
+
+      - name: Notify on Failure
+        if: ${{ needs.t7-download.result == 'failure' || needs.t7-download.result == 'cancelled' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.repos.createCommitComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.sha,
+              body: '@${{ github.repository_owner }} ❌ Workflow **${{ github.workflow }}** failed! See run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+            })
