@@ -15,6 +15,6 @@ dependencies = [
     "matplotlib==3.11.2",
     "seaborn==0.13.2",
     "scipy==1.18.1",
-    "python-dotenv==1.2.3",
-    "google-genai==2.25.0"
+    "python-dotenv==1.2.4",
+    "google-genai==2.28.0"
 ]
