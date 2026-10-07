@@ -162,9 +162,10 @@ jobs:
 
       - name: Evaluate Uplift Performance
         run: |
-          mkdir -p data/processed/history
           TODAY=$(date +%Y-%m-%d)
-          cp data/processed/full_batch_report.json data/processed/history/report_$TODAY.json
+          MONTH=$(date +%Y-%m)
+          mkdir -p data/processed/history/$MONTH
+          cp data/processed/full_batch_report.json data/processed/history/$MONTH/report_$TODAY.json
           find data/processed/history/ -name "report_*.json" -mtime +180 -exec rm {} \;
           uv run python src/processing/uplift_evaluator.py
 

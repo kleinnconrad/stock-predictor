@@ -165,14 +165,18 @@ def run_batch():
         json.dump(report, out, indent=2)
         
     history_dir = os.path.join(out_dir, "history")
-    os.makedirs(history_dir, exist_ok=True)
-    today_str = datetime.utcnow().strftime("%Y-%m-%d")
-    hist_file = os.path.join(history_dir, f"report_{today_str}.json")
+    today_dt = datetime.utcnow()
+    month_str = today_dt.strftime("%Y-%m")
+    today_str = today_dt.strftime("%Y-%m-%d")
+    month_dir = os.path.join(history_dir, month_str)
+    os.makedirs(month_dir, exist_ok=True)
+    
+    hist_file = os.path.join(month_dir, f"report_{today_str}.json")
     with open(hist_file, "w") as out:
         json.dump(report, out, indent=2)
         
     now = time.time()
-    for f_path in glob.glob(os.path.join(history_dir, "report_*.json")):
+    for f_path in glob.glob(os.path.join(history_dir, "*", "report_*.json")):
         if os.stat(f_path).st_mtime < now - 180 * 86400:
             os.remove(f_path)
             

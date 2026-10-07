@@ -29,7 +29,11 @@ def create_dummy_data():
             "predictions": predictions
         }
         
-        file_path = os.path.join(history_dir, f"report_{target_date.isoformat()}.json")
+        month_str = target_date.strftime("%Y-%m")
+        month_dir = os.path.join(history_dir, month_str)
+        os.makedirs(month_dir, exist_ok=True)
+        
+        file_path = os.path.join(month_dir, f"report_{target_date.isoformat()}.json")
         with open(file_path, "w") as f:
             json.dump(report, f, indent=2)
             
