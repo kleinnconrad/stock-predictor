@@ -1,14 +1,16 @@
 import sys
 import os
 
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.append(project_root)
+# Ensure the root directory is in the Python path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from config.universe import ALL_FRED_INDICATORS, ALL_YF_TICKERS
 from config.settings import load_settings
 # Single source of truth for the transformation rules
 from src.ingestion.global_macro import (MACRO_KEYWORDS, MOMENTUM_WINDOWS, RATE_KEYWORDS, ZSCORE_KEYWORDS,
                                         ZSCORE_WINDOW)
+
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 settings = load_settings()
 threshold = settings['threshold']

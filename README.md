@@ -1,7 +1,7 @@
 # Xetra Two-Step Stock Prediction
 [![1. T7 Download (Initialization)](https://github.com/kleinnconrad/stock-predictor/actions/workflows/01_t7_download.yml/badge.svg?branch=main)](https://github.com/kleinnconrad/stock-predictor/actions/workflows/01_t7_download.yml)
 [![2. Execute Pipeline (Step 1 & 2)](https://github.com/kleinnconrad/stock-predictor/actions/workflows/02_run_pipeline.yml/badge.svg?branch=main)](https://github.com/kleinnconrad/stock-predictor/actions/workflows/02_run_pipeline.yml)
-[![Tests](https://github.com/kleinnconrad/stock-predictor/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/kleinnconrad/stock-predictor/actions/workflows/tests.yml)
+[![CI](https://github.com/kleinnconrad/stock-predictor/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/kleinnconrad/stock-predictor/actions/workflows/ci.yml)
 ![Fundamentals Last Updated](https://img.shields.io/badge/Fundamentals_Last_Updated-2026--09--22-blue)
 ## Table of Contents
 - [How the Engine Works](#how-the-engine-works)
@@ -233,7 +233,22 @@ The offline unit tests in `tests/` cover the data alignment, publication lags, p
 ```bash
 uv run pytest
 ```
-The `Tests` workflow runs them on every pull request and on pushes to `main`.
+
+The `CI` workflow (`.github/workflows/ci.yml`) runs the following checks on every pull request and on pushes to `main`:
+
+| Job | Checks |
+|---|---|
+| `Lint` | `uv.lock` matches `pyproject.toml`; `ruff check`; `actionlint` (including `shellcheck`) on the workflow files; JavaScript syntax of `dashboard/app.js` |
+| `Tests` | The unit tests on Python 3.12 and 3.14 |
+| `Conventional Commits` | Every commit of a pull request follows the Conventional Commits format required by Release Please (pull requests only) |
+| `CI passed` | Succeeds only if all jobs above succeeded or were skipped; use it as the single required status check in the branch protection of `main` |
+
+Run the Python checks locally before pushing:
+```bash
+uv lock --check
+uv run ruff check .
+uv run pytest
+```
 
 ---
 
@@ -241,7 +256,7 @@ The `Tests` workflow runs them on every pull request and on pushes to `main`.
 
 The project uses [uv](https://docs.astral.sh/uv/) with a lockfile to guarantee reproducible builds.
 
-* **Dependencies**: `pyproject.toml` declares the direct dependencies with exact versions; development tools (pytest) are in the `dev` dependency group.
+* **Dependencies**: `pyproject.toml` declares the direct dependencies with exact versions; development tools (pytest, ruff) are in the `dev` dependency group.
 * **Lockfile**: `uv.lock` pins the complete dependency tree. After changing `pyproject.toml`, run `uv lock` and commit both files. Never edit `uv.lock` manually.
 * **Environment**: `uv sync` creates the virtual environment; `uv run <command>` runs a command in it. The GitHub Actions workflows use `uv run --locked`, which fails if `uv.lock` does not match `pyproject.toml`.
 * **Automated Updates**: Dependabot updates the Python dependencies (`uv` ecosystem, updating `pyproject.toml` and `uv.lock` together) and the GitHub Actions, each grouped into a single weekly Pull Request.
@@ -269,7 +284,7 @@ When a `feat:` or `fix:` commit is pushed to `main`, the bot opens a **Release P
 Here is the directory layout of the repository and what you can find in each folder:
 
 - **`.devcontainer/`**: Devcontainer configuration (Python 3.12, uv) for reproducible development environments in VS Code or GitHub Codespaces.
-- **`.github/`**: GitHub Actions workflows (T7 download, pipeline, dashboard deployment, tests, Release Please) and the Dependabot configuration.
+- **`.github/`**: GitHub Actions workflows (T7 download, pipeline, dashboard deployment, CI checks, Release Please) and the Dependabot configuration.
 - **`config/`**: Parameters (`settings.yaml`), the settings loader (`settings.py`) and the macro and fundamental universes (`universe.py`).
 - **`dashboard/`**: HTML/JS/CSS of the dashboard deployed to GitHub Pages.
 - **`data/`**: Data artifacts at various stages of processing:
