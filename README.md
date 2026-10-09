@@ -163,7 +163,7 @@ The engine also extracts metrics that are shown on the dashboard but are not use
 * **Beta Factor:** $\beta = \frac{\text{Covariance}(R_s, R_m)}{\text{Variance}(R_m)}$. Volatility of the stock relative to the market. A beta greater than 1 indicates higher volatility than the market. Beta is not used as a predictor because of its collinearity with the stock's own volatility and its nature as a static snapshot.
 * **Liquidity (Avg Daily Traded Value):** $\text{Liquidity (€M)} = \frac{\text{Average Daily Volume} \times \text{Latest Stock Price}}{1,000,000}$. An estimate of the average value traded per day. Low liquidity means that large orders can move the price (slippage); values below €0.5M are flagged. It is not used as a predictor because of its collinearity with market capitalization and price.
 
-**Price filter on the dashboard:** Stocks priced at or below €10 are hidden from all KPIs and tables of the dashboard. The "Suppressed" KPI shows how many stocks are hidden and how many of them are buy candidates. The filter only affects the dashboard; the report, `final_buy_signals.csv` and the uplift evaluation include all stocks.
+**Price filter:** Stocks priced at or below €10 (`min_price_eur`) are hidden from all KPIs and tables of the dashboard and excluded from the uplift evaluation, where a single illiquid penny stock could otherwise dominate a cohort average. The "Suppressed" KPI shows how many stocks are hidden and how many of them are buy candidates. The batch report and `final_buy_signals.csv` still include all stocks.
 
 ---
 
@@ -220,7 +220,7 @@ All user-defined parameters are defined in `config/settings.yaml` and loaded thr
 | Step 1 model | `features_to_select`, `anova_k`, `step1_history_years`, `feature_warmup_years`, `quantiles`, `cv_splits`, `sfs_cv_splits`, `min_cv_train_rows`, `min_cv_accuracy` |
 | Macro data | `fred_publication_lag_days`, `fred_max_staleness_days` |
 | Step 2 ruleset | `min_step2_score`, `min_step2_applicable_rules`, `step2_yoy_tolerance_days`, `min_current_ratio`, `min_annual_roe`, `fundamentals_max_age_days` |
-| Reporting | `history_retention_days`, `uplift_match_tolerance_days` |
+| Reporting | `history_retention_days`, `uplift_match_tolerance_days`, `min_price_eur` |
 | Data source | `xetra_t7_url` |
 
 The macro and fundamental universes are defined in `config/universe.py`.
@@ -301,7 +301,7 @@ The engine generates the following outputs:
 3. **`data/processed/full_batch_report.json`**: All prediction payloads of a run with the execution date and the parameters. It feeds the dashboard.
 4. **`data/processed/final_buy_signals.csv`**: The tickers that passed both Step 1 and Step 2 (`UP_FINAL_BUY`).
 5. **`data/processed/history/YYYY-MM/report_YYYY-MM-DD.json`**: Daily archive of the batch report. Reports older than 200 days (`history_retention_days`, based on the date in the file name) are removed automatically.
-6. **`data/processed/uplift_report.json`**: Backtest of earlier predictions. For the archived reports closest to 1, 3 and 6 months ago (within 15 days), it measures the return of every stock from the first close on or after the report date to the latest close and averages it per cohort (`UP_FINAL_BUY`, `UP`, `NOT_UP`) and over all stocks (`baseline`). Empty cohorts are `null`; `counts` holds the cohort sizes. This feeds the uplift charts on the dashboard.
+6. **`data/processed/uplift_report.json`**: Backtest of earlier predictions. For the archived reports closest to 1, 3 and 6 months ago (within 15 days), it measures the return of every stock from the first close on or after the report date to the latest close and averages it per cohort (`UP_FINAL_BUY`, `UP`, `NOT_UP`) and over all stocks (`baseline`). Stocks priced at or below `min_price_eur` (€10) at the time of the prediction are excluded from all cohorts, as on the dashboard; `excluded_below_min_price` holds their number. Empty cohorts are `null`; `counts` holds the cohort sizes. This feeds the uplift charts on the dashboard.
 7. **`data/processed/company_profiles_cache.json`**: Cached company descriptions generated with the Gemini API, committed by the pipeline so that only new tickers are requested.
 
 Copyright (c) 2026 Conrad Kleinn. All rights reserved.

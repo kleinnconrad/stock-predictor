@@ -77,7 +77,7 @@ Responsible for qualifying the universe, engineering the target-stock features a
 
 * **`qualifier.py`**: Filters the raw Xetra dataframe to common stocks of the product groups `DEUTSCHLAND`, `DAX`, `MDAX` and `SDAX` and maps their mnemonics to Yahoo Finance `.DE` tickers. No liquidity filter is applied.
 * **`features.py`**: Engineers target-stock technical features (21D/63D/126D/252D momentum, distance to the 50- and 200-day SMA, 21D volatility), computes the forward return over `horizon_days` and assigns the binary `Target` (1 if the return reaches `threshold`). It trims the warm-up history after the features are computed.
-* **`uplift_evaluator.py`**: Backtests the archived reports closest to 1, 3 and 6 months ago by measuring each stock's return from the report date and averaging it per prediction cohort. Run with `uv run python -m src.processing.uplift_evaluator`.
+* **`uplift_evaluator.py`**: Backtests the archived reports closest to 1, 3 and 6 months ago by measuring each stock's return from the report date and averaging it per prediction cohort. Stocks priced at or below `min_price_eur` are excluded, as on the dashboard. Run with `uv run python -m src.processing.uplift_evaluator`.
 
 ## 3. `modeling/`
 Houses the Scikit-Learn machine learning architecture, validation algorithms, and the fundamental ruleset.

@@ -1,7 +1,8 @@
 """
 Backtests archived batch reports: for the reports closest to 1, 3 and 6 months ago,
 compares the realized return of each prediction cohort with the equal-weighted return
-of all evaluated stocks (baseline).
+of all evaluated stocks (baseline). Stocks priced at or below `min_price_eur` when the
+prediction was made are excluded, consistent with the dashboard.
 
 Run from the repository root: `uv run python -m src.processing.uplift_evaluator`.
 """
@@ -64,6 +65,15 @@ def download_closes(tickers: List[str], start: date, end: date) -> pd.DataFrame:
     return closes
 
 
+def price_at_prediction(prediction: dict, start_price: float) -> float:
+    """
+    Returns the price a prediction was made at: the payload's latest_price (the price the
+    dashboard showed), or the first close after the report date for older payloads without it.
+    """
+    price = prediction.get("latest_price")
+    return float(price) if isinstance(price, (int, float)) else start_price
+
+
 def cohort_returns(predictions: List[dict], returns: Dict[str, float]) -> Tuple[Dict[str, Optional[float]], Dict[str, int]]:
     """
     Averages the realized returns per prediction cohort.
@@ -91,7 +101,8 @@ def evaluate_uplift(history_dir: str = DEFAULT_HISTORY_DIR, out_file: str = DEFA
     Evaluates the archived reports closest to 1, 3 and 6 months ago and writes the uplift report.
 
     Returns are measured from the first close on or after each report's own date to the
-    latest close before today.
+    latest close before today. Stocks priced at or below `min_price_eur` (settings.yaml)
+    are excluded from all cohorts including the baseline, as on the dashboard.
 
     Args:
         history_dir (str): Directory with archived reports (history/YYYY-MM/report_*.json).
@@ -106,7 +117,9 @@ def evaluate_uplift(history_dir: str = DEFAULT_HISTORY_DIR, out_file: str = DEFA
         return {}
 
     today = today or datetime.now(timezone.utc).date()
-    tolerance_days = int(load_settings()['uplift_match_tolerance_days'])
+    settings = load_settings()
+    tolerance_days = int(settings['uplift_match_tolerance_days'])
+    min_price = float(settings['min_price_eur'])
     report_data = {}
 
     for label, days in INTERVALS.items():
@@ -129,7 +142,7 @@ def evaluate_uplift(history_dir: str = DEFAULT_HISTORY_DIR, out_file: str = DEFA
             logger.error(f"Failed to download prices for the {label} report: {e}")
             continue
 
-        returns = {}
+        returns, start_prices = {}, {}
         for ticker in tickers:
             if ticker not in closes.columns:
                 continue
@@ -137,15 +150,30 @@ def evaluate_uplift(history_dir: str = DEFAULT_HISTORY_DIR, out_file: str = DEFA
             start_price = price_on_or_after(series, report_date)
             if start_price is None or start_price <= 0:
                 continue
+            start_prices[ticker] = start_price
             returns[ticker] = float(series.iloc[-1]) / start_price - 1.0
 
-        if not returns:
+        # Penny stocks are hidden on the dashboard and barely tradeable; a single one can
+        # dominate a cohort average, so they are excluded like on the dashboard
+        eligible, excluded = [], 0
+        for prediction in predictions:
+            ticker = prediction.get("stock_name")
+            if ticker not in returns:
+                continue
+            if price_at_prediction(prediction, start_prices[ticker]) > min_price:
+                eligible.append(prediction)
+            else:
+                excluded += 1
+
+        if not eligible:
             continue
 
-        metrics, counts = cohort_returns(predictions, returns)
+        metrics, counts = cohort_returns(eligible, returns)
         report_data[label] = {
             "metrics": metrics,
             "counts": counts,
+            "min_price_eur": min_price,
+            "excluded_below_min_price": excluded,
             "date": data.get("execution_date", report_date.isoformat()),
             "report_date": report_date.isoformat(),
             "is_dummy": data.get("parameters", {}).get("dummy", False),

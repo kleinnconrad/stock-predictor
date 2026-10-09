@@ -72,8 +72,12 @@ document.addEventListener('DOMContentLoaded', () => {
          parameters = data.parameters || {};
       }
       
-      // Stocks priced at or below 10 EUR are hidden from all KPIs and tables (documented in the README)
-      const isSuppressed = d => typeof d.latest_price === 'number' && d.latest_price <= 10;
+      // Stocks priced at or below min_price_eur (settings.yaml, 10 EUR) are hidden from all KPIs and
+      // tables; the uplift evaluation excludes them as well (documented in the README)
+      const minPrice = typeof parameters.min_price_eur === 'number' ? parameters.min_price_eur : 10;
+      const suppressedLabel = document.getElementById('kpi-suppressed-label');
+      if (suppressedLabel) suppressedLabel.textContent = `Suppressed (<= ${minPrice}€)`;
+      const isSuppressed = d => typeof d.latest_price === 'number' && d.latest_price <= minPrice;
       suppressedCount = reportData.filter(isSuppressed).length;
       suppressedBuys = reportData.filter(d => isSuppressed(d) && d.final_prediction === 'UP_FINAL_BUY').length;
       reportData = reportData.filter(d => !isSuppressed(d));
@@ -112,6 +116,8 @@ document.addEventListener('DOMContentLoaded', () => {
         metaParts.push(`<strong>${k.toUpperCase()}</strong>: ${escapeHtml(dateStr)}${dummyFlag}`);
       }
     });
+    const priceFilter = keys.map(k => data[k] && data[k].min_price_eur).find(v => typeof v === 'number');
+    if (priceFilter !== undefined) metaParts.push(`stocks <= ${escapeHtml(priceFilter)}€ excluded`);
     const metaHtml = metaParts.join(' &nbsp;&nbsp;|&nbsp;&nbsp; ');
     const metaEl = document.getElementById('uplift-metadata');
     if (metaEl) metaEl.innerHTML = metaHtml;

@@ -57,7 +57,7 @@
         <p class="kpi-value" id="kpi-missing-data">-</p>
       </div>
       <div class="glass-panel kpi-card">
-        <h3 title="Stocks priced at or below 10 EUR are hidden from all KPIs and tables, including buy candidates (count in brackets)">Suppressed (<= 10€)</h3>
+        <h3 id="kpi-suppressed-label" title="Stocks priced at or below the minimum price (min_price_eur, 10 EUR) are hidden from all KPIs and tables, including buy candidates (count in brackets), and excluded from the uplift charts">Suppressed (<= 10€)</h3>
         <p class="kpi-value" id="kpi-suppressed">-</p>
       </div>
     </section>
@@ -154,6 +154,6 @@
     </section>
   </div>
 
-  <script src="app.js?v=4"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>
