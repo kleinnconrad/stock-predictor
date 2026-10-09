@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.1.0](https://github.com/kleinnconrad/stock-predictor/compare/v2.0.0...v2.1.0) (2026-10-09)
+
+
+### Features
+
+* add pre merge pipeline ([e115259](https://github.com/kleinnconrad/stock-predictor/commit/e115259cddf4c989f6b8f7584c05b6b1cbb7964b))
+* add pre merge pipeline ([67cb110](https://github.com/kleinnconrad/stock-predictor/commit/67cb110c08756fcaa7af7b3eff675d6391a56ad5))
+
 ## [2.0.0](https://github.com/kleinnconrad/stock-predictor/compare/v1.5.0...v2.0.0) (2026-10-09)
 
 
