@@ -1,4 +1,8 @@
 {
+  "0M0.DE": {
+    "full_name": "AVERDION SE INH. O.N.",
+    "description": "Averdion SE is a German real estate company focused on the acquisition, development, and administration of industrial and logistics properties, including both existing assets and new constructions."
+  },
   "123F.DE": {
     "full_name": "123FAHRSCHULE SE INH O.N.",
     "description": "123FAHRSCHULE SE operates a network of driving schools primarily in Germany, providing various driving license training and related services."
@@ -14,6 +18,14 @@
   "1GBS.DE": {
     "full_name": "GBS SOFTWARE AG INH O.N.",
     "description": "GBS Software AG is a German software company that develops and distributes digital workplace solutions, including enterprise content management, email management, and workflow automation."
+  },
+  "1INN.DE": {
+    "full_name": "INNOSCRIPTA SE INH O.N.",
+    "description": "Innoscripta SE is a German company specializing in artificial intelligence solutions, focusing on predictive analytics and machine learning for industrial applications."
+  },
+  "1SMA.DE": {
+    "full_name": "SMAG MOB.ANT.MASTS INH ON",
+    "description": "SMAG Mobile Antenna Masts specializes in the development and production of mobile antenna masts and integrated system solutions for various applications."
   },
   "1SXP.DE": {
     "full_name": "SCHOTT PHARMA INH O.N.",
@@ -87,6 +99,10 @@
     "full_name": "ABO ENERGY INH O.N.",
     "description": "ABO Energy is a German project developer that plans and builds renewable energy projects, predominantly wind and solar farms."
   },
+  "ABO.DE": {
+    "full_name": "CLEARVISE AG INH O.N.",
+    "description": "CLEARVISE AG, formerly ABO Beteiligungs AG, is a German investment company focused on acquiring and developing renewable energy projects, primarily in wind and solar power."
+  },
   "ABX.DE": {
     "full_name": "ADV.BLOCKCHAIN AG INH ON",
     "description": "Advanced Blockchain AG is a venture builder and investor in the blockchain industry, focusing on developing and investing in decentralized applications and technologies."
@@ -159,6 +175,10 @@
     "full_name": "GROUNDS R.EST. NA O.N.",
     "description": "Grounds Real Estate Development AG is a German company specializing in the acquisition, development, and sale of residential and commercial properties."
   },
+  "AMV0.DE": {
+    "full_name": "AUMOVIO SE NA O.N.",
+    "description": "Aumovio SE operates a digital platform providing a marketplace and services for the automotive sector, catering to car enthusiasts and professionals."
+  },
   "AOF.DE": {
     "full_name": "ATOSS SOFTWARE SE INH O.N",
     "description": "ATOSS Software SE is a German software company specializing in developing and selling workforce management solutions, including time management, staff scheduling, and HR software."
@@ -194,6 +214,10 @@
   "BEI.DE": {
     "full_name": "BEIERSDORF AG O.N.",
     "description": "Beiersdorf AG is a German multinational company that manufactures personal-care products and pressure-sensitive adhesives, known for brands like Nivea, Eucerin, and La Prairie."
+  },
+  "BENH.DE": {
+    "full_name": "BENO HOLDING AG  INH O.N.",
+    "description": "BENO Holding AG is a German investment company that acquires and manages interests in small and medium-sized enterprises, primarily focusing on real estate, renewable energy, and technology sectors."
   },
   "BEZ.DE": {
     "full_name": "BERENTZEN-GRP.AG",
@@ -295,6 +319,10 @@
     "full_name": "CECONOMY AG  INH O.N.",
     "description": "CECONOMY AG is a leading European retailer of consumer electronics, operating brands such as MediaMarkt and Saturn."
   },
+  "CECV.DE": {
+    "full_name": "CECONOMY AG ON Z.VERK.",
+    "description": "CECONOMY AG is a major European consumer electronics retailer operating through its MediaMarkt and Saturn brands across multiple countries."
+  },
   "CEK.DE": {
     "full_name": "CEOTRONICS AG O.N.",
     "description": "CEOTRONICS AG develops, manufactures, and distributes professional digital and analog radio communication systems and accessories, primarily serving industrial, public safety, and transport sectors."
@@ -382,6 +410,14 @@
   "DFTK.DE": {
     "full_name": "DF DT.FORFAIT AG  NA O.N.",
     "description": "Deutsche Forfait AG provides international trade finance services, primarily specializing in forfaiting, which involves purchasing future payment claims from exporters."
+  },
+  "DGR.DE": {
+    "full_name": "DT.GRUNDST.AUKT.AG",
+    "description": "Deutsche Grundst\u00fccksauktionen AG is a German company specializing in the public auction of various types of real estate properties."
+  },
+  "DHE1.DE": {
+    "full_name": "DELIVERY HERO SE NA VERK.",
+    "description": "Delivery Hero SE is a global online food delivery service operating in numerous countries across Asia, Europe, Latin America, and the Middle East, connecting customers with a wide range of restaurants and local shops."
   },
   "DHER.DE": {
     "full_name": "DELIVERY HERO SE NA O.N.",
@@ -499,6 +535,10 @@
     "full_name": "PFERDEWETTEN.DE AG NA ON",
     "description": "PFERDEWETTEN.DE AG NA ON is a German company specializing in online sports betting, particularly for horse racing."
   },
+  "ENR.DE": {
+    "full_name": "SIEMENS ENERGY AG NA O.N.",
+    "description": "Siemens Energy AG is a German energy technology company that provides a wide range of products, solutions, and services for the generation, transmission, and industrial application of electricity, including conventional and renewable power generation, and power transmission infrastructure."
+  },
   "EOAN.DE": {
     "full_name": "E.ON SE NA O.N.",
     "description": "E.ON SE is a European electric utility company focused on energy networks, customer solutions, and renewables."
@@ -518,6 +558,10 @@
   "EUZ.DE": {
     "full_name": "ECKERT+ZIEGLER  INH O.N.",
     "description": "Eckert & Ziegler Strahlen- und Medizintechnik AG is a global specialist in isotope technology for medical, scientific, and industrial applications, providing products and services for radiation therapy, molecular imaging, and industrial radiography."
+  },
+  "EVAC.DE": {
+    "full_name": "ELECTROVAC AG",
+    "description": "ELECTROVAC AG is a German company specializing in the production and distribution of high-quality glass-to-metal and ceramic-to-metal seals, primarily for industrial applications."
   },
   "EVD.DE": {
     "full_name": "CTS EVENTIM KGAA",
@@ -546,6 +590,10 @@
   "FC9.DE": {
     "full_name": "FCR IMMOBILIEN AG NA O.N.",
     "description": "FCR IMMOBILIEN AG is a German real estate company focused on acquiring, managing, and developing retail properties across Germany."
+  },
+  "FEV.DE": {
+    "full_name": "FORTEC ELEKTRO. O.N.",
+    "description": "FORTEC ELEKTRO. O.N. (Fortec Elektronik AG) is a German company specializing in the distribution and manufacturing of embedded systems, power supplies, and display technology."
   },
   "FIE.DE": {
     "full_name": "FIELMANN GROUP AG O.N.",
@@ -583,6 +631,10 @@
     "full_name": "FLATEXDEGIRO SE NA O.N.",
     "description": "FLATEXDEGIRO SE is a leading European online broker that provides a comprehensive platform for private investors to trade a wide range of financial instruments."
   },
+  "FXT.DE": {
+    "full_name": "FINEXITY AG NA O.N.",
+    "description": "FINEXITY AG is a German fintech company specializing in digital real estate investments, enabling investors to participate in fractional ownership of properties."
+  },
   "FYB.DE": {
     "full_name": "FORMYCON AG",
     "description": "FORMYCON AG is a German pharmaceutical company specializing in the development of biosimilar drugs for various therapeutic areas."
@@ -606,6 +658,10 @@
   "GFT.DE": {
     "full_name": "GFT TECHNOLOGIES SE",
     "description": "GFT Technologies SE is a global IT services and software engineering company specializing in digital transformation for the financial services industry."
+  },
+  "GIL.DE": {
+    "full_name": "DMG MORI AG O.N.",
+    "description": "DMG MORI AG is a leading global manufacturer of machine tools and a provider of integrated production solutions, serving industries worldwide."
   },
   "GLJ.DE": {
     "full_name": "GRENKE AG NA O.N.",
@@ -643,6 +699,10 @@
     "full_name": "GRAND CITY PROPERT.EO-,10",
     "description": "Grand City Properties S.A. is a real estate company focused on investing in, managing, and developing residential properties in Germany, with an emphasis on urban areas."
   },
+  "H2O.DE": {
+    "full_name": "ENAPTER AG  INH O.N.",
+    "description": "Enapter AG is a German company that develops and manufactures highly efficient AEM electrolysers for the production of green hydrogen, enabling the global transition to sustainable energy."
+  },
   "H9W.DE": {
     "full_name": "HWA AG  INH.O.N.",
     "description": "HWA AG is a German engineering company specializing in motorsport, automotive development, and production services, particularly known for its long-standing collaboration with Mercedes-AMG."
@@ -666,6 +726,10 @@
   "HDD.DE": {
     "full_name": "HEIDELBERG.DRUCKMA.O.N.",
     "description": "Heidelberger Druckmaschinen AG is a leading global manufacturer of sheet-fed offset printing machines and a provider of solutions for the print media industry."
+  },
+  "HE8.DE": {
+    "full_name": "HELIOS SOLAR AG INH EO 1",
+    "description": "Helios Solar AG is a German company specializing in the solar energy sector, focusing on the development and implementation of solar projects."
   },
   "HEI.DE": {
     "full_name": "HEIDELBERG MATERIALS O.N.",
@@ -698,6 +762,10 @@
   "HLAG.DE": {
     "full_name": "HAPAG-LLOYD AG NA O.N.",
     "description": "Hapag-Lloyd AG is a leading global container shipping company that offers worldwide liner services for general cargo, reefer cargo, dangerous goods, and special cargo, connecting major ports across all continents."
+  },
+  "HLE.DE": {
+    "full_name": "HELLA GMBH+CO. KGAA O.N.",
+    "description": "Hella GmbH & Co. KGaA is a global automotive supplier that develops and manufactures lighting and electronic components and systems for the automotive industry."
   },
   "HMU.DE": {
     "full_name": "HMS BERGBAU AG",
@@ -799,6 +867,10 @@
     "full_name": "JUNGHEINRICH AG O.N.VZO",
     "description": "Jungheinrich AG is a German company specializing in material handling equipment, warehousing, and logistics solutions, manufacturing and selling industrial trucks, racking systems, and integrated intralogistics systems."
   },
+  "KA1.DE": {
+    "full_name": "HAUSVORTEIL AG NA O.N.",
+    "description": "HAUSVORTEIL AG is a German company focused on providing services related to real estate, including property management and brokerage."
+  },
   "KA8.DE": {
     "full_name": "KLASSIK RADIO AG NA O.N.",
     "description": "Klassik Radio AG operates a commercial radio station in Germany that broadcasts classical music, providing entertainment and information services to its listeners."
@@ -842,6 +914,10 @@
   "KWS.DE": {
     "full_name": "KWS SAAT KGAA  INH O.N.",
     "description": "KWS SAAT SE & Co. KGaA is a German plant breeding company that develops, produces, and sells seeds for corn, sugarbeet, cereals, oil crops, and vegetables globally."
+  },
+  "LEG.DE": {
+    "full_name": "LEG IMMOBILIEN SE NA O.N.",
+    "description": "LEG Immobilien SE is a German residential real estate company that owns and manages a large portfolio of apartments, primarily in North Rhine-Westphalia."
   },
   "LEI.DE": {
     "full_name": "LEIFHEIT AG O.N.",
@@ -971,9 +1047,17 @@
     "full_name": "MUTARES KGAA  NA O.N.",
     "description": "Mutares SE & Co. KGaA is a private equity holding company that acquires medium-sized companies in special situations and aims to increase their value by repositioning them."
   },
+  "MVV1.DE": {
+    "full_name": "MVV ENERGIE AG NA O.N.",
+    "description": "MVV Energie AG is a German utility company primarily engaged in the generation, distribution, and sale of electricity, heat, gas, and water, with a strong focus on renewable energy and energy efficiency."
+  },
   "MWB0.DE": {
     "full_name": "MWB FAIRTRADE WPHDL.NA ON",
     "description": "MWB Fairtrade Wertpapierhandelsbank AG operates as a financial services provider specializing in securities trading and brokerage activities."
+  },
+  "MXHN.DE": {
+    "full_name": "MAX AUTOMATION SE NA O.N.",
+    "description": "MAX AUTOMATION SE is a German company specializing in high-tech automation solutions, including robotics, and environmental technology for various industries."
   },
   "MZX.DE": {
     "full_name": "MASTERFLEX O.N.",
@@ -1035,6 +1119,10 @@
     "full_name": "OVB HOLDING AG",
     "description": "OVB HOLDING AG is a European financial services sales company based in Germany, specializing in brokering various financial products for private households."
   },
+  "OBCK.DE": {
+    "full_name": "OTTOBOCK SE+CO.KGAA  O.N.",
+    "description": "Ottobock SE & Co. KGaA is a global medical technology company specializing in the development, manufacturing, and servicing of prosthetic and orthotic devices, and mobility solutions."
+  },
   "OBS.DE": {
     "full_name": "ORBIS SE INH O.N.",
     "description": "ORBIS SE is a German IT consulting firm specializing in the implementation and optimization of SAP and Microsoft business solutions for its clients."
@@ -1071,6 +1159,10 @@
     "full_name": "PRO DV AG INH O.N.",
     "description": "PRO DV AG is a German IT service provider focusing on software solutions, IT consulting, and system integration for public administration and private sector clients."
   },
+  "PFV.DE": {
+    "full_name": "PFEIFFER VACUUM TECH.O.N.",
+    "description": "Pfeiffer Vacuum Technology AG manufactures vacuum solutions, including pumps, measurement and analysis equipment, for various industries such as semiconductor, research, and industrial applications."
+  },
   "PNE3.DE": {
     "full_name": "PNE AG  NA O.N.",
     "description": "PNE AG is a German project developer and operator of onshore and offshore wind farms, solar parks, and hybrid energy solutions globally."
@@ -1086,6 +1178,10 @@
   "PSM.DE": {
     "full_name": "PROSIEBENSAT.1  NA O.N.",
     "description": "ProSiebenSat.1 Media SE is a leading German media company primarily engaged in free-to-air television broadcasting, digital entertainment, and e-commerce."
+  },
+  "PTHH.DE": {
+    "full_name": "PATH2 HYDR. AG INH O.N.",
+    "description": "PATH2 HYDR. AG INH O.N. is a German company engaged in the hydraulics sector, providing specialized solutions and components."
   },
   "PTP.DE": {
     "full_name": "PENTIXAPHARM HLDG NA O.N.",
@@ -1231,6 +1327,10 @@
     "full_name": "SIEMENS AG  NA O.N.",
     "description": "Siemens AG is a German multinational conglomerate focused on industrial automation and digitalization, intelligent infrastructure, distributed energy, and healthcare technology."
   },
+  "SIS.DE": {
+    "full_name": "FIRST SENSOR AG O.N.",
+    "description": "First Sensor AG develops and produces customer-specific sensor solutions for applications in the industrial, medical, and mobility sectors."
+  },
   "SIX2.DE": {
     "full_name": "SIXT SE ST O.N.",
     "description": "SIXT SE is a German multinational car rental company and mobility service provider offering a range of services including car rental, car sharing, and ride-hailing."
@@ -1246,6 +1346,10 @@
   "SKB.DE": {
     "full_name": "KOENIG + BAUER AG ST O.N.",
     "description": "Koenig & Bauer AG is a German manufacturer of printing machines and systems, serving the packaging, publishing, and security printing industries."
+  },
+  "SLSA.DE": {
+    "full_name": "SOLUTIANCE AG  NA O.N.",
+    "description": "SOLUTIANCE AG is a German company specializing in IT consulting services and software solutions for digital transformation and business process optimization."
   },
   "SLYG.DE": {
     "full_name": "SHELLY GROUP PLC     EO 1",
@@ -1299,6 +1403,10 @@
     "full_name": "SHAREHOLD.VAL.BET.NA O.N.",
     "description": "SHAREHOLD.VAL.BET.NA O.N. is an investment company focused on acquiring and managing participations in various businesses."
   },
+  "SWA.DE": {
+    "full_name": "SCHLOSS WACHENHEIM AG O.N",
+    "description": "SCHLOSS WACHENHEIM AG O.N is a German company primarily engaged in the production and distribution of sparkling wines and other alcoholic beverages, operating globally."
+  },
   "SY1.DE": {
     "full_name": "SYMRISE AG INH. O.N.",
     "description": "Symrise AG is a German producer of flavors and fragrances, specializing in the development and manufacture of scents, flavorings, cosmetic active ingredients, and raw materials for personal care and food industries."
@@ -1311,6 +1419,10 @@
     "full_name": "SYZYGY AG O.N.",
     "description": "SYZYGY AG O.N. is a German company that specializes in digital marketing services, offering strategy, creation, media, and technology solutions to its clients."
   },
+  "SZ50.DE": {
+    "full_name": "LUEBKE KELBER AG NA O.N.",
+    "description": "LUEBKE KELBER AG NA O.N. is a German real estate company focused on the acquisition, development, and management of commercial properties."
+  },
   "SZG.DE": {
     "full_name": "SALZGITTER AG O.N.",
     "description": "Salzgitter AG is a leading German steel and technology group engaged in the production, processing, and trading of steel products."
@@ -1318,6 +1430,10 @@
   "SZU.DE": {
     "full_name": "SUEDZUCKER AG  O.N.",
     "description": "S\u00fcdzucker AG is a major German sugar producer and food company, known for its sugar products and other food ingredients."
+  },
+  "T3T1.DE": {
+    "full_name": "SEVEN PRINCIPLES AG O.N.",
+    "description": "SEVEN PRINCIPLES AG is a German IT service provider offering consulting, software development, and system integration services for businesses."
   },
   "TEG.DE": {
     "full_name": "TAG IMMOBILIEN AG",
@@ -1335,9 +1451,17 @@
     "full_name": "ZEAL NETWORK SE NA O.N.",
     "description": "ZEAL Network SE is an online lottery company that brokers tickets for state lotteries and offers its own lottery products."
   },
+  "TIW.DE": {
+    "full_name": "TIN INN HLDG AG VNA O.N.",
+    "description": "TIN INN HLDG AG VNA O.N. is a German holding company that may invest in various sectors and businesses."
+  },
   "TKA.DE": {
     "full_name": "THYSSENKRUPP AG O.N.",
     "description": "ThyssenKrupp AG is a German multinational conglomerate focusing on industrial engineering and steel production, with operations in elevators, industrial plants, and materials services."
+  },
+  "TKMS.DE": {
+    "full_name": "TKMS AG + CO. KGAA O.N.",
+    "description": "Thyssenkrupp Marine Systems AG + Co. KGaA is a leading German shipbuilding company specializing in the design and construction of submarines, naval vessels, and marine electronics."
   },
   "TLX.DE": {
     "full_name": "TALANX AG NA O.N.",
@@ -1358,6 +1482,10 @@
   "TPG0.DE": {
     "full_name": "THE PLATFORM GROUP NA ON",
     "description": "THE PLATFORM GROUP AG (TPG0.DE) is a German software company specializing in providing innovative B2B platform solutions and services."
+  },
+  "TTK.DE": {
+    "full_name": "TAKKT AG O.N.",
+    "description": "TAKKT AG is a German B2B direct marketing specialist offering a wide range of business equipment and supplies through its various mail-order and e-commerce brands."
   },
   "TTR1.DE": {
     "full_name": "TECHNOTRANS SE NA O.N.",
@@ -1399,6 +1527,10 @@
     "full_name": "UZIN UTZ SE O.N.",
     "description": "UZIN UTZ SE is a German manufacturer of construction chemicals and floor systems, providing products for subfloor preparation, adhesives for floor coverings, and floor finishes."
   },
+  "V1NC.DE": {
+    "full_name": "VINCORION SE INH O.N.",
+    "description": "VINCORION SE is a German technology company specializing in developing and manufacturing electrification, power generation, and power electronics solutions for demanding applications in defense, aviation, and rail."
+  },
   "V3V.DE": {
     "full_name": "FAMICORD AG",
     "description": "FAMICORD AG specializes in the collection, processing, and long-term storage of stem cells for therapeutic and research applications."
@@ -1406,6 +1538,10 @@
   "V6C.DE": {
     "full_name": "VISCOM SE O.N.",
     "description": "Viscom SE develops, manufactures, and sells automated optical inspection systems and X-ray inspection systems primarily for industrial electronics manufacturing worldwide."
+  },
+  "VAD.DE": {
+    "full_name": "SCP STAN.CAP.PART. INH ON",
+    "description": "SCP STAN.CAP.PART. INH ON (VAD.DE) represents the stock of VAD Technologies AG, a German company specializing in value-added distribution of IT hardware and software solutions primarily in the Middle East and Africa."
   },
   "VBK.DE": {
     "full_name": "VERBIO SE INH O.N.",
@@ -1495,6 +1631,10 @@
     "full_name": "WUESTENROT+WUERTT.AG O.N.",
     "description": "W\u00fcstenrot & W\u00fcrttembergische AG is a German financial services group offering building society products, various insurance solutions, and other related banking services."
   },
+  "XK4.DE": {
+    "full_name": "GABLER GRP AG INH O.N.",
+    "description": "GABLER GRP AG INH O.N. is a German industrial holding company with diverse operations, primarily focused on manufacturing and engineering solutions."
+  },
   "XTP.DE": {
     "full_name": "SINO AG",
     "description": "SINO AG is a German online brokerage firm offering specialized trading services and platforms for active and professional traders."
@@ -1518,5 +1658,9 @@
   "ZIL2.DE": {
     "full_name": "ELRINGKLINGER AG NA O.N.",
     "description": "ElringKlinger AG is a German automotive supplier that develops and produces components for powertrain, chassis, and body as well as battery and fuel cell technologies for the global automotive industry."
+  },
+  "ZN2.DE": {
+    "full_name": "WEGROW AG  INH O.N.",
+    "description": "WEGROW AG is a German company specializing in the cultivation, processing, and distribution of medical cannabis products."
   }
 }
