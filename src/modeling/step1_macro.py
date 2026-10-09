@@ -6,22 +6,30 @@ from .base_pipeline import build_pipeline
 from .diagnostics import calculate_ks_and_cutoff, calculate_cv_accuracy, generate_confusion_matrix, generate_lift_chart, get_confusion_matrix_dict
 from sklearn.model_selection import TimeSeriesSplit
 import os
-import yaml
+from config.settings import load_settings
 
 logger = logging.getLogger(__name__)
 
-def execute_step1(df: pd.DataFrame, ticker: str = "UNKNOWN", n_features_out: int = 12) -> Tuple[Dict[str, Any], pd.DataFrame]:
+def execute_step1(df: pd.DataFrame, ticker: str = "UNKNOWN") -> Tuple[Dict[str, Any], pd.DataFrame]:
     """
     Executes Step 1 modeling logic.
     
+    Model parameters (features_to_select, anova_k, quantiles, min_cv_accuracy) are read
+    from config/settings.yaml.
+    
     Args:
         df (pd.DataFrame): The engineered DataFrame (historical rows with Target).
-        n_features_out (int): Number of features to select.
+        ticker (str): The ticker being modeled; used to name the diagnostic artifacts.
         
     Returns:
         tuple: (metrics_dictionary, filtered_prediction_dataframe)
     """
     logger.info("Executing Step 1 Macro Model.")
+    settings = load_settings()
+    n_features_out = int(settings['features_to_select'])
+    anova_k = int(settings['anova_k'])
+    quantiles = int(settings['quantiles'])
+    min_cv_accuracy = float(settings['min_cv_accuracy'])
     
     # Separate historical data where Target is known, vs most recent where Target is NaN
     train_df = df.dropna(subset=['Target'])
@@ -39,7 +47,7 @@ def execute_step1(df: pd.DataFrame, ticker: str = "UNKNOWN", n_features_out: int
     
     # We must ensure we don't ask for more features than we have
     max_features = min(n_features_out, X_train.shape[1])
-    pipeline = build_pipeline(n_features_out=max_features)
+    pipeline = build_pipeline(n_features_out=max_features, anova_k=anova_k)
     
     # Generate Cross-Validation probabilities using strict TimeSeriesSplit
     tscv = TimeSeriesSplit(n_splits=2)
@@ -75,7 +83,7 @@ def execute_step1(df: pd.DataFrame, ticker: str = "UNKNOWN", n_features_out: int
     
     # Generate Visual Artifacts for Cross Validation
     generate_confusion_matrix(y_train_clean, y_prob_cv_clean, ks_cutoff, os.path.join(diag_dir, f"{ticker}_cv_confusion_matrix.png"))
-    generate_lift_chart(y_train_clean, y_prob_cv_clean, 10, os.path.join(diag_dir, f"{ticker}_cv_lift_chart.png"))
+    generate_lift_chart(y_train_clean, y_prob_cv_clean, quantiles, os.path.join(diag_dir, f"{ticker}_cv_lift_chart.png"))
     
     # Now fit on the entire historical dataset to get the final model weights for prediction
     pipeline.fit(X_train, y_train)
@@ -126,15 +134,6 @@ def execute_step1(df: pd.DataFrame, ticker: str = "UNKNOWN", n_features_out: int
         "removed_by_sfs": removed_by_sfs
     }
     
-    # Load minimum CV accuracy from settings
-    try:
-        with open('config/settings.yaml', 'r') as f:
-            settings = yaml.safe_load(f)
-            min_cv_accuracy = float(settings.get('min_cv_accuracy', 0.65))
-    except Exception as e:
-        logger.warning(f"Failed to load min_cv_accuracy from settings.yaml: {e}. Defaulting to 0.65")
-        min_cv_accuracy = 0.65
-
     # Evaluate Confusion Matrix Rule: TP > FN and TN > FP
     cm_rule_passed = False
     if cv_confusion_matrix:

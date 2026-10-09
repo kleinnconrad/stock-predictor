@@ -1,10 +1,12 @@
 import pandas as pd
 import numpy as np
 import logging
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-def engineer_features(df: pd.DataFrame, horizon_days: int = 126, threshold: float = 0.10) -> pd.DataFrame:
+def engineer_features(df: pd.DataFrame, horizon_days: int = 126, threshold: float = 0.10,
+                      history_years: Optional[int] = None) -> pd.DataFrame:
     """
     Engineers technical indicators, macroeconomic features, and the target variable.
     
@@ -12,6 +14,9 @@ def engineer_features(df: pd.DataFrame, horizon_days: int = 126, threshold: floa
         df (pd.DataFrame): The combined pricing and macro/fundamental DataFrame.
         horizon_days (int): The prediction horizon in days.
         threshold (float): The target threshold for positive classification (e.g., 0.10 for 10%).
+        history_years (Optional[int]): If set, rows older than this many years before the latest
+            row are dropped after the features are computed. The input should contain extra
+            warm-up history so rolling features are populated from the first kept row.
         
     Returns:
         pd.DataFrame: DataFrame with engineered features and the 'Target' column.
@@ -58,6 +63,10 @@ def engineer_features(df: pd.DataFrame, horizon_days: int = 126, threshold: floa
         # Drop intermediary columns and non-stationary absolute price/volume features
         cols_to_drop = ['SMA_50', 'SMA_200', 'Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume']
         data = data.drop(columns=[c for c in cols_to_drop if c in data.columns])
+        
+        if history_years is not None and not data.empty:
+            history_start = data.index.max() - pd.DateOffset(years=history_years)
+            data = data[data.index >= history_start]
         
         return data
     except Exception as e:

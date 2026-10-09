@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import logging
-import yaml
+from config.settings import load_settings
 from typing import Dict, Any, Tuple
 
 logger = logging.getLogger(__name__)
@@ -25,13 +25,7 @@ def execute_step2(funds_df: pd.DataFrame) -> Tuple[Dict[str, Any], str]:
         logger.warning("Not enough quarterly fundamental data to evaluate ruleset.")
         return {}, "NOT_UP"
         
-    try:
-        with open('config/settings.yaml', 'r') as f:
-            settings = yaml.safe_load(f)
-            min_step2_score = int(settings.get('min_step2_score', 7))
-    except Exception as e:
-        logger.warning(f"Failed to load min_step2_score from settings.yaml: {e}. Defaulting to 7")
-        min_step2_score = 7
+    min_step2_score = int(load_settings()['min_step2_score'])
         
     # Get the two most recent quarters
     q_latest = funds_df.iloc[-1]

@@ -5,13 +5,14 @@ from sklearn.feature_selection import SelectKBest, f_classif, SequentialFeatureS
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import TimeSeriesSplit
 
-def build_pipeline(n_features_out: int = 12) -> Pipeline:
+def build_pipeline(n_features_out: int = 12, anova_k: int = 40) -> Pipeline:
     """
     Constructs the standard Scikit-learn Pipeline incorporating imputation, Z-scaling, 
     ANOVA pre-filtering, and Sequential Feature Selection.
     
     Args:
         n_features_out (int): Number of features for the final model to select.
+        anova_k (int): Number of features kept by the ANOVA pre-filter.
         
     Returns:
         Pipeline: The un-fitted Scikit-learn Pipeline.
@@ -25,8 +26,8 @@ def build_pipeline(n_features_out: int = 12) -> Pipeline:
     # 3. Z-Scaler: Normalizes variables so coefficients are accurately scaled and comparable.
     scaler = StandardScaler()
     
-    # 4. ANOVA pre-filter: Selects top 40 features to prevent SFS from taking hours on massive global macro universe.
-    anova = SelectKBest(score_func=f_classif, k=40)
+    # 4. ANOVA pre-filter: Keeps the top `anova_k` features so SFS stays tractable on the large macro universe.
+    anova = SelectKBest(score_func=f_classif, k=anova_k)
     
     # 5. Logistic Regression instance for SFS and the final model
     logreg = LogisticRegression(class_weight='balanced', solver='liblinear', random_state=42)

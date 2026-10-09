@@ -1,6 +1,5 @@
 import logging
 import pandas as pd
-import yaml
 import os
 from tqdm import tqdm
 from ..ingestion.xetra_t7 import fetch_xetra_t7
@@ -13,6 +12,7 @@ from ..modeling.step1_macro import execute_step1
 from ..modeling.step2_funds import execute_step2
 from .json_exporter import export_prediction_json, export_feature_diagnostics_json
 from ..ingestion.company_profile import fetch_company_profile
+from config.settings import load_settings
 
 logger = logging.getLogger(__name__)
 
@@ -23,18 +23,26 @@ def run_single(ticker_data: dict, macro_df: pd.DataFrame = None) -> bool:
     ticker = ticker_data['Ticker']
     company_name = ticker_data['Company']
     logger.info(f"Running Two-Step Cascade for single ticker: {ticker} ({company_name})")
+    settings = load_settings()
+    history_years = int(settings['step1_history_years'])
+    fetch_years = history_years + int(settings['feature_warmup_years'])
     if macro_df is None:
         logger.info("Pre-caching Global Macro Universe for local execution...")
-        macro_df = fetch_global_macro_universe(history_years=3)
+        macro_df = fetch_global_macro_universe(history_years=fetch_years)
         
     try:
         # Step 1
-        merged_df = fetch_step1_data(ticker, macro_df, history_years=3)
+        merged_df = fetch_step1_data(ticker, macro_df, history_years=fetch_years)
         if merged_df.empty:
             logger.warning(f"No market data for {ticker}. Aborting.")
             return False
             
-        features_df = engineer_features(merged_df)
+        features_df = engineer_features(
+            merged_df,
+            horizon_days=int(settings['horizon_days']),
+            threshold=float(settings['threshold']),
+            history_years=history_years,
+        )
         metrics_1, filtered_df_1 = execute_step1(features_df, ticker=ticker)
         step1_dates = filtered_df_1.index
         feature_diagnostics_1 = metrics_1.pop('feature_diagnostics', {}) if metrics_1 else {}
@@ -113,8 +121,7 @@ def run_batch():
     logger.info("Starting local batch runner.")
     
     # 1. Fetch Tickers
-    with open('config/settings.yaml', 'r') as f:
-        settings = yaml.safe_load(f)
+    settings = load_settings()
     raw_df = fetch_xetra_t7(settings['xetra_t7_url'])
     qualified_tickers = filter_qualified_tickers(raw_df)
     
@@ -124,7 +131,8 @@ def run_batch():
         
     # 2. Cache Macro
     logger.info("Pre-caching Global Macro Universe for local execution...")
-    macro_df = fetch_global_macro_universe(history_years=3)
+    fetch_years = int(settings['step1_history_years']) + int(settings['feature_warmup_years'])
+    macro_df = fetch_global_macro_universe(history_years=fetch_years)
     
     buy_candidates = []
     

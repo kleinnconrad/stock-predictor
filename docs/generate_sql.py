@@ -5,10 +5,9 @@ project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(project_root)
 
 from config.universe import ALL_FRED_INDICATORS, ALL_YF_TICKERS
-import yaml
+from config.settings import load_settings
 
-with open(os.path.join(project_root, 'config', 'settings.yaml'), 'r') as f:
-    settings = yaml.safe_load(f)
+settings = load_settings()
 threshold = settings.get('threshold', 0.10)
 
 RATE_KEYWORDS = ['TNX', 'IRX', 'VIX', 'UNRATE', 'T10Y2Y', 'EPU', 'ratio_', 'HUTTTT', 'NFCI', 'BAML', 'UMCSENT']

@@ -8,7 +8,6 @@ import json
 import time
 import random
 import argparse
-import yaml
 import datetime
 import pandas as pd
 import yfinance as yf
@@ -19,6 +18,7 @@ from src.processing.features import engineer_features
 from src.modeling.step1_macro import execute_step1
 from src.orchestration.json_exporter import export_prediction_json, export_feature_diagnostics_json
 from src.ingestion.company_profile import fetch_company_profile
+from config.settings import load_settings
 
 def apply_anti_jitter():
     """
@@ -50,8 +50,19 @@ def main():
     shard_tickers = all_tickers[args.shard :: args.total]
     print(f"[Runner {args.shard}/{args.total}] Processing {len(shard_tickers)} tickers.")
     
+    settings = load_settings()
+    history_years = int(settings['step1_history_years'])
+    # Fetch extra warm-up history so rolling features are populated from the first training day
+    fetch_years = history_years + int(settings['feature_warmup_years'])
+    applied_parameters = {
+        key: settings[key] for key in (
+            'horizon_days', 'threshold', 'step1_history_years', 'feature_warmup_years',
+            'features_to_select', 'anova_k', 'min_cv_accuracy', 'min_step2_score'
+        )
+    }
+
     print("Pre-caching Global Macro Universe...")
-    macro_df = fetch_global_macro_universe(history_years=3)
+    macro_df = fetch_global_macro_universe(history_years=fetch_years)
     
     passed_tickers = []
     step1_dates_dict = {}
@@ -61,19 +72,21 @@ def main():
         company_name = row['Company']
         apply_anti_jitter()
         try:
-            merged_df = fetch_step1_data(ticker, macro_df, history_years=3)
+            merged_df = fetch_step1_data(ticker, macro_df, history_years=fetch_years)
             if merged_df.empty:
                 continue
                 
-            features_df = engineer_features(merged_df)
+            features_df = engineer_features(
+                merged_df,
+                horizon_days=int(settings['horizon_days']),
+                threshold=float(settings['threshold']),
+                history_years=history_years,
+            )
             
             metrics, filtered_df = execute_step1(features_df)
             step1_dates = filtered_df.index
             feature_diagnostics = metrics.pop('feature_diagnostics', {}) if metrics else {}
             
-            with open('config/settings.yaml', 'r') as f:
-                settings = yaml.safe_load(f)
-                
             # Get the last available close price
             latest_price = float(merged_df['Close'].iloc[-1]) if 'Close' in merged_df.columns else None
 
@@ -106,13 +119,7 @@ def main():
                 "beta": beta,
                 "liquidity": liquidity,
                 "prediction_date": str(datetime.date.today()),
-                "applied_parameters": {
-                    "horizon_days": settings.get('horizon_days', 126),
-                    "threshold": settings.get('threshold', 0.10),
-                    "step1_history_years": settings.get('step1_history_years', 10),
-                    "step2_history_years": settings.get('step2_history_years', 4),
-                    "features_to_select": settings.get('features_to_select', 12)
-                },
+                "applied_parameters": applied_parameters,
                 "step1_model": metrics,
                 "final_prediction": "PENDING"
             } if metrics else {}
