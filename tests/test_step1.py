@@ -116,3 +116,29 @@ def test_feature_names_stay_aligned_when_a_feature_has_no_observations(fast_sett
     assert metrics['cv_status'] == 'ok'
     assert 'f3' in metrics['selected_predictors_and_weights']
     assert 'empty_feature' not in metrics['selected_predictors_and_weights']
+
+
+def test_failing_final_fit_is_reported_instead_of_raised(fast_settings, monkeypatch):
+    from src.modeling import base_pipeline
+
+    calls = {'n': 0}
+
+    def build_failing_on_final_fit(*args, **kwargs):
+        pipeline = base_pipeline.build_pipeline(*args, **kwargs)
+        calls['n'] += 1
+        if calls['n'] == 3:  # two CV folds succeed, the final fit on all rows fails
+            def fail(*a, **k):
+                raise ValueError("All the fits failed")
+            pipeline.fit = fail
+        return pipeline
+
+    monkeypatch.setattr(step1_macro, 'build_pipeline', build_failing_on_final_fit)
+    rng = np.random.default_rng(3)
+    df = _frame(2000, np.zeros(2000))
+    df['Target'] = np.where(df['f0'] + 0.3 * rng.normal(size=2000) > 0, 1.0, 0.0)
+    df.iloc[-126:, df.columns.get_loc('Target')] = np.nan
+
+    metrics = step1_macro.execute_step1(df, ticker='FINAL')
+
+    assert metrics['cv_status'].startswith('cv_failed: final fit failed')
+    assert metrics['predicted_class'] == 'NOT_UP'

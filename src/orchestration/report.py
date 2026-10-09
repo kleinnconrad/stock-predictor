@@ -23,6 +23,18 @@ REPORT_FILE_PATTERN = re.compile(r"report_(\d{4}-\d{2}-\d{2})\.json$")
 PROFILE_CACHE_NAME = 'company_profiles_cache.json'
 
 
+def find_prediction_files(pattern: str) -> List[str]:
+    """
+    Returns the prediction payloads matching a glob in which `**` matches any number of
+    directories.
+    
+    The folder layout of downloaded GitHub Actions artifacts depends on the uploaded
+    paths (their common parent becomes the artifact root), so the pipeline searches
+    recursively, e.g. `step2_artifacts/**/predictions/*.json`.
+    """
+    return sorted(glob.glob(pattern, recursive=True))
+
+
 def _preference(payload: Dict[str, Any]) -> tuple:
     # A payload that went through Step 2 is more complete; a buy beats a Step 2 rejection
     return ('step2_model' in payload, payload.get('final_prediction') == 'UP_FINAL_BUY')

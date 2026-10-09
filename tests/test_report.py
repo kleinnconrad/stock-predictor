@@ -62,3 +62,16 @@ def test_profile_cache_keeps_generated_descriptions_only(tmp_path):
     ]
     assert update_profile_cache(predictions, str(cache)) == 2
     assert set(json.loads(cache.read_text())) == {'AAA', 'OLD'}
+
+
+def test_prediction_files_are_found_in_every_artifact_layout(tmp_path):
+    from src.orchestration.report import find_prediction_files
+
+    # Artifact root = common parent of the uploaded paths (outputs/) ...
+    a = _write(tmp_path / 'step2_artifacts' / 'step2-final-shard-0' / 'predictions' / 'AAA.DE_prediction.json', {})
+    # ... or the repository root when files outside outputs/ are uploaded as well
+    b = _write(tmp_path / 'step2_artifacts' / 'step2-final-shard-1' / 'outputs' / 'predictions' / 'BBB.DE_prediction.json', {})
+
+    found = find_prediction_files(str(tmp_path / 'step2_artifacts' / '**' / 'predictions' / '*.json'))
+
+    assert found == sorted([a, b])

@@ -108,7 +108,9 @@ jobs:
           path: step2_artifacts
 
       - name: Consolidate Shards
-        run: uv run --locked python scripts/04_consolidate.py --predictions-glob 'step2_artifacts/*/outputs/predictions/*.json'
+        # The artifact root is the common parent of the uploaded paths (outputs/), so payloads
+        # arrive as step2_artifacts/<artifact>/predictions/*.json; ** keeps this layout-independent
+        run: uv run --locked python scripts/04_consolidate.py --predictions-glob 'step2_artifacts/**/predictions/*.json'
 
       - name: Evaluate Uplift Performance
         run: uv run --locked python -m src.processing.uplift_evaluator
