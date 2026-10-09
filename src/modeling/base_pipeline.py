@@ -63,7 +63,10 @@ def build_pipeline(n_features_out: int = 12, anova_k: int = 40, sfs_cv=None) -> 
         Pipeline: The un-fitted Scikit-learn Pipeline.
     """
     # 1. Imputer: Fills remaining NaNs (e.g., very start of the dataset) with median.
-    imputer = SimpleImputer(strategy='median')
+    #    Features without any observation (e.g. an instrument listed after the training window
+    #    starts) are kept as constants, so the output stays aligned with the input columns
+    #    used to name the selected features; VarianceThreshold removes them next.
+    imputer = SimpleImputer(strategy='median', keep_empty_features=True)
 
     # 2. Variance Threshold: Drops constant features (0 variance) to prevent divide by zero errors in ANOVA.
     var_thresh = VarianceThreshold()

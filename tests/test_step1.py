@@ -102,3 +102,17 @@ def test_degenerate_cutoffs_are_detected():
     assert walk_forward_predictions([single_class_first_fold, single_class_first_fold]) is None
     cutoff = ks_cutoff_or_none(np.array([0, 0, 1, 1]), np.array([0.1, 0.2, 0.8, 0.9]))
     assert cutoff is not None and np.isfinite(cutoff[1])
+
+
+def test_feature_names_stay_aligned_when_a_feature_has_no_observations(fast_settings):
+    rng = np.random.default_rng(2)
+    df = _frame(2000, np.zeros(2000))
+    df['Target'] = np.where(df['f3'] + 0.3 * rng.normal(size=2000) > 0, 1.0, 0.0)
+    df.iloc[-126:, df.columns.get_loc('Target')] = np.nan
+    df.insert(0, 'empty_feature', np.nan)  # e.g. an instrument without history in the window
+
+    metrics = step1_macro.execute_step1(df, ticker='EMPTY')
+
+    assert metrics['cv_status'] == 'ok'
+    assert 'f3' in metrics['selected_predictors_and_weights']
+    assert 'empty_feature' not in metrics['selected_predictors_and_weights']
