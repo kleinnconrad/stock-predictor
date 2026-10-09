@@ -49,3 +49,16 @@ def test_publish_writes_report_buy_list_and_archive(tmp_path):
     assert report['execution_date'] == '2026-10-09T01:30:00.000000Z'
     assert pd.read_csv(tmp_path / 'final_buy_signals.csv')['Ticker'].tolist() == ['AAA']
     assert (tmp_path / 'history' / '2026-10' / 'report_2026-10-09.json').exists()
+
+
+def test_profile_cache_keeps_generated_descriptions_only(tmp_path):
+    from src.orchestration.report import update_profile_cache
+
+    cache = tmp_path / 'company_profiles_cache.json'
+    cache.write_text(json.dumps({'OLD': {'full_name': 'Old AG', 'description': 'Kept.'}}))
+    predictions = [
+        {'stock_name': 'AAA', 'company_name': 'A AG', 'company_description': 'Makes things.'},
+        {'stock_name': 'BBB', 'company_name': 'B AG', 'company_description': 'Error fetching description.'},
+    ]
+    assert update_profile_cache(predictions, str(cache)) == 2
+    assert set(json.loads(cache.read_text())) == {'AAA', 'OLD'}

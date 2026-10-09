@@ -13,12 +13,14 @@ from typing import Any, Dict, Iterable, List, Optional
 
 import pandas as pd
 
+from ..ingestion.company_profile import FALLBACK_DESCRIPTIONS
 from .json_exporter import write_json_atomic
 
 logger = logging.getLogger(__name__)
 
 VALID_PREDICTIONS = ("UP", "NOT_UP", "UP_FINAL_BUY")
 REPORT_FILE_PATTERN = re.compile(r"report_(\d{4}-\d{2}-\d{2})\.json$")
+PROFILE_CACHE_NAME = 'company_profiles_cache.json'
 
 
 def _preference(payload: Dict[str, Any]) -> tuple:
@@ -145,11 +147,41 @@ def prune_history(history_dir: str, today: date, retention_days: int) -> List[st
     return removed
 
 
+def update_profile_cache(predictions: List[Dict[str, Any]], cache_path: str) -> int:
+    """
+    Adds the company profiles of the consolidated predictions to the profile cache.
+    
+    The cache is committed by the pipeline, so the next run reads descriptions from it
+    instead of requesting all of them from the Gemini API again.
+    
+    Args:
+        predictions (List[Dict[str, Any]]): Consolidated payloads.
+        cache_path (str): Path of company_profiles_cache.json.
+        
+    Returns:
+        int: Number of cached profiles.
+    """
+    cache: Dict[str, Any] = {}
+    if os.path.exists(cache_path):
+        with open(cache_path, 'r', encoding='utf-8') as f:
+            cache = json.load(f)
+    for payload in predictions:
+        description = payload.get('company_description')
+        if payload.get('stock_name') and description and description not in FALLBACK_DESCRIPTIONS:
+            cache[payload['stock_name']] = {
+                'full_name': payload.get('company_name'),
+                'description': description,
+            }
+    write_json_atomic(cache_path, dict(sorted(cache.items())))
+    return len(cache)
+
+
 def publish_report(predictions: List[Dict[str, Any]], settings: Dict[str, Any], out_dir: str,
                    now: Optional[datetime] = None) -> Dict[str, Any]:
     """
     Writes full_batch_report.json and final_buy_signals.csv to `out_dir`, archives the
-    report under `out_dir`/history and prunes reports older than `history_retention_days`.
+    report under `out_dir`/history, prunes reports older than `history_retention_days`
+    and adds the company profiles to `out_dir`/company_profiles_cache.json.
 
     Args:
         predictions (List[Dict[str, Any]]): Consolidated payloads.
@@ -167,5 +199,6 @@ def publish_report(predictions: List[Dict[str, Any]], settings: Dict[str, Any], 
     history_dir = os.path.join(out_dir, 'history')
     archive_report(report, history_dir, now.date())
     prune_history(history_dir, now.date(), int(settings['history_retention_days']))
+    update_profile_cache(predictions, os.path.join(out_dir, PROFILE_CACHE_NAME))
     logger.info(f"Published report with {len(predictions)} predictions and {len(buys)} buy candidates to {out_dir}.")
     return report
