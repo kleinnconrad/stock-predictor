@@ -2,7 +2,7 @@
 
 ## Fundamental Data Cache Maintenance
 Whenever you start working on this repository, you MUST proactively check if the fundamental data cache is outdated.
-1. Check the current date. The fundamental data cache maintenance runs every month on the 15th (or the first time you start Antigravity IDE after this date).
+1. Check the current date. The fundamental data cache maintenance runs every month on the 15th (or the first session started after this date).
 2. Check the `last_updated` date in `data/raw/fundamentals/_manifest.json` (written by the update script; file modification dates are not reliable in a git checkout). 
 3. If the current date is the 15th of the month or later, and the files were last updated before the 15th of the current month, you MUST automatically run the `uv run python scripts/update_fundamentals.py` script to refresh the fundamentals cache.
 4. Inform the user that you are running the monthly fundamentals update in the background.
@@ -47,4 +47,4 @@ Whenever you start working on this repository, you MUST proactively check if the
 - Use specific exception handling (`try...except` blocks) instead of catching generic `Exception`s where possible, and provide informative error messages.
 
 ## 9. Version Control & Committing
-- You MUST NEVER run `git commit` or push changes to the repository by yourself unless the user explicitly asks you to do so. Prepare the changes locally and inform the user so they can review and commit them manually.
+- Never run `git commit` or `git push`, and never commit or push through GitHub tools or APIs, without the user's explicit approval of that specific commit. Prepare the changes locally, show the diff and the proposed commit message, and wait for approval. Approval of one commit does not extend to later commits.
