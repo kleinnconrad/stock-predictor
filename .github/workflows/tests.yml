@@ -1,0 +1,28 @@
+name: Tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@caf0cab7a618c569241d31dcd442f54681755d39 # v3.2.4
+        with:
+          version: "0.12.17"
+          enable-cache: true
+
+      # Offline unit tests; no API keys or network access required
+      - name: Run unit tests
+        run: uv run --locked pytest -q
