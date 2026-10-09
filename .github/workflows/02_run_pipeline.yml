@@ -88,7 +88,6 @@ jobs:
         with:
           name: step2-final-shard-${{ matrix.shard }}
           path: |
-            data/processed/final_buy_signals_shard_${{ matrix.shard }}.csv
             outputs/predictions/
             outputs/diagnostics/
           retention-days: 7
@@ -113,66 +112,17 @@ jobs:
           path: step2_artifacts
 
       - name: Consolidate Shards
-        run: |
-          mkdir -p data/processed
-          echo "Ticker" > data/processed/final_buy_signals.csv
-          find step2_artifacts/ -name "final_buy_signals_shard_*.csv" -exec awk 'FNR>1' {} + >> data/processed/final_buy_signals.csv
-          
-          uv run python -c '
-          import os, json, glob, yaml
-          from datetime import datetime
-          
-          with open("config/settings.yaml", "r") as f:
-              settings = yaml.safe_load(f)
-
-          payload_dict = {}
-          for f in glob.glob("step2_artifacts/*/outputs/predictions/*.json"):
-              try:
-                  with open(f, "r") as file:
-                      data = json.load(file)
-                      ticker = data.get("stock_name")
-                      if not ticker: continue
-                      
-                      if data.get("final_prediction") not in ["UP", "NOT_UP", "UP_FINAL_BUY"]:
-                          data["final_prediction"] = "NOT_UP"
-                      
-                      if ticker not in payload_dict:
-                          payload_dict[ticker] = data
-                      else:
-                          current_pred = payload_dict[ticker].get("final_prediction")
-                          new_pred = data.get("final_prediction")
-                          
-                          if "step2_model" in data and "step2_model" not in payload_dict[ticker]:
-                              payload_dict[ticker] = data
-                          elif new_pred == "UP_FINAL_BUY" and current_pred == "UP":
-                              payload_dict[ticker] = data
-              except Exception as e:
-                  print(f"Failed to read {f}: {e}")
-                  
-          report = {
-              "execution_date": datetime.utcnow().isoformat() + "Z",
-              "parameters": settings,
-              "predictions": list(payload_dict.values())
-          }
-          
-          with open("data/processed/full_batch_report.json", "w") as out:
-              json.dump(report, out, indent=2)
-          '
+        run: uv run python scripts/04_consolidate.py --predictions-glob 'step2_artifacts/*/outputs/predictions/*.json'
 
       - name: Evaluate Uplift Performance
-        run: |
-          TODAY=$(date +%Y-%m-%d)
-          MONTH=$(date +%Y-%m)
-          mkdir -p data/processed/history/$MONTH
-          cp data/processed/full_batch_report.json data/processed/history/$MONTH/report_$TODAY.json
-          find data/processed/history/ -name "report_*.json" -mtime +180 -exec rm {} \;
-          uv run python src/processing/uplift_evaluator.py
+        run: uv run python src/processing/uplift_evaluator.py
 
       - name: Commit and Push Final Buy Signals
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -f data/processed/final_buy_signals.csv data/processed/full_batch_report.json data/processed/history/ data/processed/uplift_report.json
+          # -A also stages archived reports removed by the retention policy
+          git add -A -f data/processed/final_buy_signals.csv data/processed/full_batch_report.json data/processed/history/ data/processed/uplift_report.json
           git commit -m "chore: Auto-update final results and JSON batch report" || echo "No changes to commit"
           git pull --rebase --autostash origin main
           git push

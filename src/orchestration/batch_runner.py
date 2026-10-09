@@ -1,3 +1,4 @@
+import glob
 import logging
 import pandas as pd
 import os
@@ -5,6 +6,7 @@ from tqdm import tqdm
 from ..ingestion.xetra_t7 import fetch_xetra_t7
 from ..ingestion.global_macro import fetch_global_macro_universe
 from ..processing.qualifier import filter_qualified_tickers
+from .report import consolidate_predictions, publish_report
 from .steps import history_window, run_step1_for_ticker, run_step2_for_ticker
 from config.settings import load_settings
 
@@ -74,53 +76,12 @@ def run_batch():
         if run_single(ticker_data, macro_df=macro_df):
             buy_candidates.append(ticker_data['Ticker'])
             
-    out_dir = os.path.join('data', 'processed')
-    os.makedirs(out_dir, exist_ok=True)
-    out_path = os.path.join(out_dir, 'final_buy_signals_local.csv')
-    pd.DataFrame({'ticker': buy_candidates}).to_csv(out_path, index=False)
-    logger.info(f"Local batch run complete. {len(buy_candidates)} buy candidates found. Saved to {out_path}.")
+    logger.info(f"Local batch run complete. {len(buy_candidates)} buy candidates found.")
     
-    import json
-    import glob
-    import time
-    from datetime import datetime
+    # Same consolidation and archiving as the GitHub Actions pipeline
+    predictions = consolidate_predictions(glob.glob(os.path.join('outputs', 'predictions', '*.json')))
+    publish_report(predictions, settings, os.path.join('data', 'processed'))
     
-    payload_dict = {}
-    for f_path in glob.glob("outputs/predictions/*.json"):
-        try:
-            with open(f_path, "r") as file:
-                data = json.load(file)
-                ticker = data.get("stock_name")
-                if ticker:
-                    payload_dict[ticker] = data
-        except Exception as e:
-            logger.error(f"Failed to read {f_path}: {e}")
-            
-    report = {
-        "execution_date": datetime.utcnow().isoformat() + "Z",
-        "parameters": settings,
-        "predictions": list(payload_dict.values())
-    }
-    
-    with open(os.path.join(out_dir, 'full_batch_report.json'), "w") as out:
-        json.dump(report, out, indent=2)
-        
-    history_dir = os.path.join(out_dir, "history")
-    today_dt = datetime.utcnow()
-    month_str = today_dt.strftime("%Y-%m")
-    today_str = today_dt.strftime("%Y-%m-%d")
-    month_dir = os.path.join(history_dir, month_str)
-    os.makedirs(month_dir, exist_ok=True)
-    
-    hist_file = os.path.join(month_dir, f"report_{today_str}.json")
-    with open(hist_file, "w") as out:
-        json.dump(report, out, indent=2)
-        
-    now = time.time()
-    for f_path in glob.glob(os.path.join(history_dir, "*", "report_*.json")):
-        if os.stat(f_path).st_mtime < now - 180 * 86400:
-            os.remove(f_path)
-            
     try:
         from ..processing.uplift_evaluator import evaluate_uplift
         evaluate_uplift()

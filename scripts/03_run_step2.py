@@ -60,9 +60,7 @@ def main():
         except Exception:
             logger.exception(f"Failed {ticker} in Step 2")
 
-    # Export final candidate list for this shard
-    output_path = f'data/processed/final_buy_signals_shard_{args.shard}.csv'
-    pd.DataFrame({'Ticker': final_buy_candidates}).to_csv(output_path, index=False)
+    # The final buy list is built from the consolidated payloads by scripts/04_consolidate.py
     logger.info(f"[Runner {args.shard}] Found {len(final_buy_candidates)} Final Buy Candidates.")
 
 if __name__ == "__main__":
