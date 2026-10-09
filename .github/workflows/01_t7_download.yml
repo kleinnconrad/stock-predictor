@@ -2,7 +2,9 @@ name: "1. T7 Download (Initialization)"
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 1 * * 1' # 2 AM
+    # Sundays 22:00 UTC (23:00 CET / 00:00 CEST), so the refreshed list is committed
+    # before the daily pipeline starts on Monday at 01:00 UTC
+    - cron: '0 22 * * 0'
 
 jobs:
   t7-download:
@@ -19,13 +21,6 @@ jobs:
 
       - name: Run T7 Extraction
         run: uv run python scripts/01_run_t7.py
-
-      - name: Upload Qualified Tickers Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: t7-state-artifact
-          path: data/state/qualified_tickers.csv
-          retention-days: 7
 
       - name: Commit and Push T7 Dump and Qualified Tickers
         run: |

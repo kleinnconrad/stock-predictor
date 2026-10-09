@@ -2,7 +2,7 @@ name: "2. Execute Pipeline (Step 1 & 2)"
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 1 * * *'   # 1:00 AM UTC (2:00 AM CET)
+    - cron: '0 1 * * *'   # 01:00 UTC (02:00 CET / 03:00 CEST)
 
 jobs:
   step1-matrix:
@@ -19,13 +19,6 @@ jobs:
         with:
           version: "latest"
           enable-cache: true
-
-      - name: Download T7 Artifact
-        uses: dawidd6/action-download-artifact@v6
-        with:
-          workflow: 01_t7_download.yml
-          name: t7-state-artifact
-          path: data/state/
 
       - name: Execute Step 1 Model
         env:
