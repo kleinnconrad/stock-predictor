@@ -77,3 +77,28 @@ def test_learnable_signal_is_validated(fast_settings):
     assert metrics['cv_accuracy'] > 0.7
     assert 'f0' in metrics['selected_predictors_and_weights']
     assert metrics['predicted_class'] in ('UP', 'NOT_UP')
+
+
+def test_cutoff_is_learned_on_earlier_folds_only():
+    from src.modeling.diagnostics import walk_forward_predictions
+
+    # Fold 1 separates at ~0.3; fold 2 would be perfectly separated at 0.75 if tuned on itself
+    fold1 = (np.array([0, 0, 1, 1]), np.array([0.1, 0.2, 0.4, 0.5]))
+    fold2 = (np.array([0, 0, 1, 1]), np.array([0.6, 0.7, 0.8, 0.9]))
+
+    y_true, y_pred = walk_forward_predictions([fold1, fold2])
+
+    assert list(y_true) == [0, 0, 1, 1]
+    assert list(y_pred) == [1, 1, 1, 1]  # cutoff from fold 1 (0.4) is applied, not re-tuned
+
+
+def test_degenerate_cutoffs_are_detected():
+    from src.modeling.diagnostics import ks_cutoff_or_none, walk_forward_predictions
+
+    assert ks_cutoff_or_none(np.array([0, 0, 0]), np.array([0.1, 0.2, 0.3])) is None
+    # No discrimination: positives score lowest, so max(TPR - FPR) is reached only at +inf
+    assert ks_cutoff_or_none(np.array([1, 1, 0, 0]), np.array([0.1, 0.2, 0.3, 0.4])) is None
+    single_class_first_fold = (np.array([0, 0]), np.array([0.1, 0.2]))
+    assert walk_forward_predictions([single_class_first_fold, single_class_first_fold]) is None
+    cutoff = ks_cutoff_or_none(np.array([0, 0, 1, 1]), np.array([0.1, 0.2, 0.8, 0.9]))
+    assert cutoff is not None and np.isfinite(cutoff[1])
