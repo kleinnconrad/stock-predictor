@@ -4,14 +4,8 @@ import os
 from tqdm import tqdm
 from ..ingestion.xetra_t7 import fetch_xetra_t7
 from ..ingestion.global_macro import fetch_global_macro_universe
-from ..ingestion.market_api import fetch_step1_data
-from ..ingestion.funds_api import fetch_fundamentals
 from ..processing.qualifier import filter_qualified_tickers
-from ..processing.features import engineer_features
-from ..modeling.step1_macro import execute_step1
-from ..modeling.step2_funds import execute_step2
-from .json_exporter import export_prediction_json, export_feature_diagnostics_json
-from ..ingestion.company_profile import fetch_company_profile
+from .steps import history_window, run_step1_for_ticker, run_step2_for_ticker
 from config.settings import load_settings
 
 logger = logging.getLogger(__name__)
@@ -19,98 +13,38 @@ logger = logging.getLogger(__name__)
 def run_single(ticker_data: dict, macro_df: pd.DataFrame = None) -> bool:
     """
     Runs the full Step 1 and Step 2 pipeline for a single ticker.
+    
+    Uses the same per-ticker runners as the GitHub Actions scripts, so local runs
+    produce identical payloads and diagnostics.
+    
+    Args:
+        ticker_data (dict): {'Ticker': ..., 'Company': ...}.
+        macro_df (pd.DataFrame): Pre-cached macro matrix (fetched if omitted).
+        
+    Returns:
+        bool: True if the ticker is a final buy candidate.
     """
     ticker = ticker_data['Ticker']
     company_name = ticker_data['Company']
     logger.info(f"Running Two-Step Cascade for single ticker: {ticker} ({company_name})")
     settings = load_settings()
-    history_years = int(settings['step1_history_years'])
-    fetch_years = history_years + int(settings['feature_warmup_years'])
     if macro_df is None:
         logger.info("Pre-caching Global Macro Universe for local execution...")
+        _, fetch_years = history_window(settings)
         macro_df = fetch_global_macro_universe(history_years=fetch_years)
         
     try:
-        # Step 1
-        merged_df = fetch_step1_data(ticker, macro_df, history_years=fetch_years)
-        if merged_df.empty:
-            logger.warning(f"No market data for {ticker}. Aborting.")
+        payload = run_step1_for_ticker(ticker, company_name, macro_df, settings)
+        if payload is None:
+            return False
+        if payload['final_prediction'] != 'UP':
+            logger.info(f"{ticker} failed Step 1 (cv_status: {payload['step1_model'].get('cv_status')}). Not proceeding to Step 2.")
             return False
             
-        features_df = engineer_features(
-            merged_df,
-            horizon_days=int(settings['horizon_days']),
-            threshold=float(settings['threshold']),
-            history_years=history_years,
-        )
-        metrics_1 = execute_step1(features_df, ticker=ticker)
-        feature_diagnostics_1 = metrics_1.pop('feature_diagnostics', {}) if metrics_1 else {}
-        pred_payload_1 = metrics_1
-        
-        combined_diagnostics = {"step1_macro": feature_diagnostics_1}
-        export_feature_diagnostics_json(ticker, combined_diagnostics)
-        
-        # Get the last available close price
-        latest_price = float(merged_df['Close'].iloc[-1]) if 'Close' in merged_df.columns else None
-
-        # Fetch company profile from Gemini API
-        profile = fetch_company_profile(ticker, company_name)
-
-        # We will export the combined payload at the end. For now, export Step 1 alone.
-        combined_payload = {
-            "stock_name": ticker,
-            "company_name": profile.get("full_name", "Unknown"),
-            "company_description": profile.get("description", "No description available."),
-            "latest_price": latest_price,
-            "step1_model": pred_payload_1, 
-            "final_prediction": "PENDING"
-        }
-        if pred_payload_1:
-            export_prediction_json(ticker, combined_payload)
-            
-        latest_macro_pred = metrics_1.get("predicted_class", "NOT_UP")
-        if latest_macro_pred != "UP":
-            logger.info(f"{ticker} failed Step 1 macro threshold (Predicted: {latest_macro_pred}). Not proceeding to Step 2.")
-            combined_payload["final_prediction"] = "NOT_UP"
-            export_prediction_json(ticker, combined_payload)
-            return False
-            
-        # Step 2
-        funds_df = fetch_fundamentals(ticker)
-        
-        mat_dir = os.path.join('outputs', 'matrices')
-        os.makedirs(mat_dir, exist_ok=True)
-        funds_df.to_csv(os.path.join(mat_dir, f"{ticker}_step2_funds.csv"))
-        
-        if funds_df.empty:
-             logger.warning(f"No fundamental data for {ticker}. Aborting.")
-             combined_payload["final_prediction"] = "UP"
-             export_prediction_json(ticker, combined_payload)
-             return False
-             
-        metrics_2, latest_pred_class = execute_step2(funds_df)
-        feature_diagnostics_2 = metrics_2.get('feature_diagnostics', {}) if metrics_2 else {}
-        pred_payload_2 = metrics_2
-        final_decision = latest_pred_class == "UP"
-        
-        combined_diagnostics["step2_funds"] = feature_diagnostics_2
-        export_feature_diagnostics_json(ticker, combined_diagnostics)
-        
-        combined_payload["step2_model"] = pred_payload_2
-        combined_payload["final_prediction"] = "UP_FINAL_BUY" if final_decision else "UP"
-        
-        # Unconditionally export the final updated payload regardless of outcome
-        export_prediction_json(ticker, combined_payload)
-        
-        if final_decision:
-            logger.info(f"*** {ticker} PASSED STEP 2 AND IS A BUY CANDIDATE! ***")
-            return True
-        else:
-            logger.info(f"{ticker} failed Step 2.")
-            return False
-            
-    except Exception as e:
-        logger.error(f"Error processing {ticker}: {e}", exc_info=True)
+        payload = run_step2_for_ticker(ticker)
+        return payload['final_prediction'] == 'UP_FINAL_BUY'
+    except Exception:
+        logger.exception(f"Error processing {ticker}")
         return False
 
 def run_batch():
@@ -130,7 +64,7 @@ def run_batch():
         
     # 2. Cache Macro
     logger.info("Pre-caching Global Macro Universe for local execution...")
-    fetch_years = int(settings['step1_history_years']) + int(settings['feature_warmup_years'])
+    _, fetch_years = history_window(settings)
     macro_df = fetch_global_macro_universe(history_years=fetch_years)
     
     buy_candidates = []

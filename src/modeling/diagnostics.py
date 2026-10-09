@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from sklearn.metrics import roc_curve, accuracy_score, confusion_matrix
+from sklearn.metrics import roc_curve, confusion_matrix
 import matplotlib.pyplot as plt
 import seaborn as sns
 import logging

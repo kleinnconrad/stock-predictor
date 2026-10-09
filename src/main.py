@@ -2,33 +2,30 @@ import logging
 import sys
 import os
 import argparse
+import tomllib
+from pathlib import Path
 
 # Add project root to sys.path to allow execution as a script from any directory
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from dotenv import load_dotenv
 from src.orchestration.batch_runner import run_batch, run_single
+from src.orchestration.logging_setup import configure_logging
 
 load_dotenv()
 
-def setup_logging():
-    os.makedirs('logs', exist_ok=True)
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        handlers=[
-            logging.StreamHandler(sys.stdout),
-            logging.FileHandler(os.path.join('logs', 'xetra_predictor.log'))
-        ]
-    )
+def read_version() -> str:
+    """Returns the project version maintained by release-please in pyproject.toml."""
+    with open(Path(__file__).resolve().parents[1] / 'pyproject.toml', 'rb') as f:
+        return tomllib.load(f)['project']['version']
 
 def main():
     parser = argparse.ArgumentParser(description="Xetra Two-Step Stock Prediction Engine")
     parser.add_argument("--ticker", type=str, help="Run the model for a single specific ticker (e.g., SAP.DE)", default=None)
     args = parser.parse_args()
 
-    setup_logging()
+    configure_logging(log_file=os.path.join('logs', 'xetra_predictor.log'))
     logger = logging.getLogger(__name__)
-    logger.info("Starting Xetra Two-Step Stock Prediction Engine (v5.0)")
+    logger.info(f"Starting Xetra Two-Step Stock Prediction Engine (v{read_version()})")
     
     try:
         if args.ticker:

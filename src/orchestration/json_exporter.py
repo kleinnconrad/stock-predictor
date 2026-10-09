@@ -1,56 +1,118 @@
 import json
 import logging
+import math
 import os
-from typing import Dict, Any
+import tempfile
+from typing import Dict, Any, Optional
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
+
+PREDICTIONS_DIR = os.path.join('outputs', 'predictions')
+DIAGNOSTICS_DIR = os.path.join('outputs', 'diagnostics')
+
+
+def to_json_safe(value: Any) -> Any:
+    """
+    Converts numpy types to native Python types and non-finite floats to None.
+
+    Python's json module writes NaN and Infinity as bare tokens, which are not valid JSON
+    and break JSON.parse in the dashboard.
+
+    Args:
+        value (Any): A JSON-like structure.
+
+    Returns:
+        Any: The same structure containing only JSON-serializable values.
+    """
+    if isinstance(value, dict):
+        return {str(k): to_json_safe(v) for k, v in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [to_json_safe(v) for v in value]
+    if isinstance(value, np.generic):
+        value = value.item()
+    if isinstance(value, float) and not math.isfinite(value):
+        return None
+    return value
+
+
+def write_json_atomic(file_path: str, data: Any) -> None:
+    """
+    Serializes `data` first and then replaces `file_path` atomically.
+
+    A serialization error therefore never truncates an existing file.
+
+    Args:
+        file_path (str): Target file.
+        data (Any): JSON-like structure.
+    """
+    text = json.dumps(to_json_safe(data), indent=2, allow_nan=False)
+    directory = os.path.dirname(file_path) or '.'
+    os.makedirs(directory, exist_ok=True)
+    fd, tmp_path = tempfile.mkstemp(dir=directory, suffix='.tmp')
+    try:
+        with os.fdopen(fd, 'w', encoding='utf-8') as f:
+            f.write(text)
+        os.replace(tmp_path, file_path)
+    except BaseException:
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)
+        raise
+
+
+def _read_json(file_path: str) -> Optional[Any]:
+    if not os.path.exists(file_path):
+        return None
+    with open(file_path, 'r', encoding='utf-8') as f:
+        return json.load(f)
+
 
 def export_prediction_json(ticker: str, payload_data: Dict[str, Any]):
     """
     Exports the final prediction and model parameters to a strict JSON schema.
-    
+
     Args:
         ticker (str): The stock ticker.
         payload_data (Dict[str, Any]): The formatted payload data.
     """
-    output_dir = os.path.join('outputs', 'predictions')
-    os.makedirs(output_dir, exist_ok=True)
-    
-    file_path = os.path.join(output_dir, f"{ticker}_prediction.json")
-    
+    file_path = os.path.join(PREDICTIONS_DIR, f"{ticker}_prediction.json")
     try:
-        # payload_data should already be cast to native Python floats inside the step functions,
-        # but just in case, json.dumps will fail if not, which is a good strict check.
-        with open(file_path, 'w', encoding='utf-8') as f:
-            json.dumps(payload_data) # Dry run test
-            json.dump(payload_data, f, indent=2)
-            
+        write_json_atomic(file_path, payload_data)
         logger.info(f"Successfully exported JSON prediction for {ticker} to {file_path}")
-    except TypeError as e:
-        logger.error(f"Failed to serialize JSON for {ticker} - likely a numpy type wasn't cast: {e}")
+    except (TypeError, ValueError) as e:
+        logger.error(f"Failed to serialize JSON for {ticker}: {e}")
         raise
-    except Exception as e:
-        logger.error(f"Error writing JSON for {ticker}: {e}")
-        raise
+
+
+def load_prediction_json(ticker: str) -> Optional[Dict[str, Any]]:
+    """
+    Loads a previously exported prediction payload.
+
+    Returns:
+        Optional[Dict[str, Any]]: The payload, or None if it does not exist.
+    """
+    return _read_json(os.path.join(PREDICTIONS_DIR, f"{ticker}_prediction.json"))
+
 
 def export_feature_diagnostics_json(ticker: str, diagnostics_data: Dict[str, Any]):
     """
     Exports the feature selection diagnostics to a JSON file.
-    
+
     Args:
         ticker (str): The stock ticker.
-        diagnostics_data (Dict[str, Any]): The formatted diagnostics data.
+        diagnostics_data (Dict[str, Any]): Diagnostics keyed by step ("step1_macro", "step2_funds").
     """
-    output_dir = os.path.join('outputs', 'diagnostics')
-    os.makedirs(output_dir, exist_ok=True)
-    
-    file_path = os.path.join(output_dir, f"{ticker}_feature_diagnostics.json")
-    
-    try:
-        with open(file_path, 'w', encoding='utf-8') as f:
-            json.dump(diagnostics_data, f, indent=2)
-            
-        logger.info(f"Successfully exported feature diagnostics for {ticker} to {file_path}")
-    except Exception as e:
-        logger.error(f"Error writing feature diagnostics JSON for {ticker}: {e}")
-        raise
+    file_path = os.path.join(DIAGNOSTICS_DIR, f"{ticker}_feature_diagnostics.json")
+    write_json_atomic(file_path, diagnostics_data)
+    logger.info(f"Successfully exported feature diagnostics for {ticker} to {file_path}")
+
+
+def load_feature_diagnostics_json(ticker: str) -> Dict[str, Any]:
+    """
+    Loads previously exported feature diagnostics.
+
+    Returns:
+        Dict[str, Any]: The diagnostics, or an empty dict if none exist.
+    """
+    return _read_json(os.path.join(DIAGNOSTICS_DIR, f"{ticker}_feature_diagnostics.json")) or {}
