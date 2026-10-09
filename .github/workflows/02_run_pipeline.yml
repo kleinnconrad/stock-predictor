@@ -15,10 +15,10 @@ jobs:
         shard: [0, 1, 2]
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@caf0cab7a618c569241d31dcd442f54681755d39 # v3.2.4
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           version: "0.12.17"
           enable-cache: true
@@ -30,7 +30,7 @@ jobs:
         run: uv run --locked python scripts/02_run_step1.py --shard ${{ matrix.shard }} --total 3
 
       - name: Upload Step 1 State Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: step1-state-shard-${{ matrix.shard }}
           path: |
@@ -38,7 +38,7 @@ jobs:
           retention-days: 7
           
       - name: Upload Step 1 Outputs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: step1-outputs-shard-${{ matrix.shard }}
           path: |
@@ -54,23 +54,23 @@ jobs:
         shard: [0, 1, 2]
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@caf0cab7a618c569241d31dcd442f54681755d39 # v3.2.4
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           version: "0.12.17"
           enable-cache: true
 
       - name: Download Step 1 Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           pattern: step1-state-shard-*
           path: data/state
           merge-multiple: true
 
       - name: Download Step 1 Outputs
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           pattern: step1-outputs-shard-*
           path: outputs
@@ -80,7 +80,7 @@ jobs:
         run: uv run --locked python scripts/03_run_step2.py --shard ${{ matrix.shard }} --total 3
 
       - name: Upload Final Output Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: step2-final-shard-${{ matrix.shard }}
           path: |
@@ -93,16 +93,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@caf0cab7a618c569241d31dcd442f54681755d39 # v3.2.4
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           version: "0.12.17"
           enable-cache: true
 
       - name: Download all Step 2 Shard Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           pattern: step2-final-shard-*
           path: step2_artifacts
@@ -132,7 +132,7 @@ jobs:
     steps:
       - name: Notify on Success
         if: ${{ needs.consolidate-and-commit.result == 'success' }}
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             github.rest.repos.createCommitComment({
@@ -144,7 +144,7 @@ jobs:
 
       - name: Notify on Failure
         if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             github.rest.repos.createCommitComment({
