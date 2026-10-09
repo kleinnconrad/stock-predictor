@@ -1,3 +1,14 @@
+// Escapes text before it is inserted with innerHTML. Report fields include LLM-generated
+// descriptions and exchange data, which must never be interpreted as markup.
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   let reportData = [];
   let executionDate = null;
@@ -87,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (data[k]) {
         let dateStr = new Date(data[k].date).toLocaleDateString();
         let dummyFlag = data[k].is_dummy ? '<span style="color:var(--status-orange)">(Dummy Data)</span>' : '';
-        metaHtml += `<strong>${k.toUpperCase()}</strong>: ${dateStr} ${dummyFlag} &nbsp;&nbsp;|&nbsp;&nbsp; `;
+        metaHtml += `<strong>${k.toUpperCase()}</strong>: ${escapeHtml(dateStr)} ${dummyFlag} &nbsp;&nbsp;|&nbsp;&nbsp; `;
       }
     });
     if (metaHtml.endsWith(" &nbsp;&nbsp;|&nbsp;&nbsp; ")) {
@@ -195,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
     for (const [key, value] of Object.entries(parameters)) {
       const badge = document.createElement('div');
       badge.className = 'param-badge';
-      badge.innerHTML = `<strong>${key}:</strong> ${value}`;
+      badge.innerHTML = `<strong>${escapeHtml(key)}:</strong> ${escapeHtml(value)}`;
       metaParams.appendChild(badge);
     }
   }
@@ -238,22 +249,22 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (status === 'UP') {
       return `<span class="status-pill status-up">UP</span>`;
     } else {
-      return `<span class="status-pill status-not-up">${status || 'NOT_UP'}</span>`;
+      return `<span class="status-pill status-not-up">${escapeHtml(status || 'NOT_UP')}</span>`;
     }
   }
 
   function createRowHtml(d) {
-    const stockName = d.stock_name || 'UNKNOWN';
-    const companyName = d.company_name ? d.company_name : '';
-    const companyDesc = d.company_description ? d.company_description : '';
+    const stockName = escapeHtml(d.stock_name || 'UNKNOWN');
+    const companyName = escapeHtml(d.company_name || '');
+    const companyDesc = escapeHtml(d.company_description || '');
     const priceStr = typeof d.latest_price === 'number' ? `€${d.latest_price.toFixed(2)}` : 'N/A';
     const acc = d.step1_model?.cv_accuracy ? (d.step1_model.cv_accuracy * 100).toFixed(1) : 0;
     const ksRaw = d.step1_model?.ks_cutoff;
-    const ks = typeof ksRaw === 'number' ? ksRaw.toFixed(3) : (ksRaw || 'N/A');
+    const ks = typeof ksRaw === 'number' ? ksRaw.toFixed(3) : escapeHtml(ksRaw || 'N/A');
     const step1Class = d.step1_model?.predicted_class || 'N/A';
-    const peRatio = typeof d.pe_ratio === 'number' ? d.pe_ratio.toFixed(2) : (d.pe_ratio || 'N/A');
-    const beta = typeof d.beta === 'number' ? d.beta.toFixed(2) : (d.beta || 'N/A');
-    const liquidityStr = typeof d.liquidity === 'number' ? d.liquidity.toFixed(2) : (d.liquidity || 'N/A');
+    const peRatio = typeof d.pe_ratio === 'number' ? d.pe_ratio.toFixed(2) : escapeHtml(d.pe_ratio || 'N/A');
+    const beta = typeof d.beta === 'number' ? d.beta.toFixed(2) : escapeHtml(d.beta || 'N/A');
+    const liquidityStr = typeof d.liquidity === 'number' ? d.liquidity.toFixed(2) : escapeHtml(d.liquidity || 'N/A');
 
     let priceHtml = `<td>${priceStr}</td>`;
     
@@ -278,13 +289,13 @@ document.addEventListener('DOMContentLoaded', () => {
             </tr>
             <tr>
               <td style="color: var(--text-muted); text-align: right; padding-right: 6px;">True NOT_UP</td>
-              <td style="border: 1px dashed var(--border-color); padding: 4px;" class="true-negative" title="True Negative">${cm.TN}</td>
-              <td style="border: 1px dashed var(--border-color); padding: 4px;" class="false-positive" title="False Positive">${cm.FP}</td>
+              <td style="border: 1px dashed var(--border-color); padding: 4px;" class="true-negative" title="True Negative">${escapeHtml(cm.TN)}</td>
+              <td style="border: 1px dashed var(--border-color); padding: 4px;" class="false-positive" title="False Positive">${escapeHtml(cm.FP)}</td>
             </tr>
             <tr>
               <td style="color: var(--text-muted); text-align: right; padding-right: 6px;">True UP</td>
-              <td style="border: 1px dashed var(--border-color); padding: 4px;" class="false-negative" title="False Negative">${cm.FN}</td>
-              <td style="border: 1px dashed var(--border-color); padding: 4px;" class="true-positive" title="True Positive">${cm.TP}</td>
+              <td style="border: 1px dashed var(--border-color); padding: 4px;" class="false-negative" title="False Negative">${escapeHtml(cm.FN)}</td>
+              <td style="border: 1px dashed var(--border-color); padding: 4px;" class="true-positive" title="True Positive">${escapeHtml(cm.TP)}</td>
             </tr>
           </table>
         </td>
@@ -442,14 +453,15 @@ document.addEventListener('DOMContentLoaded', () => {
     
     let html = '';
     reportData.forEach(d => {
-      const stockName = d.stock_name || 'UNKNOWN';
-      if (search && !stockName.toLowerCase().includes(search)) return;
+      const rawStockName = d.stock_name || 'UNKNOWN';
+      if (search && !rawStockName.toLowerCase().includes(search)) return;
+      const stockName = escapeHtml(rawStockName);
       
       let step1Html = '';
       if (d.step1_model && d.step1_model.selected_predictors_and_weights) {
         let items = '';
         for (const [k, v] of Object.entries(d.step1_model.selected_predictors_and_weights)) {
-          items += `<div class="var-item"><span class="var-key">${k}</span><span class="var-value">${Number(v).toFixed(4)}</span></div>`;
+          items += `<div class="var-item"><span class="var-key">${escapeHtml(k)}</span><span class="var-value">${Number(v).toFixed(4)}</span></div>`;
         }
         
         step1Html = `<h4>Step 1: Macro Predictors & Weights</h4><div class="var-grid">${items}</div>`;
@@ -460,19 +472,19 @@ document.addEventListener('DOMContentLoaded', () => {
         let items = '';
         for (const [k, v] of Object.entries(d.step2_model.feature_diagnostics)) {
           if (typeof v === 'object' && v !== null) {
-            items += `<div style="grid-column: 1 / -1; margin-top: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 0.5rem;"><strong>${k}</strong></div>`;
+            items += `<div style="grid-column: 1 / -1; margin-top: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 0.5rem;"><strong>${escapeHtml(k)}</strong></div>`;
             for (const [subK, subV] of Object.entries(v)) {
-              let disp = typeof subV === 'number' ? Number(subV).toFixed(2) : subV;
-              items += `<div class="var-item" style="padding-left: 1rem;"><span class="var-key">${subK}</span><span class="var-value" style="font-weight: bold;">${disp}</span></div>`;
+              let disp = typeof subV === 'number' ? Number(subV).toFixed(2) : escapeHtml(subV);
+              items += `<div class="var-item" style="padding-left: 1rem;"><span class="var-key">${escapeHtml(subK)}</span><span class="var-value" style="font-weight: bold;">${disp}</span></div>`;
             }
           } else {
-            let disp = v;
+            let disp = escapeHtml(v);
             if (typeof v === 'boolean') {
               disp = v ? '<span style="color: var(--status-green);">PASS</span>' : '<span style="color: var(--status-red);">FAIL</span>';
             } else if (typeof v === 'number') {
               disp = Number(v).toFixed(2);
             }
-            items += `<div class="var-item"><span class="var-key">${k}</span><span class="var-value">${disp}</span></div>`;
+            items += `<div class="var-item"><span class="var-key">${escapeHtml(k)}</span><span class="var-value">${disp}</span></div>`;
           }
         }
         step2Html = `<div style="margin-top: 2rem; border-top: 2px dashed var(--border-color); padding-top: 1rem;">
@@ -489,7 +501,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (step1Html || step2Html) {
         html += `
           <details class="stock-variables">
-            <summary>${stockName} ${d.company_name ? '- ' + d.company_name : ''}</summary>
+            <summary>${stockName} ${d.company_name ? '- ' + escapeHtml(d.company_name) : ''}</summary>
             <div class="variables-content">
               ${step1Html}
               ${step2Html}
