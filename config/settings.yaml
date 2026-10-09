@@ -22,6 +22,10 @@ fred_publication_lag_days:
 fred_max_staleness_days: 400  # series without a newer observation are treated as discontinued
 
 # Step 2 ruleset
-min_step2_score: 7
+min_step2_score: 7                # rules to pass out of 10, pro-rated to the applicable rules
+min_step2_applicable_rules: 5     # fewer applicable rules: the company is not evaluable
+step2_yoy_tolerance_days: 45      # tolerance when matching the same period one year earlier
+min_current_ratio: 1.2
+min_annual_roe: 0.12              # pro-rated to the reporting period (quarter or half-year)
 
 xetra_t7_url: "https://www.cashmarket.deutsche-boerse.com/resource/blob/1528/6249e15bf93885fd91bd411663a0ff82/data/t7-xetr-allTradableInstruments.csv"
