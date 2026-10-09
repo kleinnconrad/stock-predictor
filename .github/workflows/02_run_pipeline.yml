@@ -115,7 +115,7 @@ jobs:
         run: uv run python scripts/04_consolidate.py --predictions-glob 'step2_artifacts/*/outputs/predictions/*.json'
 
       - name: Evaluate Uplift Performance
-        run: uv run python src/processing/uplift_evaluator.py
+        run: uv run python -m src.processing.uplift_evaluator
 
       - name: Commit and Push Final Buy Signals
         run: |
