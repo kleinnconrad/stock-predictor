@@ -103,3 +103,32 @@ def test_universe_contains_documented_commodities_and_no_discontinued_series():
                       'JPNPROINDMISMEI', 'GBRCPIALLMINMEI', 'GBRPROINDMISMEI'):
         assert series_id not in ALL_FRED_INDICATORS
     assert len(ALL_FRED_INDICATORS) == len(set(ALL_FRED_INDICATORS))
+
+
+def _macro_levels():
+    index = pd.bdate_range('2020-01-01', '2026-01-01')
+    trend = np.linspace(1.0, 2.0, len(index))
+    return pd.DataFrame({
+        'CPIAUCSL': 300 * trend, 'UNRATE': 4 + np.sin(np.arange(len(index)) / 50),
+        '^VIX': 20 + np.cos(np.arange(len(index)) / 30), 'HG=F': 4 * trend, 'GC=F': 2000 * trend[::-1],
+        'SPY': 400 * trend,
+    }, index=index)
+
+
+def test_fred_indicators_get_momentum_and_acceleration_features():
+    out = global_macro.engineer_macro_features(_macro_levels())
+
+    # Trending FRED series: percentage momentum and acceleration, no raw level
+    assert {'CPIAUCSL_63D_ret', 'CPIAUCSL_Dist_SMA200', 'CPIAUCSL_YoY_Accel_3M'} <= set(out.columns)
+    assert 'CPIAUCSL_Level' not in out.columns
+    # Rate-like FRED series: level plus absolute differences and acceleration
+    assert {'UNRATE_Level', 'UNRATE_21D_diff', 'UNRATE_YoY_Accel_3M'} <= set(out.columns)
+
+
+def test_ratios_and_regime_zscores_are_built():
+    out = global_macro.engineer_macro_features(_macro_levels())
+
+    assert 'ratio_copper_gold_Level' in out.columns
+    assert '^VIX_Roll_ZScore_2Y' in out.columns
+    assert out['^VIX_Roll_ZScore_2Y'].iloc[-1] == out['^VIX_Roll_ZScore_2Y'].iloc[-1]  # not NaN
+    assert 'SPY_Level' not in out.columns

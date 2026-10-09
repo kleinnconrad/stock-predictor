@@ -122,6 +122,94 @@ def fetch_fred_indicators(series_ids, start_date, end_date, max_staleness_days: 
         return pd.DataFrame()
     return pd.concat(frames, axis=1, sort=True)
 
+# Columns whose levels are already stationary (rates, spreads, indices of sentiment/stress):
+# transformed with absolute differences and kept as levels.
+RATE_KEYWORDS = ['TNX', 'IRX', 'VIX', 'UNRATE', 'T10Y2Y', 'EPU', 'ratio_', 'HUTTTT', 'NFCI', 'UMCSENT']
+# Slow-moving economic series that additionally get a YoY acceleration (2nd derivative) feature.
+MACRO_KEYWORDS = ['CPIAUCSL', 'CP00MI15', 'M2SL', 'PAYEMS', 'UNRATE', 'WALCL', 'ASSETS', 'PERMIT', 'ICSA', 'DGORDER']
+# Stress indicators that get a rolling 2-year Z-score (regime normalization).
+ZSCORE_KEYWORDS = ['VIX', 'credit_spread', 'EPU']
+MOMENTUM_WINDOWS = [21, 63, 126, 252]
+ZSCORE_WINDOW = 504
+
+def engineer_macro_features(macro_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Expands the aligned macro levels (Yahoo Finance and FRED alike) into stationary features.
+    
+    Rate-like columns keep their level and use absolute differences; all other columns use
+    percentage changes and never expose their non-stationary level. Every column gets
+    multi-timeframe momentum and distance to its 200-day SMA; slow-moving economic series
+    get a YoY acceleration feature and stress indicators a rolling 2-year Z-score.
+    
+    Args:
+        macro_df (pd.DataFrame): Business-day aligned macro levels.
+        
+    Returns:
+        pd.DataFrame: The expanded feature matrix.
+    """
+    logger.info("Applying quantitative feature engineering to the macro cache...")
+    macro_df = macro_df.copy()
+    
+    # A. Interaction Ratios
+    def safe_ratio(num, den, col_name):
+        if num in macro_df.columns and den in macro_df.columns:
+            macro_df[col_name] = macro_df[num] / macro_df[den]
+
+    safe_ratio('HG=F', 'GC=F', 'ratio_copper_gold')
+    safe_ratio('HYG', 'LQD', 'ratio_credit_spread')
+    safe_ratio('XLY', 'XLP', 'ratio_consumer_risk')
+    safe_ratio('SPY', 'TLT', 'ratio_risk_on_off')
+    safe_ratio('XLK', 'SPY', 'ratio_tech_dominance')
+    safe_ratio('IGOV', 'TLT', 'ratio_intl_vs_us_bonds')
+    
+    col_dict = {}
+    for col in macro_df.columns:
+        series = macro_df[col]
+        is_rate_or_spread = any(kw in col for kw in RATE_KEYWORDS)
+        
+        # 0. Preserve Stationary Levels
+        if is_rate_or_spread:
+            col_dict[f'{col}_Level'] = series
+            
+        # 1. Multi-Timeframe Momentum
+        for w in MOMENTUM_WINDOWS:
+            if is_rate_or_spread:
+                col_dict[f'{col}_{w}D_diff'] = series.diff(w)
+            else:
+                col_dict[f'{col}_{w}D_ret'] = series.pct_change(w, fill_method=None)
+                
+        # 2. Distance to Trend (200-day SMA)
+        sma_200 = series.rolling(window=200).mean()
+        if is_rate_or_spread:
+            col_dict[f'{col}_Dist_SMA200'] = series - sma_200
+        else:
+            col_dict[f'{col}_Dist_SMA200'] = (series / sma_200) - 1.0
+            
+        # 3. Macro Acceleration (2nd Derivative): YoY change now vs. 3 months ago
+        if any(kw in col for kw in MACRO_KEYWORDS):
+            if is_rate_or_spread:
+                current_1Y_change = series.diff(252)
+                past_1Y_change = series.shift(63).diff(252)
+            else:
+                current_1Y_change = series.pct_change(252, fill_method=None)
+                past_1Y_change = series.shift(63).pct_change(252, fill_method=None)
+            col_dict[f'{col}_YoY_Accel_3M'] = current_1Y_change - past_1Y_change
+            
+        # 4. Rolling 2-Year Z-Scores
+        if any(kw in col for kw in ZSCORE_KEYWORDS):
+            roll_mean = series.rolling(window=ZSCORE_WINDOW).mean()
+            roll_std = series.rolling(window=ZSCORE_WINDOW).std() + 1e-8
+            col_dict[f'{col}_Roll_ZScore_2Y'] = (series - roll_mean) / roll_std
+            
+    expanded_macro = pd.DataFrame(col_dict, index=macro_df.index)
+    
+    # Clean infinities caused by ratio divisions
+    expanded_macro = expanded_macro.replace([np.inf, -np.inf], np.nan)
+    
+    # Drop columns that ended up being completely NaN
+    expanded_macro = expanded_macro.dropna(axis=1, how='all')
+    return expanded_macro.ffill()
+
 def fetch_global_macro_universe(history_years: int) -> pd.DataFrame:
     """
     Downloads the full 360-degree macroeconomic universe from YF and FRED,
@@ -171,89 +259,6 @@ def fetch_global_macro_universe(history_years: int) -> pd.DataFrame:
     global_macro_df = align_to_business_days(global_macro_df, end_date=last_closed_day)
     global_macro_df = global_macro_df.dropna(how='all')
     
-    # =========================================================================
-    # ADVANCED QUANTITATIVE FEATURE ENGINEERING
-    # =========================================================================
-    logger.info("Applying massive quantitative feature engineering matrix to macro cache...")
-    
-    # A. Interaction Ratios
-    def safe_ratio(num, den, col_name):
-        if num in global_macro_df.columns and den in global_macro_df.columns:
-            global_macro_df[col_name] = global_macro_df[num] / global_macro_df[den]
-
-    safe_ratio('HG=F', 'GC=F', 'ratio_copper_gold')
-    safe_ratio('HYG', 'LQD', 'ratio_credit_spread')
-    safe_ratio('XLY', 'XLP', 'ratio_consumer_risk')
-    safe_ratio('SPY', 'TLT', 'ratio_risk_on_off')
-    safe_ratio('XLK', 'SPY', 'ratio_tech_dominance')
-    safe_ratio('IGOV', 'TLT', 'ratio_intl_vs_us_bonds')
-    
-    # B. Timeframes and Rate Keywords
-    windows = [21, 63, 126, 252] 
-    RATE_KEYWORDS = ['TNX', 'IRX', 'VIX', 'UNRATE', 'T10Y2Y', 'EPU', 'ratio_', 'HUTTTT', 'NFCI', 'BAML', 'UMCSENT']
-    MACRO_KEYWORDS = ['CPIAUCSL', 'M2SL', 'PAYEMS', 'UNRATE', 'ASSETS', 'PROIND', 'PERMIT']
-    
-    col_dict = {}
-    
-    for col in global_macro_df.columns:
-        if col in ALL_FRED_INDICATORS:
-            # FRED indicators are updated infrequently (e.g. monthly/quarterly).
-            # We only keep their forward-filled levels and a rolling Z-score.
-            # (Forward fill is already applied globally via resample('B').ffill())
-            col_dict[f'{col}_Level'] = global_macro_df[col]
-            
-            # Z-scale using a rolling 2-Year window to prevent look-ahead bias
-            roll_mean = global_macro_df[col].rolling(window=504).mean()
-            roll_std = global_macro_df[col].rolling(window=504).std() + 1e-8
-            col_dict[f'{col}_ZScore'] = (global_macro_df[col] - roll_mean) / roll_std
-            continue
-
-        is_rate_or_spread = any(kw in col for kw in RATE_KEYWORDS)
-        
-        # 0. Preserve Stationary Levels
-        if is_rate_or_spread:
-            col_dict[f'{col}_Level'] = global_macro_df[col]
-            
-        # 1. Multi-Timeframe Momentum
-        for w in windows:
-            if is_rate_or_spread:
-                col_dict[f'{col}_{w}D_diff'] = global_macro_df[col].diff(w)
-            else:
-                col_dict[f'{col}_{w}D_ret'] = global_macro_df[col].pct_change(w, fill_method=None)
-                
-        # 2. Distance to Trend (200-day SMA)
-        sma_200 = global_macro_df[col].rolling(window=200).mean()
-        if is_rate_or_spread:
-            col_dict[f'{col}_Dist_SMA200'] = global_macro_df[col] - sma_200
-        else:
-            col_dict[f'{col}_Dist_SMA200'] = (global_macro_df[col] / sma_200) - 1.0
-            
-        # 3. Macro Acceleration (2nd Derivative)
-        if any(kw in col for kw in MACRO_KEYWORDS):
-            if is_rate_or_spread:
-                current_1Y_change = global_macro_df[col].diff(252)
-                past_1Y_change = global_macro_df[col].shift(63).diff(252)
-            else:
-                current_1Y_change = global_macro_df[col].pct_change(252, fill_method=None)
-                past_1Y_change = global_macro_df[col].shift(63).pct_change(252, fill_method=None)
-                
-            col_dict[f'{col}_YoY_Accel_3M'] = current_1Y_change - past_1Y_change
-            
-        # 4. Rolling 2-Year Z-Scores
-        if 'VIX' in col or 'credit_spread' in col or 'EPU' in col:
-            roll_mean = global_macro_df[col].rolling(window=504).mean()
-            roll_std = global_macro_df[col].rolling(window=504).std() + 1e-8
-            col_dict[f'{col}_Roll_ZScore_2Y'] = (global_macro_df[col] - roll_mean) / roll_std
-            
-    # Assemble expanded matrix
-    expanded_macro = pd.DataFrame(col_dict, index=global_macro_df.index)
-    
-    # Clean infinities caused by ratio divisions
-    expanded_macro = expanded_macro.replace([np.inf, -np.inf], np.nan)
-    
-    # Drop columns that ended up being completely NaN
-    expanded_macro = expanded_macro.dropna(axis=1, how='all')
-    expanded_macro = expanded_macro.ffill()
-    
+    expanded_macro = engineer_macro_features(global_macro_df)
     logger.info(f"Global macro engineering complete. Expanded Matrix Shape: {expanded_macro.shape}")
     return expanded_macro
