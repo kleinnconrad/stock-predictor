@@ -10,6 +10,13 @@ feature_warmup_years: 2       # extra history fetched so rolling features (up to
 quantiles: 10                 # bins of the lift chart
 min_cv_accuracy: 0.65
 
+# Calendar days between a FRED observation date and its (conservative) publication date
+fred_publication_lag_days:
+  daily: 1
+  weekly: 7
+  monthly: 60
+  quarterly: 150
+
 # Step 2 ruleset
 min_step2_score: 7
 

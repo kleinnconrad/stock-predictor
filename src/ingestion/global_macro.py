@@ -5,9 +5,59 @@ import pandas_datareader.data as web
 import datetime
 import logging
 import os
+from typing import Dict
 from config.universe import ALL_YF_TICKERS, ALL_FRED_INDICATORS
+from config.settings import load_settings
 
 logger = logging.getLogger(__name__)
+
+def infer_observation_frequency(index: pd.DatetimeIndex) -> str:
+    """
+    Infers the release frequency of a series from the spacing of its observation dates.
+    
+    Args:
+        index (pd.DatetimeIndex): Observation dates of a series (NaNs already removed).
+        
+    Returns:
+        str: One of 'daily', 'weekly', 'monthly' or 'quarterly'.
+    """
+    if len(index) < 2:
+        return 'monthly'
+    median_gap_days = pd.Series(index).diff().dt.days.median()
+    if median_gap_days <= 3:
+        return 'daily'
+    if median_gap_days <= 10:
+        return 'weekly'
+    if median_gap_days <= 45:
+        return 'monthly'
+    return 'quarterly'
+
+def apply_publication_lag(fred_df: pd.DataFrame, lag_days: Dict[str, int]) -> pd.DataFrame:
+    """
+    Moves every FRED observation to the date it was (conservatively) available.
+    
+    FRED dates an observation by the start of the period it covers, not by its release:
+    September CPI is dated September 1 but published mid-October. Without this shift the
+    training rows contain information that was not public on that date.
+    
+    Args:
+        fred_df (pd.DataFrame): FRED series indexed by observation date.
+        lag_days (Dict[str, int]): Publication lag in calendar days per frequency.
+        
+    Returns:
+        pd.DataFrame: The same series, each indexed by its assumed publication date.
+    """
+    shifted = []
+    for col in fred_df.columns:
+        series = fred_df[col].dropna()
+        if series.empty:
+            continue
+        frequency = infer_observation_frequency(series.index)
+        series.index = series.index + pd.Timedelta(days=int(lag_days[frequency]))
+        shifted.append(series)
+    if not shifted:
+        return pd.DataFrame()
+    return pd.concat(shifted, axis=1, sort=True)
 
 def align_to_business_days(df: pd.DataFrame, end_date) -> pd.DataFrame:
     """
@@ -62,13 +112,16 @@ def fetch_global_macro_universe(history_years: int) -> pd.DataFrame:
     if isinstance(yf_df.columns, pd.MultiIndex):
         yf_df.columns = yf_df.columns.droplevel('Ticker')
         
-    # 2. Fetch FRED indicators
+    # 2. Fetch FRED indicators and shift them to their publication dates
+    lag_days = load_settings()['fred_publication_lag_days']
+    fred_start = start_date - datetime.timedelta(days=max(lag_days.values()) + 31)
     try:
         api_key = os.getenv('FRED_API_KEY')
-        fred_df = web.DataReader(ALL_FRED_INDICATORS, 'fred', start_date, end_date, api_key=api_key)
+        fred_df = web.DataReader(ALL_FRED_INDICATORS, 'fred', fred_start, end_date, api_key=api_key)
     except Exception as e:
         logger.error(f"Failed to fetch FRED indicators: {e}")
         fred_df = pd.DataFrame()
+    fred_df = apply_publication_lag(fred_df, lag_days)
         
     # 3. Merge, forward-fill and align to business days (up to yesterday)
     global_macro_df = yf_df.join(fred_df, how='outer')
