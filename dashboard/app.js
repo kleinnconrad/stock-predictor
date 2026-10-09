@@ -9,6 +9,17 @@ function escapeHtml(value) {
     .replace(/'/g, '&#39;');
 }
 
+// Formats a report parameter; nested settings (e.g. FRED publication lags) are shown as JSON.
+function formatParam(value) {
+  return value !== null && typeof value === 'object' ? JSON.stringify(value) : value;
+}
+
+// Step 2 rules whose inputs a company does not report are null ("not applicable").
+function isStep2Evaluable(d) {
+  const diag = d.step2_model && d.step2_model.feature_diagnostics;
+  return Boolean(diag) && diag.Evaluable !== false;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   let reportData = [];
   let executionDate = null;
@@ -31,6 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const kpiMissingData = document.getElementById('kpi-missing-data');
   const kpiSuppressed = document.getElementById('kpi-suppressed');
   let suppressedCount = 0;
+  let suppressedBuys = 0;
   
   const metaDate = document.getElementById('meta-date');
   const metaParams = document.getElementById('meta-params');
@@ -60,12 +72,11 @@ document.addEventListener('DOMContentLoaded', () => {
          parameters = data.parameters || {};
       }
       
-      const originalLength = reportData.length;
-      reportData = reportData.filter(d => {
-        if (typeof d.latest_price === 'number' && d.latest_price <= 10) return false;
-        return true;
-      });
-      suppressedCount = originalLength - reportData.length;
+      // Stocks priced at or below 10 EUR are hidden from all KPIs and tables (documented in the README)
+      const isSuppressed = d => typeof d.latest_price === 'number' && d.latest_price <= 10;
+      suppressedCount = reportData.filter(isSuppressed).length;
+      suppressedBuys = reportData.filter(d => isSuppressed(d) && d.final_prediction === 'UP_FINAL_BUY').length;
+      reportData = reportData.filter(d => !isSuppressed(d));
 
       renderMetadata();
       calculateKPIs();
@@ -74,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
     })
     .catch(error => {
       console.error("Failed to load JSON data", error);
-      const errorHtml = `<tr><td colspan="5" style="text-align:center; color: var(--status-red);">Failed to load data. Ensure full_batch_report.json is available.</td></tr>`;
+      const errorHtml = `<tr><td colspan="11" style="text-align:center; color: var(--status-red);">Failed to load data. Ensure full_batch_report.json is available.</td></tr>`;
       tableBodyOther.innerHTML = errorHtml;
       tableBodyBuys.innerHTML = errorHtml;
     });
@@ -93,17 +104,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const keys = ["1m", "3m", "6m"];
     const labelsMap = { "1m": "1 Month", "3m": "3 Months", "6m": "6 Months" };
     
-    let metaHtml = "";
+    const metaParts = [];
     keys.forEach(k => {
       if (data[k]) {
-        let dateStr = new Date(data[k].date).toLocaleDateString();
-        let dummyFlag = data[k].is_dummy ? '<span style="color:var(--status-orange)">(Dummy Data)</span>' : '';
-        metaHtml += `<strong>${k.toUpperCase()}</strong>: ${escapeHtml(dateStr)} ${dummyFlag} &nbsp;&nbsp;|&nbsp;&nbsp; `;
+        let dateStr = data[k].report_date || new Date(data[k].date).toLocaleDateString();
+        let dummyFlag = data[k].is_dummy ? ' <span style="color:var(--status-orange)">(Dummy Data)</span>' : '';
+        metaParts.push(`<strong>${k.toUpperCase()}</strong>: ${escapeHtml(dateStr)}${dummyFlag}`);
       }
     });
-    if (metaHtml.endsWith(" &nbsp;&nbsp;|&nbsp;&nbsp; ")) {
-      metaHtml = metaHtml.slice(0, -29);
-    }
+    const metaHtml = metaParts.join(' &nbsp;&nbsp;|&nbsp;&nbsp; ');
     const metaEl = document.getElementById('uplift-metadata');
     if (metaEl) metaEl.innerHTML = metaHtml;
     
@@ -111,13 +120,19 @@ document.addEventListener('DOMContentLoaded', () => {
       const ctx = document.getElementById(`uplift-chart-${k}`);
       if (!ctx) return;
       
-      let baseline = 0, upFinalBuy = 0, up = 0, notUp = 0;
-      if (data[k] && data[k].metrics) {
-        baseline = data[k].metrics.baseline ? data[k].metrics.baseline * 100 : 0;
-        upFinalBuy = data[k].metrics.UP_FINAL_BUY ? data[k].metrics.UP_FINAL_BUY * 100 : 0;
-        up = data[k].metrics.UP ? data[k].metrics.UP * 100 : 0;
-        notUp = data[k].metrics.NOT_UP ? data[k].metrics.NOT_UP * 100 : 0;
+      if (!data[k] || !data[k].metrics) {
+        ctx.parentElement.innerHTML = `<div style="height: 100%; display: flex; align-items: center; justify-content: center; color: var(--text-muted); text-align: center;">${labelsMap[k]}: not enough history yet</div>`;
+        return;
       }
+      // Empty cohorts are null and are not drawn (a missing cohort is not a 0% return)
+      const pct = v => (typeof v === 'number' ? v * 100 : null);
+      const metrics = data[k].metrics;
+      const counts = data[k].counts || {};
+      const baseline = pct(metrics.baseline);
+      const upFinalBuy = pct(metrics.UP_FINAL_BUY);
+      const up = pct(metrics.UP);
+      const notUp = pct(metrics.NOT_UP);
+      const cohortCounts = [counts.NOT_UP, counts.UP, counts.UP_FINAL_BUY];
       
       new Chart(ctx, {
         type: 'bar',
@@ -170,7 +185,11 @@ document.addEventListener('DOMContentLoaded', () => {
             tooltip: {
               callbacks: {
                 label: function(context) {
-                  return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + '%';
+                  if (context.parsed.y === null) return context.dataset.label + ': n/a';
+                  const n = context.dataset.type === 'bar' ? cohortCounts[context.dataIndex]
+                                                           : counts.baseline;
+                  return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + '%' +
+                         (typeof n === 'number' ? ` (n=${n})` : '');
                 }
               }
             }
@@ -197,7 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderMetadata() {
     if (executionDate) {
       const d = new Date(executionDate);
-      metaDate.textContent = d.toLocaleString() + " UTC";
+      metaDate.textContent = d.toLocaleString(undefined, { timeZone: 'UTC' }) + " UTC";
     } else {
       metaDate.textContent = "N/A (Legacy Data)";
     }
@@ -206,7 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
     for (const [key, value] of Object.entries(parameters)) {
       const badge = document.createElement('div');
       badge.className = 'param-badge';
-      badge.innerHTML = `<strong>${escapeHtml(key)}:</strong> ${escapeHtml(value)}`;
+      badge.innerHTML = `<strong>${escapeHtml(key)}:</strong> ${escapeHtml(formatParam(value))}`;
       metaParams.appendChild(badge);
     }
   }
@@ -223,13 +242,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const notUp = reportData.filter(d => d.final_prediction === 'NOT_UP').length;
     kpiNotUp.textContent = notUp;
 
-    const failedStep2 = reportData.filter(d => d.final_prediction === 'UP' && (d.step2_model && d.step2_model.feature_diagnostics)).length;
+    const failedStep2 = reportData.filter(d => d.final_prediction === 'UP' && isStep2Evaluable(d)).length;
     if (kpiFailedStep2) kpiFailedStep2.textContent = failedStep2;
 
-    const missingData = reportData.filter(d => d.final_prediction === 'UP' && (!d.step2_model || !d.step2_model.feature_diagnostics)).length;
+    const missingData = reportData.filter(d => d.final_prediction === 'UP' && !isStep2Evaluable(d)).length;
     kpiMissingData.textContent = missingData;
 
-    if (kpiSuppressed) kpiSuppressed.textContent = suppressedCount;
+    if (kpiSuppressed) {
+      kpiSuppressed.textContent = suppressedBuys > 0 ? `${suppressedCount} (${suppressedBuys} buys)` : suppressedCount;
+    }
 
     const accuracies = reportData
       .filter(d => d.step1_model && d.step1_model.cv_accuracy)
@@ -262,6 +283,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const ksRaw = d.step1_model?.ks_cutoff;
     const ks = typeof ksRaw === 'number' ? ksRaw.toFixed(3) : escapeHtml(ksRaw || 'N/A');
     const step1Class = d.step1_model?.predicted_class || 'N/A';
+    const cvStatus = d.step1_model?.cv_status;
+    const accFallback = cvStatus && cvStatus !== 'ok'
+      ? `<span title="${escapeHtml(cvStatus)}">N/A (${escapeHtml(cvStatus.split(':')[0])})</span>`
+      : 'N/A';
     const peRatio = typeof d.pe_ratio === 'number' ? d.pe_ratio.toFixed(2) : escapeHtml(d.pe_ratio || 'N/A');
     const beta = typeof d.beta === 'number' ? d.beta.toFixed(2) : escapeHtml(d.beta || 'N/A');
     const liquidityStr = typeof d.liquidity === 'number' ? d.liquidity.toFixed(2) : escapeHtml(d.liquidity || 'N/A');
@@ -303,8 +328,8 @@ document.addEventListener('DOMContentLoaded', () => {
       cmRuleHtml = `
         <td style="font-size: 0.9rem; font-weight: bold;">
           ${d.step1_model.cm_rule_passed 
-            ? '<span style="color: var(--status-green);" title="TP > FN & TN > FP">✅ Pass</span>' 
-            : '<span style="color: var(--status-red);" title="TP > FN & TN > FP not met">❌ Fail</span>'}
+            ? '<span style="color: var(--status-green);" title="TP > FN & TN > FP">PASS</span>' 
+            : '<span style="color: var(--status-red);" title="TP > FN & TN > FP not met">FAIL</span>'}
         </td>
       `;
     }
@@ -322,7 +347,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <td>${getStatusHtml(d.final_prediction)}</td>
       <td>${getStatusHtml(step1Class)}</td>
       <td>
-        ${acc > 0 ? `${acc}% <div class="acc-bar-bg"><div class="acc-bar-fill" style="width: ${acc}%"></div></div>` : 'N/A'}
+        ${acc > 0 ? `${acc}% <div class="acc-bar-bg"><div class="acc-bar-fill" style="width: ${acc}%"></div></div>` : accFallback}
       </td>
       <td>${ks}</td>
       ${cmHtml}
@@ -390,7 +415,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Render Buys Table
     tableBodyBuys.innerHTML = '';
     if (buysList.length === 0) {
-      tableBodyBuys.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--text-muted);">No confirmed buy candidates match filters.</td></tr>`;
+      tableBodyBuys.innerHTML = `<tr><td colspan="11" style="text-align:center; color: var(--text-muted);">No confirmed buy candidates match filters.</td></tr>`;
     } else {
       buysList.forEach(d => {
         const tr = document.createElement('tr');
@@ -402,7 +427,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Render Other Table
     tableBodyOther.innerHTML = '';
     if (otherList.length === 0) {
-      tableBodyOther.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--text-muted);">No other stocks match filters.</td></tr>`;
+      tableBodyOther.innerHTML = `<tr><td colspan="11" style="text-align:center; color: var(--text-muted);">No other stocks match filters.</td></tr>`;
     } else {
       otherList.forEach(d => {
         const tr = document.createElement('tr');
@@ -474,12 +499,16 @@ document.addEventListener('DOMContentLoaded', () => {
           if (typeof v === 'object' && v !== null) {
             items += `<div style="grid-column: 1 / -1; margin-top: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 0.5rem;"><strong>${escapeHtml(k)}</strong></div>`;
             for (const [subK, subV] of Object.entries(v)) {
-              let disp = typeof subV === 'number' ? Number(subV).toFixed(2) : escapeHtml(subV);
+              let disp = typeof subV === 'number' ? Number(subV).toFixed(2) : (subV === null ? 'N/A' : escapeHtml(subV));
               items += `<div class="var-item" style="padding-left: 1rem;"><span class="var-key">${escapeHtml(subK)}</span><span class="var-value" style="font-weight: bold;">${disp}</span></div>`;
             }
           } else {
             let disp = escapeHtml(v);
-            if (typeof v === 'boolean') {
+            if (v === null) {
+              disp = '<span style="color: var(--text-muted);">N/A</span>';
+            } else if (k === 'Evaluable') {
+              disp = v ? 'YES' : '<span style="color: var(--status-red);">NO</span>';
+            } else if (typeof v === 'boolean') {
               disp = v ? '<span style="color: var(--status-green);">PASS</span>' : '<span style="color: var(--status-red);">FAIL</span>';
             } else if (typeof v === 'number') {
               disp = Number(v).toFixed(2);
