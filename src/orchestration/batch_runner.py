@@ -43,8 +43,7 @@ def run_single(ticker_data: dict, macro_df: pd.DataFrame = None) -> bool:
             threshold=float(settings['threshold']),
             history_years=history_years,
         )
-        metrics_1, filtered_df_1 = execute_step1(features_df, ticker=ticker)
-        step1_dates = filtered_df_1.index
+        metrics_1 = execute_step1(features_df, ticker=ticker)
         feature_diagnostics_1 = metrics_1.pop('feature_diagnostics', {}) if metrics_1 else {}
         pred_payload_1 = metrics_1
         

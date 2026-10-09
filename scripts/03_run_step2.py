@@ -43,14 +43,7 @@ def main():
     all_passed_tickers = list(set(all_passed_tickers)) # De-duplicate
     all_passed_tickers.sort() # Ensure deterministic ordering before sharding!
     
-    # 2. Consolidate Valid Step 1 Dates Dictionary
-    shard_jsons = glob.glob('data/state/step1_dates_shard_*.json')
-    step1_dates_dict = {}
-    for f in shard_jsons:
-        with open(f, 'r') as file:
-            step1_dates_dict.update(json.load(file))
-            
-    # 3. Shard for Distributed Execution
+    # 2. Shard for Distributed Execution
     shard_tickers = all_passed_tickers[args.shard :: args.total]
     print(f"[Runner {args.shard}/{args.total}] Processing {len(shard_tickers)} tickers for Step 2.")
     
@@ -59,9 +52,6 @@ def main():
     for ticker in tqdm(shard_tickers, desc=f"Step 2 - Shard {args.shard}"):
         apply_anti_jitter()
         try:
-            # Reconstruct the DatetimeIndex of valid dates from Step 1
-            # (Removed: no longer intersecting historical dates with fundamentals)
-            
             # Fetch fundamentals and run Step 2
             funds_df = fetch_fundamentals(ticker)
             if funds_df.empty:

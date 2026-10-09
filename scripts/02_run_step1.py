@@ -4,7 +4,6 @@ import sys
 # Ensure the root directory is in the Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import json
 import time
 import random
 import argparse
@@ -65,7 +64,6 @@ def main():
     macro_df = fetch_global_macro_universe(history_years=fetch_years)
     
     passed_tickers = []
-    step1_dates_dict = {}
     
     for row in tqdm(shard_tickers, desc=f"Step 1 - Shard {args.shard}"):
         ticker = row['Ticker']
@@ -83,8 +81,7 @@ def main():
                 history_years=history_years,
             )
             
-            metrics, filtered_df = execute_step1(features_df)
-            step1_dates = filtered_df.index
+            metrics = execute_step1(features_df)
             feature_diagnostics = metrics.pop('feature_diagnostics', {}) if metrics else {}
             
             # Get the last available close price
@@ -133,8 +130,6 @@ def main():
                 
             if metrics.get('predicted_class') == 'UP':
                 passed_tickers.append(ticker)
-                # Store valid dates for Step 2 execution
-                step1_dates_dict[ticker] = [str(d) for d in step1_dates]
                 
         except Exception as e:
             print(f"Failed {ticker} in Step 1: {e}")
@@ -142,10 +137,6 @@ def main():
     # Save State Artifacts for Step 2
     output_path = f'data/state/step1_passed_shard_{args.shard}.csv'
     pd.DataFrame({'Ticker': passed_tickers}).to_csv(output_path, index=False)
-    
-    json_path = f'data/state/step1_dates_shard_{args.shard}.json'
-    with open(json_path, 'w') as f:
-        json.dump(step1_dates_dict, f)
         
     print(f"[Runner {args.shard}] Saved {len(passed_tickers)} passing tickers.")
 

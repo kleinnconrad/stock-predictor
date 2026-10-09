@@ -39,7 +39,6 @@ jobs:
           name: step1-state-shard-${{ matrix.shard }}
           path: |
             data/state/step1_passed_shard_${{ matrix.shard }}.csv
-            data/state/step1_dates_shard_${{ matrix.shard }}.json
           retention-days: 7
           
       - name: Upload Step 1 Outputs

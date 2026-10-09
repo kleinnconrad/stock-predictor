@@ -8,6 +8,9 @@ anova_k: 40                   # features kept by the ANOVA pre-filter before SFS
 step1_history_years: 10       # training window of the Step 1 model
 feature_warmup_years: 2       # extra history fetched so rolling features (up to 504 days) are populated from the first training day
 quantiles: 10                 # bins of the lift chart
+cv_splits: 2                  # expanding-window CV folds used to validate the model
+sfs_cv_splits: 5              # CV folds used inside the Sequential Feature Selector
+min_cv_train_rows: 126        # minimum rows of the first training fold after purging `horizon_days`
 min_cv_accuracy: 0.65
 
 # Calendar days between a FRED observation date and its (conservative) publication date
