@@ -13,6 +13,7 @@ import requests
 # Add the src and root directory to python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from config.universe import FUNDAMENTAL_UNIVERSE
+from src.ingestion.funds_api import write_cache_manifest
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -102,6 +103,8 @@ def update_all_fundamentals():
         if not success:
             logger.warning(f"Could not fetch fundamental data for {ticker} after all retries and fallback options.")
             
+    write_cache_manifest(datetime.now().date(), success_count)
+
     # Update README.md with the current date
     readme_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'README.md')
     if os.path.exists(readme_path):

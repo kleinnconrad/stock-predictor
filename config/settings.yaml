@@ -1,9 +1,36 @@
+# Target definition: UP if the close rises by at least `threshold` within `horizon_days` trading days
 horizon_days: 126
 threshold: 0.10
-features_to_select: 12
-step1_history_years: 10
-step2_history_years: 4
-quantiles: 10
-xetra_t7_url: "https://www.cashmarket.deutsche-boerse.com/resource/blob/1528/6249e15bf93885fd91bd411663a0ff82/data/t7-xetr-allTradableInstruments.csv"
+
+# Step 1 model
+features_to_select: 12        # features kept by the Sequential Feature Selector
+anova_k: 40                   # features kept by the ANOVA pre-filter before SFS
+step1_history_years: 10       # training window of the Step 1 model
+feature_warmup_years: 2       # extra history fetched so rolling features (up to 504 days) are populated from the first training day
+quantiles: 10                 # bins of the lift chart
+cv_splits: 2                  # expanding-window CV folds used to validate the model
+sfs_cv_splits: 5              # CV folds used inside the Sequential Feature Selector
+min_cv_train_rows: 126        # minimum rows of the first training fold after purging `horizon_days`
 min_cv_accuracy: 0.65
-min_step2_score: 7
+
+# Calendar days between a FRED observation date and its (conservative) publication date
+fred_publication_lag_days:
+  daily: 1
+  weekly: 7
+  monthly: 60
+  quarterly: 150
+fred_max_staleness_days: 400  # series without a newer observation are treated as discontinued
+
+# Step 2 ruleset
+min_step2_score: 7                # rules to pass out of 10, pro-rated to the applicable rules
+min_step2_applicable_rules: 5     # fewer applicable rules: the company is not evaluable
+step2_yoy_tolerance_days: 45      # tolerance when matching the same period one year earlier
+min_current_ratio: 1.2
+min_annual_roe: 0.12              # pro-rated to the reporting period (quarter or half-year)
+fundamentals_max_age_days: 45     # warn if scripts/update_fundamentals.py has not refreshed the cache for longer
+
+# Reporting
+history_retention_days: 200       # archived daily reports kept; must exceed the 6-month uplift lookback
+uplift_match_tolerance_days: 15   # max distance between the 1/3/6-month lookback date and an archived report
+
+xetra_t7_url: "https://www.cashmarket.deutsche-boerse.com/resource/blob/1528/6249e15bf93885fd91bd411663a0ff82/data/t7-xetr-allTradableInstruments.csv"

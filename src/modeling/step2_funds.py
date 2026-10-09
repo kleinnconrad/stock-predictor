@@ -1,166 +1,176 @@
 import pandas as pd
 import numpy as np
 import logging
-import yaml
-from typing import Dict, Any, Tuple
+from typing import Any, Dict, Optional, Tuple
+from config.settings import load_settings
 
 logger = logging.getLogger(__name__)
+
+RULE_LABELS = {
+    1: "Rule 1 (Revenue Growth)",
+    2: "Rule 2 (Profitability)",
+    3: "Rule 3 (Earnings Momentum)",
+    4: "Rule 4 (Cash Flow Health)",
+    5: "Rule 5 (Quality of Earnings)",
+    6: "Rule 6 (Free Cash Flow)",
+    7: "Rule 7 (Margin Improvement)",
+    8: "Rule 8 (Current Ratio)",
+    9: "Rule 9 (De-leveraging)",
+    10: "Rule 10 (ROE Proxy)",
+}
+
+METRIC_COLUMNS = [
+    'Total Revenue', 'Net Income', 'Operating Cash Flow', 'Free Cash Flow', 'Operating Income',
+    'Current Assets', 'Current Liabilities', 'Total Debt', 'Stockholders Equity'
+]
+
+
+def _value(row: pd.Series, key: str) -> Optional[float]:
+    """Returns a statement value as float, or None if the line item is missing."""
+    if key not in row.index or pd.isna(row[key]):
+        return None
+    return float(row[key])
+
+
+def select_comparison_statement(funds_df: pd.DataFrame, tolerance_days: int) -> Tuple[pd.Series, str]:
+    """
+    Picks the statement the latest one is compared against.
+
+    Comparing with the same period one year earlier removes seasonality and works for
+    quarterly and half-yearly reporters alike. If no statement lies within
+    365 +/- `tolerance_days` days before the latest one, the previous statement is used.
+
+    Args:
+        funds_df (pd.DataFrame): Statements sorted by date (oldest first), at least two rows.
+        tolerance_days (int): Allowed deviation from exactly one year.
+
+    Returns:
+        Tuple[pd.Series, str]: The comparison statement and the basis
+        ('same_period_prior_year' or 'previous_period').
+    """
+    latest_date = funds_df.index[-1]
+    earlier = funds_df.iloc[:-1]
+    distance = np.abs((earlier.index - (latest_date - pd.Timedelta(days=365))).days)
+    if (distance <= tolerance_days).any():
+        return earlier.iloc[int(np.argmin(distance))], 'same_period_prior_year'
+    return earlier.iloc[-1], 'previous_period'
+
+
+def reporting_period_days(funds_df: pd.DataFrame) -> int:
+    """
+    Classifies the reporting cadence from the spacing of the statements.
+
+    Returns:
+        int: 182 for half-yearly reporters, otherwise 91 (quarterly).
+    """
+    if len(funds_df) < 2:
+        return 91
+    median_gap = pd.Series(funds_df.index).diff().dt.days.median()
+    return 182 if median_gap > 135 else 91
+
 
 def execute_step2(funds_df: pd.DataFrame) -> Tuple[Dict[str, Any], str]:
     """
     Executes Step 2 Fundamental Ruleset Engine.
-    
-    Evaluates the two most recent quarterly financial statements against a strict 
-    fundamental health checklist.
-    
+
+    Evaluates the latest financial statement against the same period one year earlier
+    (falling back to the previous statement) using ten fundamental health rules. A rule
+    whose inputs are not reported by the company (e.g. current assets for banks) is not
+    applicable and is skipped. The ticker passes if at least `min_step2_applicable_rules`
+    rules are applicable and the share of passed rules reaches `min_step2_score` out of 10.
+
     Args:
         funds_df (pd.DataFrame): The raw quarterly fundamental DataFrame.
-        
+
     Returns:
         tuple: (metrics_dictionary, final_prediction_class)
     """
     logger.info("Executing Step 2 Fundamental Ruleset Engine.")
-    
-    if funds_df.empty or len(funds_df) < 2:
-        logger.warning("Not enough quarterly fundamental data to evaluate ruleset.")
-        return {}, "NOT_UP"
-        
-    try:
-        with open('config/settings.yaml', 'r') as f:
-            settings = yaml.safe_load(f)
-            min_step2_score = int(settings.get('min_step2_score', 7))
-    except Exception as e:
-        logger.warning(f"Failed to load min_step2_score from settings.yaml: {e}. Defaulting to 7")
-        min_step2_score = 7
-        
-    # Get the two most recent quarters
-    q_latest = funds_df.iloc[-1]
-    q_prev = funds_df.iloc[-2]
+    settings = load_settings()
+    min_step2_score = int(settings['min_step2_score'])
+    min_applicable = int(settings['min_step2_applicable_rules'])
+    tolerance_days = int(settings['step2_yoy_tolerance_days'])
+    min_current_ratio = float(settings['min_current_ratio'])
+    min_annual_roe = float(settings['min_annual_roe'])
 
-    required_columns = [
-        'Total Revenue', 'Net Income', 'Operating Cash Flow',
-        'Free Cash Flow', 'Operating Income', 'Current Assets',
-        'Current Liabilities', 'Total Debt', 'Stockholders Equity'
-    ]
+    funds_df = funds_df.dropna(how='all').sort_index()
+    if len(funds_df) < 2:
+        logger.warning("Fewer than two financial statements available. Step 2 is not evaluable.")
+        diagnostics = {"Evaluable": False, "Reason": "fewer than two financial statements"}
+        return {"predicted_class": "NOT_UP", "feature_diagnostics": diagnostics}, "NOT_UP"
 
-    # Check for missing required columns
-    missing_cols = [col for col in required_columns if col not in funds_df.columns]
-    if missing_cols:
-        logger.warning(f"Missing required columns in fundamental data: {missing_cols}. Failing Step 2.")
-        return {}, "NOT_UP"
+    latest = funds_df.iloc[-1]
+    compare, comparison_basis = select_comparison_statement(funds_df, tolerance_days)
+    period_days = reporting_period_days(funds_df)
+    roe_threshold = min_annual_roe * period_days / 365
 
-    # Fail Step 2 if any required value is missing
-    if q_latest[required_columns].isna().any() or q_prev[required_columns].isna().any():
-        logger.warning("Financial statements have missing values for required fields. Failing Step 2.")
-        return {}, "NOT_UP"
-    
-    def safe_get(series, key):
-        val = series.get(key, np.nan)
-        return float(val) if pd.notna(val) else 0.0
-    
-    # 1. Revenue Growth: Total Revenue (Q_latest) > Total Revenue (Q_prev)
-    rev_latest = safe_get(q_latest, 'Total Revenue')
-    rev_prev = safe_get(q_prev, 'Total Revenue')
-    rule_1_pass = rev_latest > rev_prev
-    
-    # 2. Profitability: Net Income (Q_latest) > 0
-    ni_latest = safe_get(q_latest, 'Net Income')
-    rule_2_pass = ni_latest > 0
-    
-    # 3. Earnings Momentum: Net Income (Q_latest) > Net Income (Q_prev)
-    ni_prev = safe_get(q_prev, 'Net Income')
-    rule_3_pass = ni_latest > ni_prev
-    
-    # 4. Cash Flow Health: Operating Cash Flow (Q_latest) > 0
-    ocf_latest = safe_get(q_latest, 'Operating Cash Flow')
-    rule_4_pass = ocf_latest > 0
-    
-    # 5. Quality of Earnings: Operating Cash Flow (Q_latest) > Net Income (Q_latest)
-    rule_5_pass = ocf_latest > ni_latest
-    
-    # 6. Free Cash Flow Generation: FCF (Q_latest) > 0
-    fcf_latest = safe_get(q_latest, 'Free Cash Flow')
-    rule_6_pass = fcf_latest > 0
-    
-    # 7. Operating Margin Improvement: (OpInc / Rev)_latest > (OpInc / Rev)_prev
-    op_inc_latest = safe_get(q_latest, 'Operating Income')
-    op_inc_prev = safe_get(q_prev, 'Operating Income')
-    margin_latest = op_inc_latest / rev_latest if rev_latest > 0 else -1
-    margin_prev = op_inc_prev / rev_prev if rev_prev > 0 else -1
-    rule_7_pass = margin_latest > margin_prev
-    
-    # 8. Liquidity (Current Ratio): Current Assets / Current Liab > 1.2
-    ca_latest = safe_get(q_latest, 'Current Assets')
-    cl_latest = safe_get(q_latest, 'Current Liabilities')
-    current_ratio = ca_latest / cl_latest if cl_latest > 0 else 0
-    rule_8_pass = current_ratio > 1.2
-    
-    # 9. De-leveraging: Total Debt (Q_latest) < Total Debt (Q_prev)
-    debt_latest = safe_get(q_latest, 'Total Debt')
-    debt_prev = safe_get(q_prev, 'Total Debt')
-    rule_9_pass = debt_latest < debt_prev
-    
-    # 10. ROE Proxy: Net Income / Stockholders Equity > 0.03
-    equity_latest = safe_get(q_latest, 'Stockholders Equity')
-    roe_latest = ni_latest / equity_latest if equity_latest > 0 else -1
-    rule_10_pass = roe_latest > 0.03
-    
-    rules_passed = sum([
-        rule_1_pass, rule_2_pass, rule_3_pass, rule_4_pass,
-        rule_5_pass, rule_6_pass, rule_7_pass, rule_8_pass,
-        rule_9_pass, rule_10_pass
-    ])
-    
-    # Require at least min_step2_score out of 10 rules to pass
-    latest_pred_class = "UP" if rules_passed >= min_step2_score else "NOT_UP"
-    
-    if latest_pred_class == "UP":
-        logger.info(f"Fundamental Ruleset Passed! Score: {rules_passed}/10 (Required: {min_step2_score})")
-    else:
-        logger.info(f"Fundamental Ruleset Failed. Score: {rules_passed}/10 (Required: {min_step2_score})")
-    
-    diagnostics = {
-        "Rule 1 (Revenue Growth)": bool(rule_1_pass),
-        "Rule 2 (Profitability)": bool(rule_2_pass),
-        "Rule 3 (Earnings Momentum)": bool(rule_3_pass),
-        "Rule 4 (Cash Flow Health)": bool(rule_4_pass),
-        "Rule 5 (Quality of Earnings)": bool(rule_5_pass),
-        "Rule 6 (Free Cash Flow)": bool(rule_6_pass),
-        "Rule 7 (Margin Improvement)": bool(rule_7_pass),
-        "Rule 8 (Current Ratio)": bool(rule_8_pass),
-        "Rule 9 (De-leveraging)": bool(rule_9_pass),
-        "Rule 10 (ROE Proxy)": bool(rule_10_pass),
-        "Total Score": int(rules_passed),
-        "Required Score": min_step2_score,
-        "Q_latest_date": str(q_latest.name.date()),
-        "Q_prev_date": str(q_prev.name.date()),
-        "Metrics_latest": {
-            "Total Revenue": rev_latest,
-            "Net Income": ni_latest,
-            "Operating Cash Flow": ocf_latest,
-            "Free Cash Flow": fcf_latest,
-            "Operating Income": op_inc_latest,
-            "Current Assets": ca_latest,
-            "Current Liabilities": cl_latest,
-            "Total Debt": debt_latest,
-            "Stockholders Equity": equity_latest
-        },
-        "Metrics_prev": {
-            "Total Revenue": rev_prev,
-            "Net Income": ni_prev,
-            "Operating Cash Flow": safe_get(q_prev, 'Operating Cash Flow'),
-            "Free Cash Flow": safe_get(q_prev, 'Free Cash Flow'),
-            "Operating Income": op_inc_prev,
-            "Current Assets": safe_get(q_prev, 'Current Assets'),
-            "Current Liabilities": safe_get(q_prev, 'Current Liabilities'),
-            "Total Debt": debt_prev,
-            "Stockholders Equity": safe_get(q_prev, 'Stockholders Equity')
-        }
+    rev_l, rev_c = _value(latest, 'Total Revenue'), _value(compare, 'Total Revenue')
+    ni_l, ni_c = _value(latest, 'Net Income'), _value(compare, 'Net Income')
+    ocf_l = _value(latest, 'Operating Cash Flow')
+    fcf_l = _value(latest, 'Free Cash Flow')
+    oi_l, oi_c = _value(latest, 'Operating Income'), _value(compare, 'Operating Income')
+    ca_l, cl_l = _value(latest, 'Current Assets'), _value(latest, 'Current Liabilities')
+    debt_l, debt_c = _value(latest, 'Total Debt'), _value(compare, 'Total Debt')
+    equity_l = _value(latest, 'Stockholders Equity')
+
+    def known(*values) -> bool:
+        return all(v is not None for v in values)
+
+    # None marks a rule whose inputs the company does not report
+    rules: Dict[int, Optional[bool]] = {
+        # 1. Revenue Growth vs. comparison period
+        1: rev_l > rev_c if known(rev_l, rev_c) else None,
+        # 2. Profitability
+        2: ni_l > 0 if known(ni_l) else None,
+        # 3. Earnings Momentum vs. comparison period
+        3: ni_l > ni_c if known(ni_l, ni_c) else None,
+        # 4. Cash Flow Health
+        4: ocf_l > 0 if known(ocf_l) else None,
+        # 5. Quality of Earnings: cash generation exceeds accounting profit
+        5: ocf_l > ni_l if known(ocf_l, ni_l) else None,
+        # 6. Free Cash Flow Generation
+        6: fcf_l > 0 if known(fcf_l) else None,
+        # 7. Operating Margin Improvement vs. comparison period
+        7: (oi_l / rev_l > oi_c / rev_c) if known(oi_l, oi_c, rev_l, rev_c) and rev_l > 0 and rev_c > 0 else None,
+        # 8. Liquidity (Current Ratio)
+        8: (ca_l / cl_l > min_current_ratio) if known(ca_l, cl_l) and cl_l > 0 else None,
+        # 9. De-leveraging vs. comparison period
+        9: debt_l < debt_c if known(debt_l, debt_c) else None,
+        # 10. ROE Proxy, pro-rated to the length of the reporting period; negative equity fails
+        10: ((ni_l / equity_l > roe_threshold) if equity_l > 0 else False) if known(ni_l, equity_l) else None,
     }
-    
+
+    applicable = sum(1 for passed in rules.values() if passed is not None)
+    rules_passed = sum(1 for passed in rules.values() if passed)
+    # min_step2_score out of 10, pro-rated to the applicable rules (ceiling in integer math)
+    required_score = -(-min_step2_score * applicable // 10)
+    evaluable = applicable >= min_applicable
+    latest_pred_class = "UP" if evaluable and rules_passed >= required_score else "NOT_UP"
+
+    if not evaluable:
+        logger.info(f"Fundamental Ruleset not evaluable: only {applicable} rules applicable (minimum {min_applicable}).")
+    elif latest_pred_class == "UP":
+        logger.info(f"Fundamental Ruleset Passed! Score: {rules_passed}/{applicable} (Required: {required_score})")
+    else:
+        logger.info(f"Fundamental Ruleset Failed. Score: {rules_passed}/{applicable} (Required: {required_score})")
+
+    diagnostics: Dict[str, Any] = {RULE_LABELS[i]: rules[i] for i in sorted(rules)}
+    diagnostics.update({
+        "Total Score": int(rules_passed),
+        "Applicable Rules": int(applicable),
+        "Required Score": int(required_score),
+        "Evaluable": bool(evaluable),
+        "Comparison Basis": comparison_basis,
+        "ROE Threshold": round(roe_threshold, 4),
+        "Q_latest_date": str(latest.name.date()),
+        "Q_prev_date": str(compare.name.date()),
+        "Metrics_latest": {col: _value(latest, col) for col in METRIC_COLUMNS},
+        "Metrics_prev": {col: _value(compare, col) for col in METRIC_COLUMNS},
+    })
+
     metrics = {
         "predicted_class": latest_pred_class,
         "feature_diagnostics": diagnostics
     }
-    
+
     return metrics, latest_pred_class

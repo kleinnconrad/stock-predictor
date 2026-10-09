@@ -1,7 +1,7 @@
 {
   "name": "Stock Predictor",
-  "image": "mcr.microsoft.com/devcontainers/python:3.11",
-  "postCreateCommand": "pip install -r requirements.txt",
+  "image": "mcr.microsoft.com/devcontainers/python:3.12",
+  "postCreateCommand": "pip install --user uv==0.12.17 && uv sync --locked",
   "customizations": {
     "vscode": {
       "extensions": [

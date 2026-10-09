@@ -5,7 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Xetra Predictor Dashboard</title>
   <link rel="stylesheet" href="styles.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"
+          integrity="sha384-9nhczxUqK87bcKHh20fSQcTGD4qq5GhayNYSYWqwBkINBhOfQLg/P5HG5lF1urn4"
+          crossorigin="anonymous"></script>
 </head>
 <body>
   <!-- Background orbs removed for terminal theme -->
@@ -55,7 +57,7 @@
         <p class="kpi-value" id="kpi-missing-data">-</p>
       </div>
       <div class="glass-panel kpi-card">
-        <h3 title="Stocks with a price of 10 euro or below are suppressed">Suppressed (<= 10€)</h3>
+        <h3 title="Stocks priced at or below 10 EUR are hidden from all KPIs and tables, including buy candidates (count in brackets)">Suppressed (<= 10€)</h3>
         <p class="kpi-value" id="kpi-suppressed">-</p>
       </div>
     </section>
@@ -152,6 +154,6 @@
     </section>
   </div>
 
-  <script src="app.js?v=3"></script>
+  <script src="app.js?v=4"></script>
 </body>
 </html>

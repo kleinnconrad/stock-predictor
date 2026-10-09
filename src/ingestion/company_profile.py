@@ -12,6 +12,13 @@ load_dotenv()
 
 CACHE_FILE = os.path.join('data', 'processed', 'company_profiles_cache.json')
 
+# Descriptions returned when no profile could be generated; never cached
+FALLBACK_DESCRIPTIONS = (
+    "No description available.",
+    "Error fetching description.",
+    "Failed to parse description.",
+)
+
 class CompanyProfile(BaseModel):
     full_name: str
     description: str
