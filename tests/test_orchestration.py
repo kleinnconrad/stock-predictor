@@ -52,3 +52,12 @@ def test_step2_without_fundamentals_keeps_step1_result(in_tmp, monkeypatch):
     json_exporter.export_prediction_json('ABC.DE', {'stock_name': 'ABC.DE', 'final_prediction': 'UP'})
     monkeypatch.setattr(steps, 'fetch_fundamentals', lambda ticker: pd.DataFrame())
     assert steps.run_step2_for_ticker('ABC.DE')['final_prediction'] == 'UP'
+
+
+def test_fundamentals_cache_age_comes_from_the_manifest(in_tmp):
+    from datetime import date
+    from src.ingestion import funds_api
+
+    assert funds_api.cache_age_days() is None
+    funds_api.write_cache_manifest(date(2026, 9, 22), 406)
+    assert funds_api.cache_age_days(today=date(2026, 10, 9)) == 17

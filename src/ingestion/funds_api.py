@@ -1,28 +1,77 @@
 import os
+import json
 import yfinance as yf
 import pandas as pd
 import logging
 import time
 import random
 import requests
+from datetime import date
+from typing import Optional
+from config.settings import load_settings
 
 logger = logging.getLogger(__name__)
 
+FUNDAMENTALS_DIR = os.path.join('data', 'raw', 'fundamentals')
+MANIFEST_PATH = os.path.join(FUNDAMENTALS_DIR, '_manifest.json')
+_cache_age_checked = False
+
+def write_cache_manifest(updated: date, tickers_cached: int) -> None:
+    """
+    Records when scripts/update_fundamentals.py last refreshed the cache.
+    
+    File modification times cannot be used for this: in a git checkout every file has
+    the checkout time.
+    """
+    os.makedirs(FUNDAMENTALS_DIR, exist_ok=True)
+    with open(MANIFEST_PATH, 'w', encoding='utf-8') as f:
+        json.dump({"last_updated": updated.isoformat(), "tickers_cached": tickers_cached}, f, indent=2)
+        f.write("\n")
+
+def cache_age_days(today: Optional[date] = None) -> Optional[int]:
+    """
+    Returns the age of the fundamentals cache in days, or None if it is unknown.
+    """
+    if not os.path.exists(MANIFEST_PATH):
+        return None
+    with open(MANIFEST_PATH, 'r', encoding='utf-8') as f:
+        last_updated = date.fromisoformat(json.load(f)['last_updated'])
+    return ((today or date.today()) - last_updated).days
+
+def warn_if_cache_is_stale() -> None:
+    """
+    Logs a warning (once per process) if the cache is older than `fundamentals_max_age_days`.
+    """
+    global _cache_age_checked
+    if _cache_age_checked:
+        return
+    _cache_age_checked = True
+    max_age = int(load_settings()['fundamentals_max_age_days'])
+    age = cache_age_days()
+    if age is None:
+        logger.warning(f"Fundamentals cache age is unknown ({MANIFEST_PATH} missing). Run scripts/update_fundamentals.py.")
+    elif age > max_age:
+        logger.warning(f"Fundamentals cache is {age} days old (limit {max_age}). Run scripts/update_fundamentals.py.")
+
 def fetch_fundamentals(ticker: str) -> pd.DataFrame:
     """
-    Fetches fundamental financial statement data from Yahoo Finance and creates a 
-    time-series dataframe forward-filling quarterly/annual data to daily.
+    Returns the quarterly (or half-yearly) financial statements of a ticker.
+    
+    Reads the local cache written by scripts/update_fundamentals.py and falls back to
+    Yahoo Finance (which blocks GitHub Actions runners) for tickers without a cache file.
     
     Args:
         ticker (str): The stock ticker symbol.
         
     Returns:
-        pd.DataFrame: A time-indexed DataFrame containing fundamentals, forward-filled.
+        pd.DataFrame: One row per statement date (oldest first), filtered to the
+        FUNDAMENTAL_UNIVERSE line items; empty if nothing could be fetched.
     """
     # 1. Check local cache first (created by scripts/update_fundamentals.py)
     safe_ticker = ticker.replace('.', '_')
-    cache_path = os.path.join('data', 'raw', 'fundamentals', f"{safe_ticker}.csv")
+    cache_path = os.path.join(FUNDAMENTALS_DIR, f"{safe_ticker}.csv")
     if os.path.exists(cache_path):
+        warn_if_cache_is_stale()
         logger.info(f"Loaded cached fundamentals for {ticker} from {cache_path}")
         df = pd.read_csv(cache_path, index_col=0, parse_dates=True)
         return df

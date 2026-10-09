@@ -27,6 +27,7 @@ min_step2_applicable_rules: 5     # fewer applicable rules: the company is not e
 step2_yoy_tolerance_days: 45      # tolerance when matching the same period one year earlier
 min_current_ratio: 1.2
 min_annual_roe: 0.12              # pro-rated to the reporting period (quarter or half-year)
+fundamentals_max_age_days: 45     # warn if scripts/update_fundamentals.py has not refreshed the cache for longer
 
 # Reporting
 history_retention_days: 200       # archived daily reports kept; must exceed the 6-month uplift lookback
