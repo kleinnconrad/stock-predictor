@@ -9,6 +9,27 @@ from config.universe import ALL_YF_TICKERS, ALL_FRED_INDICATORS
 
 logger = logging.getLogger(__name__)
 
+def align_to_business_days(df: pd.DataFrame, end_date) -> pd.DataFrame:
+    """
+    Forward-fills every column across all observation dates, then samples business days.
+    
+    `resample('B').ffill()` only reindexes rows: a value dated on a weekend (e.g. weekly
+    FRED series dated Saturdays) or a column gap caused by a market holiday is never
+    carried forward, which leaves large parts of the matrix empty.
+    
+    Args:
+        df (pd.DataFrame): Merged series indexed by observation date (may include weekends).
+        end_date: Last business day to include.
+        
+    Returns:
+        pd.DataFrame: One row per business day with the latest known value of every column.
+    """
+    df = df.sort_index()
+    df = df[~df.index.duplicated(keep='last')]
+    df = df.ffill()
+    business_days = pd.bdate_range(df.index.min(), pd.Timestamp(end_date))
+    return df.reindex(business_days, method='ffill')
+
 def fetch_global_macro_universe(history_years: int) -> pd.DataFrame:
     """
     Downloads the full 360-degree macroeconomic universe from YF and FRED,
@@ -49,10 +70,11 @@ def fetch_global_macro_universe(history_years: int) -> pd.DataFrame:
         logger.error(f"Failed to fetch FRED indicators: {e}")
         fred_df = pd.DataFrame()
         
-    # 3. Merge and resample to Business days
+    # 3. Merge, forward-fill and align to business days (up to yesterday)
     global_macro_df = yf_df.join(fred_df, how='outer')
     global_macro_df.index = pd.to_datetime(global_macro_df.index)
-    global_macro_df = global_macro_df.resample('B').ffill()
+    last_closed_day = pd.Timestamp(current_german_date) - pd.Timedelta(days=1)
+    global_macro_df = align_to_business_days(global_macro_df, end_date=last_closed_day)
     global_macro_df = global_macro_df.dropna(how='all')
     
     # =========================================================================
