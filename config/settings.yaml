@@ -16,6 +16,7 @@ fred_publication_lag_days:
   weekly: 7
   monthly: 60
   quarterly: 150
+fred_max_staleness_days: 400  # series without a newer observation are treated as discontinued
 
 # Step 2 ruleset
 min_step2_score: 7

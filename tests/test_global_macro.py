@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 
+from src.ingestion import global_macro
 from src.ingestion.global_macro import (
     align_to_business_days,
     apply_publication_lag,
@@ -74,3 +75,31 @@ def test_infer_observation_frequency():
     assert infer_observation_frequency(pd.date_range('2026-01-01', periods=10, freq='W')) == 'weekly'
     assert infer_observation_frequency(pd.date_range('2026-01-01', periods=10, freq='MS')) == 'monthly'
     assert infer_observation_frequency(pd.date_range('2026-01-01', periods=10, freq='QS')) == 'quarterly'
+
+
+def test_fred_fetch_skips_failing_and_discontinued_series(monkeypatch):
+    def fake_reader(series_id, source, start, end, api_key=None):
+        if series_id == 'BROKEN':
+            raise IOError('not a valid series')
+        last = '2026-09-01' if series_id == 'FRESH' else '2021-06-01'
+        index = pd.date_range(end=last, periods=24, freq='MS')
+        return pd.DataFrame({series_id: np.arange(24, dtype=float)}, index=index)
+
+    monkeypatch.setattr(global_macro.web, 'DataReader', fake_reader)
+
+    out = global_macro.fetch_fred_indicators(
+        ['FRESH', 'BROKEN', 'DISCONTINUED'], '2020-01-01', '2026-10-01', max_staleness_days=400)
+
+    assert list(out.columns) == ['FRESH']
+
+
+def test_universe_contains_documented_commodities_and_no_discontinued_series():
+    from config.universe import ALL_FRED_INDICATORS, ALL_YF_TICKERS
+
+    for ticker in ('CL=F', 'GC=F', 'HG=F', 'ZC=F', 'ZW=F', 'LE=F', 'LBR=F'):
+        assert ticker in ALL_YF_TICKERS
+    assert 'OJ=F' not in ALL_YF_TICKERS
+    for series_id in ('ECBASSETS', 'LRHUTTTTEZM156S', 'PRINTO01EZQ661S', 'JPNCPIALLMINMEI',
+                      'JPNPROINDMISMEI', 'GBRCPIALLMINMEI', 'GBRPROINDMISMEI'):
+        assert series_id not in ALL_FRED_INDICATORS
+    assert len(ALL_FRED_INDICATORS) == len(set(ALL_FRED_INDICATORS))

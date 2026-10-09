@@ -16,18 +16,18 @@ MACRO_INDICATORS = [
     'DX-Y.NYB',# US Dollar Index
 ]
 
-# Industrial & Precious Metals
+# Energy, Industrial & Precious Metals
 COMMODITIES = [
-    'LE=F',    # Live Cattle 
-    'LBR=F',   # Lumber 
-    'OJ=F',    # Orange Juice ("Dr. Copper")
+    'CL=F',    # Crude Oil (WTI)
+    'GC=F',    # Gold
+    'HG=F',    # Copper ("Dr. Copper")
 ]
 
 # Agricultural Commodities
 AGRI_COMMODITIES = [
-    'ZC=F',    # Corn (Mais)
-    'ZW=F',    # Wheat (Weizen)
-    'LE=F',    # Live Cattle (Lebendrind)
+    'ZC=F',    # Corn
+    'ZW=F',    # Wheat
+    'LE=F',    # Live Cattle
 ]
 
 # Credit Risk & Bonds
@@ -60,16 +60,18 @@ TICKERS_JP = ['7203.T', '9984.T', '8035.T']
 # Sovereign Yields & Factor ETFs & FX
 SOVEREIGN_YIELDS = ['IGOV', 'BWX', 'BNDX']
 FACTOR_ETFS = ['IWM', 'IYT', 'RSP', 'SMH']
-MORE_COMMODITIES_AND_FX = ['LBR=F', 'EURUSD=X', 'JPY=X']
+MORE_COMMODITIES_AND_FX = ['LBR=F', 'EURUSD=X', 'JPY=X']  # Lumber, EUR/USD, USD/JPY
 
 # ==========================================
 # 2. FRED INDICATORS
 # ==========================================
 
 FRED_INDICATORS = ['CPIAUCSL', 'PAYEMS', 'UNRATE', 'T10Y2Y', 'WALCL']
-FRED_INDICATORS_EU = ['CP00MI15EA20M086NEST', 'LRHUTTTTEZM156S', 'ECBASSETS', 'PRINTO01EZQ661S']
-FRED_INDICATORS_JP = ['JPNCPIALLMINMEI', 'LRHUTTTTJPM156S', 'JPNASSETS', 'JPNPROINDMISMEI']
-FRED_INDICATORS_UK = ['GBRCPIALLMINMEI', 'LRHUTTTTGBM156S', 'GBRPROINDMISMEI']
+# Discontinued OECD/ECB series (euro-area unemployment and industrial production,
+# Japan/UK CPI and industrial production) were removed; FRED stopped updating them.
+FRED_INDICATORS_EU = ['CP00MI15EA20M086NEST', 'ECBASSETSW']  # HICP, ECB total assets (weekly)
+FRED_INDICATORS_JP = ['LRHUTTTTJPM156S', 'JPNASSETS']        # unemployment, BoJ total assets
+FRED_INDICATORS_UK = ['LRHUTTTTGBM156S']                     # unemployment
 FRED_INDICATORS_UNCERTAINTY = ['USEPUINDXD', 'GEPUCURRENT']
 FRED_LIQUIDITY_AND_CREDIT = ['M2SL', 'NFCI']
 FRED_LEADING_MACRO = ['PERMIT', 'ICSA', 'UMCSENT', 'DGORDER']

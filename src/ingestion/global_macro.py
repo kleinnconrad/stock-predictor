@@ -80,6 +80,48 @@ def align_to_business_days(df: pd.DataFrame, end_date) -> pd.DataFrame:
     business_days = pd.bdate_range(df.index.min(), pd.Timestamp(end_date))
     return df.reindex(business_days, method='ffill')
 
+def fetch_fred_indicators(series_ids, start_date, end_date, max_staleness_days: int) -> pd.DataFrame:
+    """
+    Fetches FRED series one by one so a single invalid or discontinued ID cannot
+    remove every FRED indicator from the matrix.
+    
+    Args:
+        series_ids (list): FRED series IDs.
+        start_date: First observation date to request.
+        end_date: Last observation date to request.
+        max_staleness_days (int): Series whose latest observation is older than this
+            are treated as discontinued and dropped.
+        
+    Returns:
+        pd.DataFrame: One column per usable series, indexed by observation date.
+    """
+    api_key = os.getenv('FRED_API_KEY')
+    frames, failed, stale = [], [], []
+    for series_id in series_ids:
+        try:
+            raw = web.DataReader(series_id, 'fred', start_date, end_date, api_key=api_key)
+        except Exception as e:
+            logger.warning(f"Failed to fetch FRED series {series_id}: {e}")
+            failed.append(series_id)
+            continue
+        series = raw[series_id].dropna() if series_id in raw.columns else pd.Series(dtype=float)
+        if series.empty:
+            failed.append(series_id)
+            continue
+        if (pd.Timestamp(end_date) - series.index.max()).days > max_staleness_days:
+            stale.append(f"{series_id} (last {series.index.max().date()})")
+            continue
+        frames.append(series.rename(series_id))
+        
+    if failed:
+        logger.warning(f"FRED series without data: {failed}")
+    if stale:
+        logger.warning(f"FRED series dropped as discontinued: {stale}")
+    if not frames:
+        logger.error("No FRED indicator could be fetched; the macro matrix contains Yahoo Finance data only.")
+        return pd.DataFrame()
+    return pd.concat(frames, axis=1, sort=True)
+
 def fetch_global_macro_universe(history_years: int) -> pd.DataFrame:
     """
     Downloads the full 360-degree macroeconomic universe from YF and FRED,
@@ -113,14 +155,13 @@ def fetch_global_macro_universe(history_years: int) -> pd.DataFrame:
         yf_df.columns = yf_df.columns.droplevel('Ticker')
         
     # 2. Fetch FRED indicators and shift them to their publication dates
-    lag_days = load_settings()['fred_publication_lag_days']
+    settings = load_settings()
+    lag_days = settings['fred_publication_lag_days']
     fred_start = start_date - datetime.timedelta(days=max(lag_days.values()) + 31)
-    try:
-        api_key = os.getenv('FRED_API_KEY')
-        fred_df = web.DataReader(ALL_FRED_INDICATORS, 'fred', fred_start, end_date, api_key=api_key)
-    except Exception as e:
-        logger.error(f"Failed to fetch FRED indicators: {e}")
-        fred_df = pd.DataFrame()
+    fred_df = fetch_fred_indicators(
+        ALL_FRED_INDICATORS, fred_start, end_date,
+        max_staleness_days=int(settings['fred_max_staleness_days']),
+    )
     fred_df = apply_publication_lag(fred_df, lag_days)
         
     # 3. Merge, forward-fill and align to business days (up to yesterday)
