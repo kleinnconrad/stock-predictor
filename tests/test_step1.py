@@ -77,29 +77,36 @@ def test_learnable_signal_is_validated(fast_settings):
     assert metrics['cv_accuracy'] > 0.7
     assert 'f0' in metrics['selected_predictors_and_weights']
     assert metrics['predicted_class'] in ('UP', 'NOT_UP')
+    # Both purged test folds are scored, each with the cutoff of its own fold model
+    labeled_rows = 2000 - 126
+    assert metrics['cv_scored_rows'] == 2 * (labeled_rows // 3)
+    assert len(metrics['cv_fold_cutoffs']) == 2
+    assert 0 < metrics['ks_cutoff'] < 1
 
 
-def test_cutoff_is_learned_on_earlier_folds_only():
-    from src.modeling.diagnostics import walk_forward_predictions
+def test_each_model_is_classified_with_its_own_training_cutoff():
+    from src.modeling.diagnostics import classify_with_own_cutoff
 
-    # Fold 1 separates at ~0.3; fold 2 would be perfectly separated at 0.75 if tuned on itself
-    fold1 = (np.array([0, 0, 1, 1]), np.array([0.1, 0.2, 0.4, 0.5]))
-    fold2 = (np.array([0, 0, 1, 1]), np.array([0.6, 0.7, 0.8, 0.9]))
+    # Two refitted models with very different probability scales
+    model_a = dict(y_fit=np.array([0, 0, 1, 1]), p_fit=np.array([0.05, 0.10, 0.20, 0.30]), p_test=np.array([0.06, 0.25]))
+    model_b = dict(y_fit=np.array([0, 0, 1, 1]), p_fit=np.array([0.90, 0.92, 0.96, 0.98]), p_test=np.array([0.91, 0.97]))
 
-    y_true, y_pred = walk_forward_predictions([fold1, fold2])
+    pred_a, cut_a = classify_with_own_cutoff(model_a['y_fit'], model_a['p_fit'], model_a['p_test'])
+    pred_b, cut_b = classify_with_own_cutoff(model_b['y_fit'], model_b['p_fit'], model_b['p_test'])
 
-    assert list(y_true) == [0, 0, 1, 1]
-    assert list(y_pred) == [1, 1, 1, 1]  # cutoff from fold 1 (0.4) is applied, not re-tuned
+    assert (cut_a, cut_b) == (0.20, 0.96)
+    assert list(pred_a) == [0, 1] and list(pred_b) == [0, 1]
+    # Transferring model A's cutoff to model B would classify every row as UP
+    assert list((model_b['p_test'] >= cut_a).astype(int)) == [1, 1]
 
 
 def test_degenerate_cutoffs_are_detected():
-    from src.modeling.diagnostics import ks_cutoff_or_none, walk_forward_predictions
+    from src.modeling.diagnostics import classify_with_own_cutoff, ks_cutoff_or_none
 
     assert ks_cutoff_or_none(np.array([0, 0, 0]), np.array([0.1, 0.2, 0.3])) is None
     # No discrimination: positives score lowest, so max(TPR - FPR) is reached only at +inf
     assert ks_cutoff_or_none(np.array([1, 1, 0, 0]), np.array([0.1, 0.2, 0.3, 0.4])) is None
-    single_class_first_fold = (np.array([0, 0]), np.array([0.1, 0.2]))
-    assert walk_forward_predictions([single_class_first_fold, single_class_first_fold]) is None
+    assert classify_with_own_cutoff(np.array([0, 0]), np.array([0.1, 0.2]), np.array([0.5])) is None
     cutoff = ks_cutoff_or_none(np.array([0, 0, 1, 1]), np.array([0.1, 0.2, 0.8, 0.9]))
     assert cutoff is not None and np.isfinite(cutoff[1])
 

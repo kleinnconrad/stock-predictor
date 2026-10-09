@@ -42,7 +42,7 @@ sequenceDiagram
         BR->>ST: 3. run_step1_for_ticker
         ST->>MA: Fetch OHLCV and join Macro
         ST->>FEAT: Engineer Target & Technicals
-        ST->>S1: Purged CV, walk-forward KS cutoff, final fit
+        ST->>S1: Purged CV, per-model KS cutoffs, final fit
         S1->>DIAG: KS cutoff, confusion matrix, charts
         ST->>CP: Fetch Company Profile (cached)
         ST->>JE: Export payload and diagnostics
@@ -83,8 +83,8 @@ Responsible for qualifying the universe, engineering the target-stock features a
 Houses the Scikit-Learn machine learning architecture, validation algorithms, and the fundamental ruleset.
 
 * **`base_pipeline.py`**: Defines the Scikit-Learn pipeline (median imputation, variance threshold, Z-scaling, ANOVA pre-filter, Sequential Feature Selection, class-balanced Logistic Regression) and `purged_time_series_cv()`, which builds expanding-window splits with a gap of `horizon_days` rows between training and test data.
-* **`diagnostics.py`**: Calculates the KS statistic and cutoff, rejects degenerate cutoffs, classifies test folds with walk-forward cutoffs, and saves confusion matrix and lift charts (Agg backend).
-* **`step1_macro.py`**: Executes Step 1: validates the model with purged cross-validation and walk-forward cutoffs, rejects tickers that cannot be validated with a `cv_status`, fits the final model, extracts the selected features and weights, and applies the CV accuracy gate, the confusion matrix rule and the KS cutoff to the latest prediction.
+* **`diagnostics.py`**: Calculates the KS statistic and cutoff, rejects degenerate cutoffs, classifies a model's predictions with the KS cutoff learned on the same model's training rows, and saves confusion matrix and lift charts (Agg backend).
+* **`step1_macro.py`**: Executes Step 1: validates the model with purged cross-validation, classifying each fold model with its own training-data KS cutoff, rejects tickers that cannot be validated with a `cv_status`, fits the final model, extracts the selected features and weights, and applies the CV accuracy gate, the confusion matrix rule and the final model's KS cutoff to the latest prediction.
 * **`step2_funds.py`**: Implements the deterministic Fundamental Rules Engine. It compares the latest statement with the same period one year earlier (falling back to the previous statement), skips rules whose inputs are not reported, and passes companies that meet the pro-rated `min_step2_score` on at least `min_step2_applicable_rules` applicable rules.
 
 ## 4. `orchestration/`

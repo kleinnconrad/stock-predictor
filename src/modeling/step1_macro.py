@@ -5,8 +5,9 @@ from typing import Dict, Any, Optional, Tuple
 from sklearn.pipeline import Pipeline
 from .base_pipeline import build_pipeline, purged_time_series_cv, InsufficientHistoryError
 from sklearn.metrics import accuracy_score
-from .diagnostics import (confusion_counts, generate_confusion_matrix, generate_lift_chart, ks_cutoff_or_none,
-                          plot_confusion_matrix, walk_forward_predictions)
+from scipy.stats import rankdata
+from .diagnostics import (classify_with_own_cutoff, confusion_counts, generate_confusion_matrix,
+                          generate_lift_chart, ks_cutoff_or_none, plot_confusion_matrix)
 import os
 from config.settings import load_settings
 
@@ -45,9 +46,11 @@ def execute_step1(df: pd.DataFrame, ticker: str = "UNKNOWN") -> Dict[str, Any]:
 
     The model is validated with an expanding-window TimeSeriesSplit whose folds are
     separated by `horizon_days` rows (purged), because each target looks `horizon_days`
-    into the future. Each test fold after the first is classified with the KS cutoff
-    learned on the earlier folds (walk-forward), and only those folds are scored. The
-    cutoff applied to the live prediction maximizes KS over all out-of-fold predictions.
+    into the future. Every model is classified with the KS cutoff learned on its own
+    training rows: each fold model classifies its test fold, and the live prediction uses
+    the cutoff of the final model trained on all rows. Refitted models put their
+    probabilities on different scales, so a cutoff is never transferred between models,
+    and no test data is used to choose it. All test folds are scored.
     If the ticker cannot be validated (too little history, a training fold with a single
     class, a failing fit, or a cutoff without discriminatory power), it is rejected with
     predicted_class NOT_UP and a `cv_status` explaining why; no score is invented.
@@ -110,30 +113,31 @@ def execute_step1(df: pd.DataFrame, ticker: str = "UNKNOWN") -> Dict[str, Any]:
         logger.info(f"Failed Step 1 for {ticker}: {e}")
         return _rejected_metrics("insufficient_history")
 
-    fold_results = []
+    # Each fold model classifies its own test fold with the KS cutoff of its own training rows
+    y_scored, y_pred_scored, p_ranks, fold_cutoffs = [], [], [], []
     try:
         for train_index, test_index in outer_cv.split(X_train):
             y_train_fold = y_train[train_index]
             if len(np.unique(y_train_fold)) < 2:
                 raise ValueError("a training fold contains a single class")
             fold_pipeline, _ = fit_pipeline(X_train.iloc[train_index], y_train_fold)
-            fold_probs = fold_pipeline.predict_proba(X_train.iloc[test_index])[:, 1]
-            fold_results.append((y_train[test_index], fold_probs))
+            test_probs = fold_pipeline.predict_proba(X_train.iloc[test_index])[:, 1]
+            classified = classify_with_own_cutoff(
+                y_train_fold, fold_pipeline.predict_proba(X_train.iloc[train_index])[:, 1], test_probs)
+            if classified is None:
+                logger.info(f"Failed Step 1 for {ticker}: a fold model's KS cutoff has no discriminatory power.")
+                return _rejected_metrics("degenerate_cutoff")
+            y_scored.append(y_train[test_index])
+            y_pred_scored.append(classified[0])
+            fold_cutoffs.append(classified[1])
+            # Probabilities of different fold models are not comparable; rank within the fold
+            p_ranks.append(rankdata(test_probs) / len(test_probs))
     except Exception as e:
         logger.info(f"Failed Step 1 for {ticker}: cross-validation failed ({e}).")
         return _rejected_metrics(f"cv_failed: {e}")
 
-    # Score folds 2..k with cutoffs learned walk-forward; derive the production cutoff from all folds
-    y_oof = np.concatenate([y for y, _ in fold_results])
-    p_oof = np.concatenate([p for _, p in fold_results])
-    walk_forward = walk_forward_predictions(fold_results)
-    production_cutoff = ks_cutoff_or_none(y_oof, p_oof)
-    if walk_forward is None or production_cutoff is None:
-        logger.info(f"Failed Step 1 for {ticker}: the KS cutoff has no discriminatory power.")
-        return _rejected_metrics("degenerate_cutoff")
-
-    y_scored, y_pred_scored = walk_forward
-    ks_stat, ks_cutoff = production_cutoff
+    y_scored = np.concatenate(y_scored)
+    y_pred_scored = np.concatenate(y_pred_scored)
     cv_accuracy = accuracy_score(y_scored, y_pred_scored)
     cv_confusion_matrix = confusion_counts(y_scored, y_pred_scored)
 
@@ -141,9 +145,10 @@ def execute_step1(df: pd.DataFrame, ticker: str = "UNKNOWN") -> Dict[str, Any]:
     os.makedirs(diag_dir, exist_ok=True)
 
     # Generate Visual Artifacts for Cross Validation
-    plot_confusion_matrix(y_scored, y_pred_scored, 'Walk-forward CV Confusion Matrix',
+    plot_confusion_matrix(y_scored, y_pred_scored, 'CV Confusion Matrix (test folds)',
                           os.path.join(diag_dir, f"{ticker}_cv_confusion_matrix.png"))
-    generate_lift_chart(y_oof, p_oof, quantiles, os.path.join(diag_dir, f"{ticker}_cv_lift_chart.png"))
+    generate_lift_chart(y_scored, np.concatenate(p_ranks), quantiles,
+                        os.path.join(diag_dir, f"{ticker}_cv_lift_chart.png"))
 
     # Now fit on the entire historical dataset to get the final model weights for prediction
     try:
@@ -152,6 +157,13 @@ def execute_step1(df: pd.DataFrame, ticker: str = "UNKNOWN") -> Dict[str, Any]:
         logger.info(f"Failed Step 1 for {ticker}: the final fit failed ({e}).")
         return _rejected_metrics(f"cv_failed: final fit failed ({e})")
     y_prob_train = pipeline.predict_proba(X_train)[:, 1]
+
+    # The live prediction is classified with the KS cutoff of the final model on its own training rows
+    production_cutoff = ks_cutoff_or_none(y_train, y_prob_train)
+    if production_cutoff is None:
+        logger.info(f"Failed Step 1 for {ticker}: the final model's KS cutoff has no discriminatory power.")
+        return _rejected_metrics("degenerate_cutoff")
+    ks_stat, ks_cutoff = production_cutoff
 
     # Generate Visual Artifacts for Full Training Set
     generate_confusion_matrix(y_train, y_prob_train, ks_cutoff, os.path.join(diag_dir, f"{ticker}_train_confusion_matrix.png"))
@@ -219,6 +231,7 @@ def execute_step1(df: pd.DataFrame, ticker: str = "UNKNOWN") -> Dict[str, Any]:
         "cv_scored_rows": int(len(y_scored)),
         "ks_stat": float(ks_stat),
         "ks_cutoff": float(ks_cutoff),
+        "cv_fold_cutoffs": [float(c) for c in fold_cutoffs],
         "latest_prob": latest_prob,
         "predicted_class": latest_pred_class,
         "selected_predictors_and_weights": selected_predictors_and_weights,

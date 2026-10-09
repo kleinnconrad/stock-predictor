@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import logging
 import os
-from typing import List, Optional, Tuple
+from typing import Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -51,36 +51,28 @@ def ks_cutoff_or_none(y_true: np.ndarray, y_prob_1: np.ndarray) -> Optional[Tupl
         return None
     return float(ks_stat), float(cutoff)
 
-def walk_forward_predictions(fold_results: List[Tuple[np.ndarray, np.ndarray]]) -> Optional[Tuple[np.ndarray, np.ndarray]]:
+def classify_with_own_cutoff(y_fit: np.ndarray, p_fit: np.ndarray,
+                             p_apply: np.ndarray) -> Optional[Tuple[np.ndarray, float]]:
     """
-    Classifies each test fold with a KS cutoff learned only on the folds before it.
+    Classifies a model's predictions with the KS cutoff learned on the same model's training rows.
 
-    Choosing the cutoff on the same predictions that are then scored inflates the
-    reported accuracy. Here fold j is classified with the cutoff that maximizes KS on
-    the out-of-fold predictions of folds 1..j-1, so the first fold is only used to
-    learn a cutoff and is not scored.
+    Refitted logistic regressions put their probabilities on very different scales, so a
+    cutoff is only meaningful for the model whose probabilities it was computed on. Learning
+    it on the training rows also keeps the test rows out of the threshold choice.
 
     Args:
-        fold_results (List[Tuple[np.ndarray, np.ndarray]]): (y_true, y_prob) per test
-            fold in chronological order.
+        y_fit (np.ndarray): Labels of the model's training rows.
+        p_fit (np.ndarray): The model's probabilities on its training rows.
+        p_apply (np.ndarray): The same model's probabilities on the rows to classify.
 
     Returns:
-        Optional[Tuple[np.ndarray, np.ndarray]]: (y_true, y_pred) of the scored folds,
-        or None if any required cutoff is degenerate or fewer than two folds exist.
+        Optional[Tuple[np.ndarray, float]]: (binary predictions, cutoff), or None if the
+        training predictions yield no usable cutoff.
     """
-    if len(fold_results) < 2:
+    ks = ks_cutoff_or_none(y_fit, p_fit)
+    if ks is None:
         return None
-    y_scored, y_pred_scored = [], []
-    for j in range(1, len(fold_results)):
-        hist_y = np.concatenate([y for y, _ in fold_results[:j]])
-        hist_p = np.concatenate([p for _, p in fold_results[:j]])
-        ks = ks_cutoff_or_none(hist_y, hist_p)
-        if ks is None:
-            return None
-        y_j, p_j = fold_results[j]
-        y_scored.append(y_j)
-        y_pred_scored.append((p_j >= ks[1]).astype(int))
-    return np.concatenate(y_scored), np.concatenate(y_pred_scored)
+    return (np.asarray(p_apply) >= ks[1]).astype(int), ks[1]
 
 def confusion_counts(y_true: np.ndarray, y_pred: np.ndarray) -> dict:
     """

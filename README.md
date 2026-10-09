@@ -42,9 +42,9 @@ The pipeline runs as scheduled GitHub Actions workflows:
 
 **Training data:** 10 years of daily history (`step1_history_years`) plus 2 years of warm-up (`feature_warmup_years`), so that the longest rolling features (up to 504 days) are populated from the first training day.
 
-**Validation (purged, walk-forward):**
+**Validation (purged):**
 * The target of each day is the return over the following 126 trading days, so labels of consecutive days overlap. The model is validated with an expanding-window **2-fold TimeSeriesSplit** (`cv_splits`) whose training and test windows are separated by a **gap of 126 rows**. Without that gap, the last training labels would be computed from prices inside the test window.
-* The KS cutoff used to classify a test fold is learned on the earlier folds only (walk-forward). The first fold therefore only provides a cutoff, and the reported **CV accuracy** and **confusion matrix** are measured on the later fold(s). The cutoff applied to the live prediction maximizes KS over all out-of-fold predictions.
+* Every model is classified with the **KS cutoff learned on its own training rows**: each fold model classifies its test fold with the cutoff from its training data, and the live prediction uses the cutoff of the final model trained on all rows. Refitted logistic regressions put their probabilities on very different scales, so a cutoff is only meaningful for the model it was computed on; it is never transferred between models, and no test data is used to choose it. The reported **CV accuracy** and **confusion matrix** cover both test folds; `cv_fold_cutoffs` lists the cutoff of each fold model.
 * A stock passes Step 1 only if the CV accuracy `(TP + TN) / Total` is at least **65%** (`min_cv_accuracy`), the **confusion matrix rule** `TP > FN AND TN > FP` holds, and the latest predicted probability is at or above the KS cutoff.
 * A stock that cannot be validated is rejected as NOT_UP with a `cv_status` instead of a score:
 
@@ -54,7 +54,7 @@ The pipeline runs as scheduled GitHub Actions workflows:
 | `insufficient_history` | Too little history for a purged split (first training fold below `min_cv_train_rows`). With the defaults, listings younger than roughly 3.3 years are rejected. |
 | `single_class_target` | The stock never (or always) reached the +10% target in its training history. |
 | `cv_failed: <reason>` | A training fold contains a single class or the fit failed. |
-| `degenerate_cutoff` | The out-of-fold predictions have no discriminatory power (KS not positive or no finite cutoff). |
+| `degenerate_cutoff` | A model's predictions on its own training rows have no discriminatory power (KS not positive or no finite cutoff). |
 
 #### Purged TimeSeriesSplit Diagram
 
@@ -67,14 +67,14 @@ gantt
     section Fold 1
     Training Data             :active, 2016-10-01, 2019-07-01
     Gap (126 days, dropped)   :done,   2019-07-01, 2020-01-01
-    Test Data (cutoff only)   :crit,   2020-01-01, 2023-04-01
+    Test Data (scored)        :crit,   2020-01-01, 2023-04-01
 
     section Fold 2
     Training Data             :active, 2016-10-01, 2022-10-01
     Gap (126 days, dropped)   :done,   2022-10-01, 2023-04-01
     Test Data (scored)        :crit,   2023-04-01, 2026-04-01
 ```
-*(The training window expands, every test window lies strictly in the future of its training window, and the 126-day gap prevents overlapping labels. Fold 2 is classified with the cutoff learned on fold 1.)*
+*(The training window expands, every test window lies strictly in the future of its training window, and the 126-day gap prevents overlapping labels. Each fold model classifies its test fold with the KS cutoff from its own training data.)*
 
 ### Step 2: The Fundamental Ruleset Engine
 Because historical fundamental data from Yahoo Finance is sparse, Step 2 does not use machine learning. It compares the company's **latest financial statement** with the statement for the **same period one year earlier** (365 ± 45 days, `step2_yoy_tolerance_days`), which removes seasonality and works for quarterly and half-yearly reporters alike. If no such statement exists, it falls back to the previous statement; `Comparison Basis` in the diagnostics records which was used.
@@ -229,7 +229,7 @@ The macro and fundamental universes are defined in `config/universe.py`.
 
 ## Testing
 
-The offline unit tests in `tests/` cover the data alignment, publication lags, purged cross-validation, walk-forward cutoffs, the Step 2 ruleset, report consolidation, history pruning, the uplift evaluation and the JSON export. They need no API keys or network access:
+The offline unit tests in `tests/` cover the data alignment, publication lags, purged cross-validation, the per-model KS cutoffs, the Step 2 ruleset, report consolidation, history pruning, the uplift evaluation and the JSON export. They need no API keys or network access:
 ```bash
 uv run pytest
 ```
@@ -296,8 +296,8 @@ Here is the directory layout of the repository and what you can find in each fol
 ## Outputs & Diagnostics
 
 The engine generates the following outputs:
-1. **`outputs/predictions/{ticker}_prediction.json`**: The full payload of a stock: company profile, latest price, P/E, beta, liquidity, the applied parameters, the Step 1 model (`cv_status`, CV accuracy, scored rows, KS statistic and cutoff, latest probability, the 12 selected features with their standardized logistic regression weights, confusion matrix) and, after Step 2, the ruleset diagnostics and the final prediction (`NOT_UP`, `UP` or `UP_FINAL_BUY`).
-2. **`outputs/diagnostics/{ticker}_feature_diagnostics.json`**: Documents which columns were fetched, which were removed by the ANOVA pre-filter and which by the Sequential Feature Selector (`step1_macro`), plus the rule-by-rule Step 2 results (`step2_funds`). The folder `outputs/diagnostics/{ticker}/` contains the walk-forward confusion matrix, the lift chart and the training confusion matrix.
+1. **`outputs/predictions/{ticker}_prediction.json`**: The full payload of a stock: company profile, latest price, P/E, beta, liquidity, the applied parameters, the Step 1 model (`cv_status`, CV accuracy, scored rows, KS statistic and cutoff of the final model, the cutoff of each fold model, latest probability, the 12 selected features with their standardized logistic regression weights, confusion matrix) and, after Step 2, the ruleset diagnostics and the final prediction (`NOT_UP`, `UP` or `UP_FINAL_BUY`).
+2. **`outputs/diagnostics/{ticker}_feature_diagnostics.json`**: Documents which columns were fetched, which were removed by the ANOVA pre-filter and which by the Sequential Feature Selector (`step1_macro`), plus the rule-by-rule Step 2 results (`step2_funds`). The folder `outputs/diagnostics/{ticker}/` contains the confusion matrix of the test folds, the lift chart and the training confusion matrix of the final model.
 3. **`data/processed/full_batch_report.json`**: All prediction payloads of a run with the execution date and the parameters. It feeds the dashboard.
 4. **`data/processed/final_buy_signals.csv`**: The tickers that passed both Step 1 and Step 2 (`UP_FINAL_BUY`).
 5. **`data/processed/history/YYYY-MM/report_YYYY-MM-DD.json`**: Daily archive of the batch report. Reports older than 200 days (`history_retention_days`, based on the date in the file name) are removed automatically.
