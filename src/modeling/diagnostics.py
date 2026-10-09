@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 from sklearn.metrics import roc_curve, confusion_matrix
+import matplotlib
+matplotlib.use("Agg")  # charts are only saved to files; interactive backends crash outside the main thread
 import matplotlib.pyplot as plt
 import seaborn as sns
 import logging
