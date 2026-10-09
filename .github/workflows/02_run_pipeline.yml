@@ -4,6 +4,9 @@ on:
   schedule:
     - cron: '0 1 * * *'   # 01:00 UTC (02:00 CET / 03:00 CEST)
 
+permissions:
+  contents: write
+
 jobs:
   step1-matrix:
     runs-on: ubuntu-latest
@@ -15,16 +18,16 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@caf0cab7a618c569241d31dcd442f54681755d39 # v3.2.4
         with:
-          version: "latest"
+          version: "0.12.17"
           enable-cache: true
 
       - name: Execute Step 1 Model
         env:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: uv run python scripts/02_run_step1.py --shard ${{ matrix.shard }} --total 3
+        run: uv run --locked python scripts/02_run_step1.py --shard ${{ matrix.shard }} --total 3
 
       - name: Upload Step 1 State Artifact
         uses: actions/upload-artifact@v4
@@ -54,9 +57,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@caf0cab7a618c569241d31dcd442f54681755d39 # v3.2.4
         with:
-          version: "latest"
+          version: "0.12.17"
           enable-cache: true
 
       - name: Download Step 1 Artifacts
@@ -74,7 +77,7 @@ jobs:
           merge-multiple: true
 
       - name: Execute Step 2 Model
-        run: uv run python scripts/03_run_step2.py --shard ${{ matrix.shard }} --total 3
+        run: uv run --locked python scripts/03_run_step2.py --shard ${{ matrix.shard }} --total 3
 
       - name: Upload Final Output Artifact
         uses: actions/upload-artifact@v4
@@ -93,9 +96,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@caf0cab7a618c569241d31dcd442f54681755d39 # v3.2.4
         with:
-          version: "latest"
+          version: "0.12.17"
           enable-cache: true
 
       - name: Download all Step 2 Shard Artifacts
@@ -105,10 +108,10 @@ jobs:
           path: step2_artifacts
 
       - name: Consolidate Shards
-        run: uv run python scripts/04_consolidate.py --predictions-glob 'step2_artifacts/*/outputs/predictions/*.json'
+        run: uv run --locked python scripts/04_consolidate.py --predictions-glob 'step2_artifacts/*/outputs/predictions/*.json'
 
       - name: Evaluate Uplift Performance
-        run: uv run python -m src.processing.uplift_evaluator
+        run: uv run --locked python -m src.processing.uplift_evaluator
 
       - name: Commit and Push Final Buy Signals
         run: |
@@ -134,7 +137,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               commit_sha: context.sha,
-              body: '@${{ github.repository_owner }} ✅ Workflow **${{ github.workflow }}** completed successfully! See run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+              body: '@${{ github.repository_owner }} Workflow **${{ github.workflow }}** completed successfully! See run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
             })
 
       - name: Notify on Failure
@@ -146,5 +149,5 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               commit_sha: context.sha,
-              body: '@${{ github.repository_owner }} ❌ Workflow **${{ github.workflow }}** failed! See run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+              body: '@${{ github.repository_owner }} Workflow **${{ github.workflow }}** failed! See run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
             })

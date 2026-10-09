@@ -6,6 +6,9 @@ on:
     # before the daily pipeline starts on Monday at 01:00 UTC
     - cron: '0 22 * * 0'
 
+permissions:
+  contents: write
+
 jobs:
   t7-download:
     runs-on: ubuntu-latest
@@ -14,13 +17,13 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@caf0cab7a618c569241d31dcd442f54681755d39 # v3.2.4
         with:
-          version: "latest"
+          version: "0.12.17"
           enable-cache: true
 
       - name: Run T7 Extraction
-        run: uv run python scripts/01_run_t7.py
+        run: uv run --locked python scripts/01_run_t7.py
 
       - name: Commit and Push T7 Dump and Qualified Tickers
         run: |
@@ -45,7 +48,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               commit_sha: context.sha,
-              body: '@${{ github.repository_owner }} ✅ Workflow **${{ github.workflow }}** completed successfully! See run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+              body: '@${{ github.repository_owner }} Workflow **${{ github.workflow }}** completed successfully! See run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
             })
 
       - name: Notify on Failure
@@ -57,5 +60,5 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               commit_sha: context.sha,
-              body: '@${{ github.repository_owner }} ❌ Workflow **${{ github.workflow }}** failed! See run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+              body: '@${{ github.repository_owner }} Workflow **${{ github.workflow }}** failed! See run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
             })
