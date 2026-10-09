@@ -146,7 +146,11 @@ def execute_step1(df: pd.DataFrame, ticker: str = "UNKNOWN") -> Dict[str, Any]:
     generate_lift_chart(y_oof, p_oof, quantiles, os.path.join(diag_dir, f"{ticker}_cv_lift_chart.png"))
 
     # Now fit on the entire historical dataset to get the final model weights for prediction
-    pipeline, sfs_cv_purged = fit_pipeline(X_train, y_train)
+    try:
+        pipeline, sfs_cv_purged = fit_pipeline(X_train, y_train)
+    except Exception as e:
+        logger.info(f"Failed Step 1 for {ticker}: the final fit failed ({e}).")
+        return _rejected_metrics(f"cv_failed: final fit failed ({e})")
     y_prob_train = pipeline.predict_proba(X_train)[:, 1]
 
     # Generate Visual Artifacts for Full Training Set
