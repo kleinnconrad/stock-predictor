@@ -3,8 +3,8 @@
 ## Fundamental Data Cache Maintenance
 Whenever you start working on this repository, you MUST proactively check if the fundamental data cache is outdated.
 1. Check the current date. The fundamental data cache maintenance runs every month on the 15th (or the first time you start Antigravity IDE after this date).
-2. Check the last modified date of the files in `data/raw/fundamentals/`. 
-3. If the current date is the 15th of the month or later, and the files were last updated before the 15th of the current month, you MUST automatically run the `python scripts/update_fundamentals.py` script to refresh the fundamentals cache.
+2. Check the `last_updated` date in `data/raw/fundamentals/_manifest.json` (written by the update script; file modification dates are not reliable in a git checkout). 
+3. If the current date is the 15th of the month or later, and the files were last updated before the 15th of the current month, you MUST automatically run the `uv run python scripts/update_fundamentals.py` script to refresh the fundamentals cache.
 4. Inform the user that you are running the monthly fundamentals update in the background.
 
 ## 1. Directory Structure
