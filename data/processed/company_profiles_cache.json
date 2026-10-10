@@ -307,6 +307,10 @@
     "full_name": "COMMERZBANK AG",
     "description": "Commerzbank AG is a leading German commercial bank offering a broad portfolio of financial services to private, corporate, and institutional clients across Germany and internationally."
   },
+  "CBK0.DE": {
+    "full_name": "COMMERZBANK AG Z. VERK.",
+    "description": "Commerzbank AG is a major German bank providing banking and financial services to private and corporate clients."
+  },
   "CDZ0.DE": {
     "full_name": "MHP HOTEL AG INH O.N.",
     "description": "MHP Hotel AG is a German hotel company focused on the acquisition, development, and operation of luxury and upscale hotels, often in partnership with leading international brands."
@@ -546,6 +550,10 @@
   "ERAG.DE": {
     "full_name": "ERNST RUSS AG NA O.N.",
     "description": "ERNST RUSS AG is a German shipping company and asset manager with a focus on container ships and real estate investments."
+  },
+  "ERW.DE": {
+    "full_name": "ERWE IMMOB. AG INH KONV.",
+    "description": "ERWE Immobilien AG is a German real estate company specializing in the development and management of commercial properties, particularly in inner-city locations across Germany."
   },
   "ERWE.DE": {
     "full_name": "ERWE IMMOB. AG INH O.N.",
@@ -1071,6 +1079,10 @@
     "full_name": "NAGARRO SE  NA O.N.",
     "description": "Nagarro SE is a global digital engineering and technology solutions company, providing services like digital product engineering, ERP, and cloud services to clients worldwide."
   },
+  "NA9A.DE": {
+    "full_name": "NAGARRO SE  NA O.N.Z.VK.",
+    "description": "Nagarro SE is a global digital engineering and technology solutions company that helps clients transform their businesses."
+  },
   "NBG6.DE": {
     "full_name": "NUERNBERGER BET.AG VNA",
     "description": "N\u00fcrnberger Beteiligungs-AG is a German insurance group providing various insurance products and financial services to private and corporate customers."
@@ -1158,6 +1170,10 @@
   "PDA0.DE": {
     "full_name": "PRO DV AG INH O.N.",
     "description": "PRO DV AG is a German IT service provider focusing on software solutions, IT consulting, and system integration for public administration and private sector clients."
+  },
+  "PFS0.DE": {
+    "full_name": "PFISTERER HLDG SE NA ON",
+    "description": "PFISTERER Holding SE is a German company specializing in energy infrastructure solutions, manufacturing products and systems for power transmission and distribution."
   },
   "PFV.DE": {
     "full_name": "PFEIFFER VACUUM TECH.O.N.",
